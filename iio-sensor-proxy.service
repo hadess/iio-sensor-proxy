@@ -1,0 +1,6 @@
+[Unit]
+Description=IIO Sensor Proxy service
+
+[Service]
+Type=simple
+ExecStart=/usr/sbin/iio-sensor-proxy
