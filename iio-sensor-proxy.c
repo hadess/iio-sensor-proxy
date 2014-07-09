@@ -4,7 +4,7 @@
  * Copyright (c) 2014 Peter F. Patel-Schneider
  * Copyright (c) 2011, 2014 Bastien Nocera <hadess@hadess.net>
  *
- * Every 250 msec, read data from an IIO accelerometer, and
+ * Every 700 msec, read data from an IIO accelerometer, and
  * from the accelerometer values, as well as the previous
  * orientation, calculate the device's new orientation.
  *
@@ -1039,7 +1039,7 @@ int main (int argc, char **argv)
 	}
 	send_uinput_event (data);
 
-	id = g_timeout_add (250, read_orientation, data);
+	id = g_timeout_add (700, read_orientation, data);
 	g_source_set_name_by_id (id, "read_orientation");
 
 	data->loop = g_main_loop_new (NULL, TRUE);
