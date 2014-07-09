@@ -166,6 +166,7 @@ typedef struct {
 
 	int channels_count;
 	iio_channel_info **channels;
+	int scan_size;
 
 	int uinput;
 	int accel_x, accel_y, accel_z;
@@ -552,7 +553,6 @@ static int write_sysfs_string(char *filename, char *basedir, char *val) {
 
 typedef struct SensorData_s {
 	ssize_t read_size;
-	int scan_size;
 	char* data;
 } SensorData;
 
@@ -610,8 +610,7 @@ prepare_output (OrientationData *or_data,
 		printf("Unable to enable the buffer %d\n", ret);
 		goto error_ret;
 	}
-	data.scan_size = size_from_channelarray (or_data->channels, or_data->channels_count);
-	data.data = g_malloc(data.scan_size * buf_len);
+	data.data = g_malloc(or_data->scan_size * buf_len);
 
 	buffer_access = g_strdup_printf ("/dev/iio:device%d", or_data->device_id);
 	/* Attempt to open non blocking to access dev */
@@ -623,7 +622,7 @@ prepare_output (OrientationData *or_data,
 	}
 
 	/* Actually read the data */
-	data.read_size = read (fp, data.data, buf_len * data.scan_size);
+	data.read_size = read (fp, data.data, buf_len * or_data->scan_size);
 	if (data.read_size == -EAGAIN) {
 		g_debug ("No new data available");
 	} else {
@@ -757,15 +756,15 @@ process_scan (SensorData data, OrientationData *or_data)
 	gboolean present_x, present_y, present_z;
 
 	/* Rather than read everything:
-	 * for (i = 0; i < data.read_size / data.scan_size; i++)...
+	 * for (i = 0; i < data.read_size / or_data->scan_size; i++)...
 	 * Just read the last one */
-	i = (data.read_size / data.scan_size) - 1;
+	i = (data.read_size / or_data->scan_size) - 1;
 	if (i < 0)
 		return or_data->previous_orientation;
 
-	process_scan_1(data.data + data.scan_size*i, or_data->channels, or_data->channels_count, "in_accel_x", &accel_x, &present_x);
-	process_scan_1(data.data + data.scan_size*i, or_data->channels, or_data->channels_count, "in_accel_y", &accel_y, &present_y);
-	process_scan_1(data.data + data.scan_size*i, or_data->channels, or_data->channels_count, "in_accel_z", &accel_z, &present_z);
+	process_scan_1(data.data + or_data->scan_size*i, or_data->channels, or_data->channels_count, "in_accel_x", &accel_x, &present_x);
+	process_scan_1(data.data + or_data->scan_size*i, or_data->channels, or_data->channels_count, "in_accel_y", &accel_y, &present_y);
+	process_scan_1(data.data + or_data->scan_size*i, or_data->channels, or_data->channels_count, "in_accel_z", &accel_z, &present_z);
 
 	/* To match the Pegatron accelerometer code
 	 * (see pega_accel_poll() in asus-laptop.c)
@@ -1031,6 +1030,7 @@ int main (int argc, char **argv)
 		g_warning ("Problem reading scan element information: %s", data->dev_dir_name);
 		return 1;
 	}
+	data->scan_size = size_from_channelarray (data->channels, data->channels_count);
 
 	/* Set up uinput */
 	if (!setup_uinput (data)) {
