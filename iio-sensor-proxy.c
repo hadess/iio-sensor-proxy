@@ -595,23 +595,6 @@ prepare_output (OrientationData *or_data,
 
 	int fp, buf_len = 127;
 
-	/* Set the device trigger to be the data ready trigger */
-	ret = write_sysfs_string_and_verify("trigger/current_trigger",
-			dev_dir_name, trigger_name);
-	if (ret < 0) {
-		printf("Failed to write current_trigger file %s\n", strerror(-ret));
-		goto error_ret;
-	}
-
-	/* Setup ring buffer parameters */
-	ret = write_sysfs_int("buffer/length", dev_dir_name, 128);
-	if (ret < 0) goto error_ret;
-	/* Enable the buffer */
-	ret = write_sysfs_int_and_verify("buffer/enable", dev_dir_name, 1);
-	if (ret < 0) {
-		printf("Unable to enable the buffer %d\n", ret);
-		goto error_ret;
-	}
 	data.data = g_malloc(or_data->scan_size * buf_len);
 
 	/* Attempt to open non blocking to access dev */
@@ -619,7 +602,7 @@ prepare_output (OrientationData *or_data,
 	if (fp == -1) { /* If it isn't there make the node */
 		printf("Failed to open %s : %s\n", or_data->dev_path, strerror(errno));
 		ret = -errno;
-		goto error_free_buffer_access;
+		goto bail;
 	}
 
 	/* Actually read the data */
@@ -630,19 +613,10 @@ prepare_output (OrientationData *or_data,
 		ret = callback(data, or_data);
 	}
 
-	/* Stop the buffer */
-	int bret = write_sysfs_int ("buffer/enable", dev_dir_name, 0);
-	if (bret < 0)
-		goto error_close_buffer_access;
-
-	/* Disconnect the trigger - just write a dummy name. */
-	write_sysfs_string ("trigger/current_trigger", dev_dir_name, "NULL");
-
-error_close_buffer_access:
 	close(fp);
-error_free_buffer_access:
+
+bail:
 	g_free(data.data);
-error_ret:
 	return ret;
 }
 
@@ -652,7 +626,8 @@ error_ret:
  * @
  **/
 static gboolean
-enable_sensors (GUdevDevice *dev)
+enable_sensors (GUdevDevice *dev,
+                int          enable)
 {
 	GDir *dir;
 	char *device_dir;
@@ -681,7 +656,7 @@ enable_sensors (GUdevDevice *dev)
 		g_free (path);
 
 		/* Enable */
-		if (write_sysfs_int (name, device_dir, 1) < 0) {
+		if (write_sysfs_int (name, device_dir, enable) < 0) {
 			g_warning ("Could not enable sensor %s/%s", device_dir, name);
 			ret = FALSE;
 			continue;
@@ -693,6 +668,51 @@ enable_sensors (GUdevDevice *dev)
 	g_free (device_dir);
 
 	return ret;
+}
+
+static gboolean
+enable_ring_buffer (OrientationData *data)
+{
+	int ret;
+
+	/* Setup ring buffer parameters */
+	ret = write_sysfs_int("buffer/length", data->dev_dir_name, 128);
+	if (ret < 0)
+		return FALSE;
+	/* Enable the buffer */
+	ret = write_sysfs_int_and_verify("buffer/enable", data->dev_dir_name, 1);
+	if (ret < 0) {
+		printf("Unable to enable the buffer %d\n", ret);
+		return FALSE;
+	}
+
+	return TRUE;
+}
+
+static void
+disable_ring_buffer (OrientationData *data)
+{
+	/* Stop the buffer */
+	write_sysfs_int ("buffer/enable", data->dev_dir_name, 0);
+
+	/* Disconnect the trigger - just write a dummy name. */
+	write_sysfs_string ("trigger/current_trigger", data->dev_dir_name, "NULL");
+}
+
+static gboolean
+enable_trigger (OrientationData *data)
+{
+	int ret;
+
+	/* Set the device trigger to be the data ready trigger */
+	ret = write_sysfs_string_and_verify("trigger/current_trigger",
+			data->dev_dir_name, data->trigger_name);
+	if (ret < 0) {
+		printf("Failed to write current_trigger file %s\n", strerror(-ret));
+		return FALSE;
+	}
+
+	return TRUE;
 }
 
 /**
@@ -1002,6 +1022,7 @@ int main (int argc, char **argv)
 	GUdevDevice *dev;
 	const gchar * const subsystems[] = { "iio", NULL };
 	guint id;
+	int ret = 0;
 
 	/* g_setenv ("G_MESSAGES_DEBUG", "all", TRUE); */
 
@@ -1020,24 +1041,27 @@ int main (int argc, char **argv)
 	data->dev_path = g_strdup (g_udev_device_get_device_file (dev));
 	data->client = client;
 
-	if (!enable_sensors (dev)) {
-		free_orientation_data (data);
-		return 1;
+	if (!enable_sensors (dev, 1) ||
+	    !enable_ring_buffer (data) ||
+	    !enable_trigger (data)) {
+		ret = 1;
+		goto out;
 	}
-	g_object_unref (dev);
 
 	/* Parse the files in scan_elements to identify what channels are present */
 	data->channels = build_channel_array (data->dev_dir_name, &(data->channels_count));
 	if (data->channels == NULL) {
 		g_warning ("Problem reading scan element information: %s", data->dev_dir_name);
-		return 1;
+		ret = 1;
+		goto out;
 	}
 	data->scan_size = size_from_channelarray (data->channels, data->channels_count);
 
 	/* Set up uinput */
 	if (!setup_uinput (data)) {
 		free_orientation_data (data);
-		return 1;
+		ret = 1;
+		goto out;
 	}
 	send_uinput_event (data);
 
@@ -1047,7 +1071,12 @@ int main (int argc, char **argv)
 	data->loop = g_main_loop_new (NULL, TRUE);
 	g_main_loop_run (data->loop);
 
+out:
+	enable_sensors (dev, 0);
+	disable_ring_buffer (data);
+
+	g_object_unref (dev);
 	free_orientation_data (data);
 
-	return 0;
+	return ret;
 }
