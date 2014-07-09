@@ -708,7 +708,7 @@ enable_trigger (OrientationData *data)
 	ret = write_sysfs_string_and_verify("trigger/current_trigger",
 			data->dev_dir_name, data->trigger_name);
 	if (ret < 0) {
-		printf("Failed to write current_trigger file %s\n", strerror(-ret));
+		g_warning ("Failed to write current_trigger file %s", g_strerror(-ret));
 		return FALSE;
 	}
 
