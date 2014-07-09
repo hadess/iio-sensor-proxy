@@ -162,6 +162,7 @@ typedef struct {
 	GMainLoop *loop;
 	char *dev_dir_name;
 	char *trigger_name;
+	char *dev_path;
 	int device_id;
 
 	int channels_count;
@@ -587,7 +588,6 @@ prepare_output (OrientationData *or_data,
 		char            *dev_dir_name,
 		char            *trigger_name,
 		int   (*callback)(SensorData, OrientationData *)) {
-	char * buffer_access;
 	int ret;
 	SensorData data;
 
@@ -612,11 +612,10 @@ prepare_output (OrientationData *or_data,
 	}
 	data.data = g_malloc(or_data->scan_size * buf_len);
 
-	buffer_access = g_strdup_printf ("/dev/iio:device%d", or_data->device_id);
 	/* Attempt to open non blocking to access dev */
-	fp = open (buffer_access, O_RDONLY | O_NONBLOCK);
+	fp = open (or_data->dev_path, O_RDONLY | O_NONBLOCK);
 	if (fp == -1) { /* If it isn't there make the node */
-		printf("Failed to open %s : %s\n", buffer_access, strerror(errno));
+		printf("Failed to open %s : %s\n", or_data->dev_path, strerror(errno));
 		ret = -errno;
 		goto error_free_buffer_access;
 	}
@@ -640,7 +639,6 @@ prepare_output (OrientationData *or_data,
 error_close_buffer_access:
 	close(fp);
 error_free_buffer_access:
-	free(buffer_access);
 	g_free(data.data);
 error_ret:
 	return ret;
@@ -983,6 +981,7 @@ free_orientation_data (OrientationData *data)
 		return;
 	g_free (data->dev_dir_name);
 	g_free (data->trigger_name);
+	g_free (data->dev_path);
 	for (i = 0; i < data->channels_count; i++)
 		channel_info_free (data->channels[i]);
 	g_free (data->channels);
@@ -1016,6 +1015,7 @@ int main (int argc, char **argv)
 	data->dev_dir_name = g_strdup (g_udev_device_get_sysfs_path (dev));
 	data->device_id = atoi (g_udev_device_get_number (dev));
 	data->trigger_name = g_strdup_printf ("accel_3d-dev%d", data->device_id);
+	data->dev_path = g_strdup (g_udev_device_get_device_file (dev));
 	data->client = client;
 
 	if (!enable_sensors (dev)) {
