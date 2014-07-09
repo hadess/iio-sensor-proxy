@@ -856,13 +856,7 @@ setup_uinput_udev (GUdevClient *client)
 	devices = g_udev_client_query_by_subsystem (client, "input");
 	for (l = devices; l != NULL; l = l->next) {
 		GUdevDevice *dev = l->data;
-//		guint i;
-#if 0
-		g_message ("path: %s", g_udev_device_get_sysfs_path (dev));
-		const gchar * const * keys = g_udev_device_get_property_keys (dev);
-		for (i = 0; keys[i]; i++)
-			g_message ("key %s", keys[i]);
-#endif
+
 		if (g_udev_device_get_property_as_boolean (dev, "ID_INPUT_ACCELEROMETER")) {
 			ret = g_object_ref (dev);
 			break;
