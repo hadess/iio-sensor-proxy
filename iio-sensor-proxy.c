@@ -78,6 +78,7 @@ orientation_to_string (OrientationUp o)
         return orientations[o];
 }
 
+#if 0
 static OrientationUp
 string_to_orientation (const char *orientation)
 {
@@ -91,6 +92,7 @@ string_to_orientation (const char *orientation)
         }
         return ORIENTATION_UNDEFINED;
 }
+#endif
 
 static OrientationUp
 orientation_calc (OrientationUp prev,
