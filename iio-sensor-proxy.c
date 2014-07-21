@@ -914,8 +914,10 @@ read_orientation (gpointer user_data)
 	int ret;
 
 	ret = prepare_output (data, data->dev_dir_name, data->trigger_name, &process_scan);
-	if (ret < 0)
+	if (ret < 0) {
+		g_main_loop_quit (data->loop);
 		return G_SOURCE_REMOVE;
+	}
 
 	orientation = ret;
 
