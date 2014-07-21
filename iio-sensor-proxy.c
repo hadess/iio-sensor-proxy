@@ -911,9 +911,13 @@ read_orientation (gpointer user_data)
 {
 	OrientationData *data = user_data;
 	OrientationUp orientation;
+	int ret;
 
-	if ((orientation = prepare_output (data, data->dev_dir_name, data->trigger_name, &process_scan)) < 0)
+	ret = prepare_output (data, data->dev_dir_name, data->trigger_name, &process_scan);
+	if (ret < 0)
 		return G_SOURCE_REMOVE;
+
+	orientation = ret;
 
 	g_debug ("Found orientation: %s, prev:%s",
 		 orientation_to_string (orientation),
