@@ -69,8 +69,8 @@ static const char *orientations[] = {
 #define RADIANS_TO_DEGREES 180.0/M_PI
 #define SAME_AXIS_LIMIT 5
 
-#define THRESHOLD_LANDSCAPE  25
-#define THRESHOLD_PORTRAIT  20
+#define THRESHOLD_LANDSCAPE  35
+#define THRESHOLD_PORTRAIT  35
 
 static const char *
 orientation_to_string (OrientationUp o)
