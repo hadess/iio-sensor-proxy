@@ -1011,7 +1011,7 @@ free_orientation_data (OrientationData *data)
 		close (data->uinput);
 	g_clear_object (&data->uinput_dev);
 	g_clear_object (&data->client);
-	g_main_loop_unref (data->loop);
+	g_clear_pointer (&data->loop, g_main_loop_unref);
 	g_free (data);
 }
 
