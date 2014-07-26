@@ -53,3 +53,4 @@ Tested on
 
 - Lenovo IdeaPad Yoga 13
 - Microsoft Surface Pro 2
+- Lenovo Yoga Pro 2
