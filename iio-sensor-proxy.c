@@ -600,7 +600,7 @@ prepare_output (OrientationData *or_data,
 	/* Attempt to open non blocking to access dev */
 	fp = open (or_data->dev_path, O_RDONLY | O_NONBLOCK);
 	if (fp == -1) { /* If it isn't there make the node */
-		printf("Failed to open %s : %s\n", or_data->dev_path, strerror(errno));
+		g_warning ("Failed to open %s : %s", or_data->dev_path, strerror(errno));
 		ret = -errno;
 		goto bail;
 	}
@@ -775,12 +775,19 @@ process_scan (SensorData data, OrientationData *or_data)
 	int accel_x, accel_y, accel_z;
 	gboolean present_x, present_y, present_z;
 
+	if (data.read_size < 0) {
+		g_warning ("Couldn't read from device: %s", g_strerror (-errno));
+		return or_data->previous_orientation;
+	}
+
 	/* Rather than read everything:
 	 * for (i = 0; i < data.read_size / or_data->scan_size; i++)...
 	 * Just read the last one */
 	i = (data.read_size / or_data->scan_size) - 1;
-	if (i < 0)
+	if (i < 0) {
+		g_debug ("Not enough data to read (read_size: %d scan_size: %d)", data.read_size, or_data->scan_size);
 		return or_data->previous_orientation;
+	}
 
 	process_scan_1(data.data + or_data->scan_size*i, or_data->channels, or_data->channels_count, "in_accel_x", &accel_x, &present_x);
 	process_scan_1(data.data + or_data->scan_size*i, or_data->channels, or_data->channels_count, "in_accel_y", &accel_y, &present_y);
