@@ -17,6 +17,10 @@ Usage
 With a new enough version of systemd[1], and a GNOME 3 based system,
 orientation changes will automatically be applied when rotating the panel.
 
+Note that a number of kernel bugs will prevent it from working correctly on
+some machines with the 3.16 kernel (kernel crashes on the Surface Pro, sensor
+failing to work after suspend on the Yoga Pro, etc.).
+
 You can verify this by running `udevadm info --export-db` and checking for
 an output resembling this one:
 ```
