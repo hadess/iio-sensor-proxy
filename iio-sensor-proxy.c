@@ -776,7 +776,7 @@ process_scan (SensorData data, OrientationData *or_data)
 	gboolean present_x, present_y, present_z;
 
 	if (data.read_size < 0) {
-		g_warning ("Couldn't read from device: %s", g_strerror (-errno));
+		g_warning ("Couldn't read from device: %s", g_strerror (errno));
 		return or_data->previous_orientation;
 	}
 
