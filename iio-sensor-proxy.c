@@ -1067,7 +1067,6 @@ int main (int argc, char **argv)
 
 	/* Set up uinput */
 	if (!setup_uinput (data)) {
-		free_orientation_data (data);
 		ret = 1;
 		goto out;
 	}
