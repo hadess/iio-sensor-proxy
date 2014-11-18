@@ -756,6 +756,7 @@ process_scan_1 (char              *data,
 				*ch_val = (int) val;
 				*ch_present = TRUE;
 			}
+			*ch_val *= channels[k]->scale;
 			break;
 		case 2:
 		case 8:
