@@ -786,7 +786,7 @@ process_scan (SensorData data, OrientationData *or_data)
 	 * Just read the last one */
 	i = (data.read_size / or_data->scan_size) - 1;
 	if (i < 0) {
-		g_debug ("Not enough data to read (read_size: %d scan_size: %d)", data.read_size, or_data->scan_size);
+		g_debug ("Not enough data to read (read_size: %d scan_size: %d)", (int) data.read_size, or_data->scan_size);
 		return or_data->previous_orientation;
 	}
 
