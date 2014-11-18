@@ -1049,8 +1049,8 @@ int main (int argc, char **argv)
 	data->client = client;
 
 	if (!enable_sensors (dev, 1) ||
-	    !enable_ring_buffer (data) ||
-	    !enable_trigger (data)) {
+	    !enable_trigger (data) ||
+	    !enable_ring_buffer (data)) {
 		ret = 1;
 		goto out;
 	}
