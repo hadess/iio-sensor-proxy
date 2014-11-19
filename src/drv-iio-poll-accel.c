@@ -68,8 +68,7 @@ iio_poll_accel_open (GUdevDevice        *device,
 	drv_data->timeout_id = g_timeout_add (700, poll_orientation, drv_data);
 	g_source_set_name_by_id (drv_data->timeout_id, "poll_orientation");
 
-	g_clear_pointer (&drv_data, g_free);
-	return FALSE;
+	return TRUE;
 }
 
 static void
