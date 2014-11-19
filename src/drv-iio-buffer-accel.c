@@ -14,6 +14,10 @@
 #include <errno.h>
 #include <stdio.h>
 
+/* 1G (9.81m/s²) corresponds to "256"
+ * value x scale is in m/s² */
+#define SCALE_TO_FF(scale) (scale * 256 / 9.81)
+
 /**
  * iio_channel_info - information about a given channel
  * @name: channel name
@@ -507,7 +511,7 @@ process_scan_1 (char              *data,
 				*ch_val = (int) val;
 				*ch_present = TRUE;
 			}
-			*ch_val *= channels[k]->scale;
+			*ch_val *= SCALE_TO_FF(channels[k]->scale);
 			break;
 		case 2:
 		case 8:

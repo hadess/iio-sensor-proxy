@@ -14,6 +14,10 @@
 #include <errno.h>
 #include <stdio.h>
 
+/* 1G (9.81m/s²) corresponds to "256"
+ * value x scale is in m/s² */
+#define SCALE_TO_FF(scale) (scale * 256 / 9.81)
+
 typedef struct DrvData {
 	guint               timeout_id;
 	ReadingsUpdateFunc  callback_func;
@@ -61,7 +65,7 @@ iio_poll_accel_open (GUdevDevice        *device,
 
 	drv_data->callback_func = callback_func;
 	drv_data->user_data = user_data;
-	drv_data->scale = g_udev_device_get_sysfs_attr_as_double (device, "in_accel_scale");
+	drv_data->scale = SCALE_TO_FF(g_udev_device_get_sysfs_attr_as_double (device, "in_accel_scale"));
 	if (drv_data->scale == 0.0)
 		drv_data->scale = 1.0;
 
