@@ -5,7 +5,9 @@ iio_sensor_proxy_SOURCES =			\
 	iio-sensor-proxy.c			\
 	uinput.h				\
 	drivers.h				\
-	drv-iio-buffer-accel.c
+	drv-iio-buffer-accel.c			\
+	drv-iio-poll-accel.c
+
 iio_sensor_proxy_CPPFLAGS =			\
 	$(IIO_SENSOR_PROXY_CFLAGS)		\
 	$(WARN_CFLAGS)

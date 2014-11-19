@@ -148,7 +148,8 @@ typedef struct {
 } OrientationData;
 
 static const SensorDriver * const drivers[] = {
-	&iio_buffer_accel
+	&iio_buffer_accel,
+	&iio_poll_accel
 };
 
 static GUdevDevice *
