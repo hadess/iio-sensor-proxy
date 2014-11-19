@@ -13,6 +13,7 @@
 #include <string.h>
 #include <errno.h>
 #include <stdio.h>
+#include <stdlib.h>
 
 /* 1G (9.81m/s²) corresponds to "256"
  * value x scale is in m/s² */
@@ -29,15 +30,34 @@ typedef struct DrvData {
 
 static DrvData *drv_data = NULL;
 
+static int
+sysfs_get_int (GUdevDevice *dev,
+	       const char  *attribute)
+{
+	int result;
+	char *contents;
+	char *filename;
+
+	result = 0;
+	filename = g_build_filename (g_udev_device_get_sysfs_path (dev), attribute, NULL);
+	if (g_file_get_contents (filename, &contents, NULL, NULL)) {
+		result = atoi (contents);
+		g_free (contents);
+	}
+	g_free (filename);
+
+	return result;
+}
+
 static gboolean
 poll_orientation (gpointer user_data)
 {
 	DrvData *data = user_data;
 	int accel_x, accel_y, accel_z;
 
-	accel_x = g_udev_device_get_sysfs_attr_as_int (data->dev, "in_accel_x_raw") * data->scale;
-	accel_y = g_udev_device_get_sysfs_attr_as_int (data->dev, "in_accel_y_raw") * data->scale;
-	accel_z = g_udev_device_get_sysfs_attr_as_int (data->dev, "in_accel_z_raw") * data->scale;
+	accel_x = sysfs_get_int (data->dev, "in_accel_x_raw") * data->scale;
+	accel_y = sysfs_get_int (data->dev, "in_accel_y_raw") * data->scale;
+	accel_z = sysfs_get_int (data->dev, "in_accel_z_raw") * data->scale;
 
 	//FIXME report errors
 	data->callback_func (&iio_poll_accel, accel_x, accel_y, accel_z, data->user_data);
