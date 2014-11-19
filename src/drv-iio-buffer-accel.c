@@ -150,7 +150,7 @@ iioutils_get_type (unsigned   *is_signed,
 	else
 		*is_signed = 0;
 
-	g_debug ("Got type for %s: is signed: %d, bytes: %d, bits_used: %d, shift: %d, mask: 0x%lX, be: %d",
+	g_debug ("Got type for %s: is signed: %d, bytes: %d, bits_used: %d, shift: %d, mask: 0x%" G_GUINT64_FORMAT ", be: %d",
 		 name, *is_signed, *bytes, *bits_used, *shift, *mask, *be);
 
 	g_free (filename);
@@ -314,7 +314,7 @@ build_channel_array (const char        *device_dir,
 	for (i = 0; i < *counter; i++) {
 		iio_channel_info *ci = ret_array[i];
 
-		g_debug ("Built channel array for %s: is signed: %d, bytes: %d, bits_used: %d, shift: %d, mask: 0x%lX, be: %d",
+		g_debug ("Built channel array for %s: is signed: %d, bytes: %d, bits_used: %d, shift: %d, mask: 0x%" G_GUINT64_FORMAT ", be: %d",
 			 ci->name, ci->is_signed, ci->bytes, ci->bits_used, ci->shift, ci->mask, ci->be);
 	}
 
