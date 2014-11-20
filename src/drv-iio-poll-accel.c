@@ -60,7 +60,13 @@ poll_orientation (gpointer user_data)
 	accel_z = sysfs_get_int (data->dev, "in_accel_z_raw") * data->scale;
 
 	//FIXME report errors
-	data->callback_func (&iio_poll_accel, accel_x, accel_y, accel_z, data->user_data);
+	if (g_strcmp0 ("i2c-SMO8500:00", g_udev_device_get_sysfs_attr (data->dev, "name")) == 0) {
+		/* Quirk for i2c-SMO8500:00 device,
+		 * swap x and y */
+		data->callback_func (&iio_poll_accel, accel_y, accel_x, accel_z, data->user_data);
+	} else {
+		data->callback_func (&iio_poll_accel, accel_x, accel_y, accel_z, data->user_data);
+	}
 
 	return G_SOURCE_CONTINUE;
 }
