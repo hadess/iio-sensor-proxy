@@ -333,14 +333,7 @@ accel_changed_func (SensorDriver *driver,
 	OrientationUp orientation = data->previous_orientation;
 
 	//FIXME handle errors
-
-	/* To match the Pegatron accelerometer code
-	 * (see pega_accel_poll() in asus-laptop.c)
-	 * we invert both x, and y values */
-	accel_x = -accel_x;
-	accel_y = -accel_y;
-
-	g_debug ("Read from IIO: %d, %d, %d", accel_x, accel_y, accel_z);
+	g_debug ("Sent by driver (quirk applied): %d, %d, %d", accel_x, accel_y, accel_z);
 
 	orientation = orientation_calc (data->previous_orientation, accel_x, accel_y, accel_z);
 

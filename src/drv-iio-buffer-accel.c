@@ -550,6 +550,12 @@ process_scan (SensorData data, DrvData *or_data)
 
 	g_debug ("Read from IIO: %d, %d, %d", accel_x, accel_y, accel_z);
 
+	/* To match the Pegatron accelerometer code
+	 * (see pega_accel_poll() in asus-laptop.c)
+	 * we invert both x, and y values */
+	accel_x = -accel_x;
+	accel_y = -accel_y;
+
 	//FIXME report errors
 	or_data->callback_func (&iio_buffer_accel, accel_x, accel_y, accel_z, or_data->user_data);
 
