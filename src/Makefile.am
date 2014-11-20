@@ -1,5 +1,4 @@
-
-bin_PROGRAMS = iio-sensor-proxy
+sbin_PROGRAMS = iio-sensor-proxy
 
 iio_sensor_proxy_SOURCES =			\
 	iio-sensor-proxy.c			\
