@@ -785,6 +785,8 @@ iio_buffer_accel_open (GUdevDevice        *device,
 	drv_data->timeout_id = g_timeout_add (700, read_orientation, drv_data);
 	g_source_set_name_by_id (drv_data->timeout_id, "read_orientation");
 
+	return TRUE;
+
 out:
 	g_clear_pointer (&drv_data, g_free);
 	return FALSE;
