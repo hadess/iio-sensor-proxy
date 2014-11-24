@@ -767,7 +767,7 @@ iio_buffer_accel_open (GUdevDevice        *device,
 	drv_data = g_new0 (DrvData, 1);
 	drv_data->dev = g_object_ref (device);
 	drv_data->trigger_name = get_trigger_name (device);
-	data->dev_dir_name = g_strdup (g_udev_device_get_sysfs_path (dev));
+	drv_data->dev_dir_name = g_strdup (g_udev_device_get_sysfs_path (device));
 	if (!drv_data->trigger_name) {
 		g_clear_pointer (&drv_data, g_free);
 		return FALSE;
@@ -780,7 +780,7 @@ iio_buffer_accel_open (GUdevDevice        *device,
 		goto out;
 	}
 
-	data->dev_path = g_strdup (g_udev_device_get_device_file (device));
+	drv_data->dev_path = g_strdup (g_udev_device_get_device_file (device));
 	drv_data->callback_func = callback_func;
 	drv_data->user_data = user_data;
 
