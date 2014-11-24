@@ -790,6 +790,9 @@ iio_buffer_accel_open (GUdevDevice        *device,
 	return TRUE;
 
 out:
+	g_clear_object (&drv_data->dev);
+	g_free (drv_data->trigger_name);
+	g_free (drv_data->dev_dir_name);
 	g_clear_pointer (&drv_data, g_free);
 	return FALSE;
 }
