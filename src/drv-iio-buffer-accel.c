@@ -582,7 +582,7 @@ prepare_output (DrvData *or_data,
 
 	/* Actually read the data */
 	data.read_size = read (fp, data.data, buf_len * or_data->scan_size);
-	if (data.read_size == -EAGAIN) {
+	if (data.read_size == -1 && errno == EAGAIN) {
 		g_debug ("No new data available");
 	} else {
 		process_scan(data, or_data);
