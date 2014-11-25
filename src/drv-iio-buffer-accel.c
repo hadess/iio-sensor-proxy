@@ -52,9 +52,9 @@ typedef struct DrvData {
 
 	GUdevDevice *dev;
 	char *trigger_name;
-	char *dev_dir_name;
+	const char *dev_dir_name;
 
-	char *dev_path;
+	const char *dev_path;
 	int device_id;
 
 	int channels_count;
@@ -380,15 +380,15 @@ static int write_sysfs_int(const char *filename, const char *basedir, int val) {
 	return _write_sysfs_int(filename, basedir, val, 0, 0, 0);
 }
 
-static int write_sysfs_int_and_verify(char *filename, char *basedir, int val) {
+static int write_sysfs_int_and_verify(const char *filename, const char *basedir, int val) {
 	return _write_sysfs_int(filename, basedir, val, 1, 0, 0);
 }
 
 static int
-_write_sysfs_string (char *filename,
-		     char *basedir,
-		     char *val,
-		     int   verify)
+_write_sysfs_string (const char *filename,
+		     const char *basedir,
+		     const char *val,
+		     int         verify)
 {
 	int ret = 0;
 	FILE *sysfsfp;
@@ -431,11 +431,11 @@ error_free:
  * @basedir: the sysfs directory in which the file is to be found
  * @val: the string to write
  **/
-static int write_sysfs_string_and_verify(char *filename, char *basedir, char *val) {
+static int write_sysfs_string_and_verify(const char *filename, const char *basedir, const char *val) {
 	return _write_sysfs_string(filename, basedir, val, 1);
 }
 
-static int write_sysfs_string(char *filename, char *basedir, char *val) {
+static int write_sysfs_string(const char *filename, const char *basedir, const char *val) {
 	return _write_sysfs_string(filename, basedir, val, 0);
 }
 
@@ -563,9 +563,9 @@ process_scan (SensorData data, DrvData *or_data)
 }
 
 static void
-prepare_output (DrvData *or_data,
-		char    *dev_dir_name,
-		char    *trigger_name)
+prepare_output (DrvData    *or_data,
+		const char *dev_dir_name,
+		const char *trigger_name)
 {
 	SensorData data;
 
@@ -766,8 +766,10 @@ iio_buffer_accel_open (GUdevDevice        *device,
 {
 	drv_data = g_new0 (DrvData, 1);
 	drv_data->dev = g_object_ref (device);
+	drv_data->dev_dir_name = g_udev_device_get_sysfs_path (device);
+	drv_data->dev_path = g_udev_device_get_device_file (device);
+
 	drv_data->trigger_name = get_trigger_name (device);
-	drv_data->dev_dir_name = g_strdup (g_udev_device_get_sysfs_path (device));
 	if (!drv_data->trigger_name) {
 		g_clear_pointer (&drv_data, g_free);
 		return FALSE;
@@ -780,7 +782,6 @@ iio_buffer_accel_open (GUdevDevice        *device,
 		goto out;
 	}
 
-	drv_data->dev_path = g_strdup (g_udev_device_get_device_file (device));
 	drv_data->callback_func = callback_func;
 	drv_data->user_data = user_data;
 
@@ -792,7 +793,6 @@ iio_buffer_accel_open (GUdevDevice        *device,
 out:
 	g_clear_object (&drv_data->dev);
 	g_free (drv_data->trigger_name);
-	g_free (drv_data->dev_dir_name);
 	g_clear_pointer (&drv_data, g_free);
 	return FALSE;
 }
@@ -804,9 +804,7 @@ iio_buffer_accel_close (void)
 
 	g_source_remove (drv_data->timeout_id);
 
-	g_free (drv_data->dev_dir_name);
 	g_free (drv_data->trigger_name);
-	g_free (drv_data->dev_path);
 	for (i = 0; i < drv_data->channels_count; i++)
 		channel_info_free (drv_data->channels[i]);
 	g_free (drv_data->channels);
