@@ -127,7 +127,8 @@ input_accel_close (void)
 
 SensorDriver input_accel = {
 	.name = "Input accelerometer",
-	.type = DRIVER_TYPE_ACCEL_INPUT,
+	.type = DRIVER_TYPE_ACCEL,
+	.specific_type = DRIVER_TYPE_ACCEL_INPUT,
 
 	.discover = input_accel_discover,
 	.open = input_accel_open,
