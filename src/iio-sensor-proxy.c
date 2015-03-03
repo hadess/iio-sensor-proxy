@@ -55,8 +55,12 @@ static const gchar introspection_xml[] =
 "  <interface name='net.hadess.SensorProxy'>"
 "    <property name='HasAccelerometer' type='b' access='read'/>"
 "    <property name='AccelerometerOrientation' type='s' access='read'/>"
+"    <property name='HasAmbientLight' type='b' access='read'/>"
+"    <property name='LightLevel' type='d' access='read'/>"
 "  </interface>"
 "</node>";
+
+#define NUM_SENSOR_TYPES DRIVER_TYPE_LIGHT + 1
 
 typedef struct {
 	GMainLoop *loop;
@@ -64,11 +68,16 @@ typedef struct {
 	GDBusConnection *connection;
 	guint name_id;
 
+	SensorDriver *drivers[NUM_SENSOR_TYPES];
+	GUdevDevice  *devices[NUM_SENSOR_TYPES];
+
 	/* Accelerometer */
-	SensorDriver *driver;
 	int accel_x, accel_y, accel_z;
 	OrientationUp previous_orientation;
-} OrientationData;
+
+	/* Light */
+	gdouble previous_level;
+} SensorData;
 
 static const SensorDriver * const drivers[] = {
 	&iio_buffer_accel,
@@ -76,41 +85,61 @@ static const SensorDriver * const drivers[] = {
 	&input_accel
 };
 
-static GUdevDevice *
-find_accel (GUdevClient   *client,
-	    SensorDriver **driver)
+static const char *
+driver_type_to_str (DriverType type)
+{
+	switch (type) {
+	case DRIVER_TYPE_ACCEL:
+		return "accelerometer";
+	case DRIVER_TYPE_LIGHT:
+		return "ambient light sensor";
+	default:
+		g_assert_not_reached ();
+	}
+}
+
+static gboolean
+find_sensors (GUdevClient *client,
+	      SensorData  *data)
 {
 	GList *devices, *input, *l;
-	GUdevDevice *ret = NULL;
+	gboolean found = FALSE;
 
-	*driver = NULL;
 	devices = g_udev_client_query_by_subsystem (client, "iio");
 	input = g_udev_client_query_by_subsystem (client, "input");
 	devices = g_list_concat (devices, input);
 
-	/* Find the accelerometer */
+	/* Find the devices */
 	for (l = devices; l != NULL; l = l->next) {
 		GUdevDevice *dev = l->data;
 		guint i;
 
 		for (i = 0; i < G_N_ELEMENTS(drivers); i++) {
-			if (drivers[i]->discover (dev)) {
-				g_debug ("Found device %s at %s",
+			SensorDriver *driver = (SensorDriver *) drivers[i];
+			if (data->drivers[driver->type] == NULL &&
+			    driver->discover (dev)) {
+				g_debug ("Found device %s of type %s at %s",
 					 g_udev_device_get_sysfs_path (dev),
-					 drivers[i]->name);
-				ret = g_object_ref (dev);
-				*driver = (SensorDriver *) drivers[i];
-				break;
+					 driver_type_to_str (driver->type),
+					 driver->name);
+				data->devices[driver->type] = g_object_ref (dev);
+				data->drivers[driver->type] = (SensorDriver *) driver;
+
+				found = TRUE;
 			}
 		}
+
+		if (data->drivers[DRIVER_TYPE_ACCEL] &&
+		    data->drivers[DRIVER_TYPE_LIGHT])
+			break;
 	}
 
 	g_list_free_full (devices, g_object_unref);
-	return ret;
+	return found;
 }
 
 static void
-send_dbus_event (OrientationData *data)
+send_dbus_event (SensorData *data)
 {
 	GVariantBuilder props_builder;
 	GVariant *props_changed = NULL;
@@ -120,9 +149,13 @@ send_dbus_event (OrientationData *data)
 	g_variant_builder_init (&props_builder, G_VARIANT_TYPE ("a{sv}"));
 
 	g_variant_builder_add (&props_builder, "{sv}", "HasAccelerometer",
-			       g_variant_new_boolean (data->driver != NULL));
+			       g_variant_new_boolean (data->drivers[DRIVER_TYPE_ACCEL] != NULL));
 	g_variant_builder_add (&props_builder, "{sv}", "AccelerometerOrientation",
 			       g_variant_new_string (orientation_to_string (data->previous_orientation)));
+	g_variant_builder_add (&props_builder, "{sv}", "HasAmbientLight",
+			       g_variant_new_boolean (data->drivers[DRIVER_TYPE_LIGHT] != NULL));
+	g_variant_builder_add (&props_builder, "{sv}", "LightLevel",
+			       g_variant_new_double (data->previous_level));
 
 	props_changed = g_variant_new ("(s@a{sv}@as)", SENSOR_PROXY_DBUS_NAME,
 				       g_variant_builder_end (&props_builder),
@@ -145,14 +178,18 @@ handle_get_property (GDBusConnection *connection,
 		     GError         **error,
 		     gpointer         user_data)
 {
-	OrientationData *data = user_data;
+	SensorData *data = user_data;
 
 	g_assert (data->connection);
 
 	if (g_strcmp0 (property_name, "HasAccelerometer") == 0)
-		return g_variant_new_boolean (data->driver != NULL);
+		return g_variant_new_boolean (data->drivers[DRIVER_TYPE_ACCEL] != NULL);
 	if (g_strcmp0 (property_name, "AccelerometerOrientation") == 0)
 		return g_variant_new_string (orientation_to_string (data->previous_orientation));
+	if (g_strcmp0 (property_name, "HasAmbientLight") == 0)
+		return g_variant_new_boolean (data->drivers[DRIVER_TYPE_LIGHT] != NULL);
+	if (g_strcmp0 (property_name, "LightLevel") == 0)
+		return g_variant_new_double (data->previous_level);
 
 	return NULL;
 }
@@ -174,7 +211,7 @@ name_lost_handler (GDBusConnection *connection,
 }
 
 static gboolean
-setup_dbus (OrientationData *data)
+setup_dbus (SensorData *data)
 {
 	GError *error = NULL;
 
@@ -211,22 +248,21 @@ setup_dbus (OrientationData *data)
 
 static void
 accel_changed_func (SensorDriver *driver,
-		    int           accel_x,
-		    int           accel_y,
-		    int           accel_z,
+		    gpointer      readings_data,
 		    gpointer      user_data)
 {
-	OrientationData *data = user_data;
+	SensorData *data = user_data;
+	AccelReadings *readings = (AccelReadings *) readings_data;
 	OrientationUp orientation = data->previous_orientation;
 
 	//FIXME handle errors
-	g_debug ("Sent by driver (quirk applied): %d, %d, %d", accel_x, accel_y, accel_z);
+	g_debug ("Accel sent by driver (quirk applied): %d, %d, %d", readings->accel_x, readings->accel_y, readings->accel_z);
 
-	orientation = orientation_calc (data->previous_orientation, accel_x, accel_y, accel_z);
+	orientation = orientation_calc (data->previous_orientation, readings->accel_x, readings->accel_y, readings->accel_z);
 
-	data->accel_x = accel_x;
-	data->accel_y = accel_y;
-	data->accel_z = accel_z;
+	data->accel_x = readings->accel_x;
+	data->accel_y = readings->accel_y;
+	data->accel_z = readings->accel_z;
 
 	if (data->previous_orientation != orientation) {
 		OrientationUp tmp;
@@ -241,8 +277,46 @@ accel_changed_func (SensorDriver *driver,
 }
 
 static void
-free_orientation_data (OrientationData *data)
+light_changed_func (SensorDriver *driver,
+		    gpointer      readings_data,
+		    gpointer      user_data)
 {
+	SensorData *data = user_data;
+	LightReadings *readings = (LightReadings *) readings_data;
+
+	//FIXME handle errors
+	g_debug ("Light level sent by driver (quirk applied): %lf", readings->level);
+
+	if (data->previous_level != readings->level) {
+		gdouble tmp;
+
+		tmp = data->previous_level;
+		data->previous_level = readings->level;
+
+		send_dbus_event (data);
+		g_debug ("Emitted orientation changed: from %lf to %lf",
+			 tmp, data->previous_level);
+	}
+}
+
+static ReadingsUpdateFunc
+driver_type_to_callback_func (DriverType type)
+{
+	switch (type) {
+	case DRIVER_TYPE_ACCEL:
+		return accel_changed_func;
+	case DRIVER_TYPE_LIGHT:
+		return light_changed_func;
+	default:
+		g_assert_not_reached ();
+	}
+}
+
+static void
+free_orientation_data (SensorData *data)
+{
+	guint i;
+
 	if (data == NULL)
 		return;
 
@@ -250,40 +324,119 @@ free_orientation_data (OrientationData *data)
 		g_bus_unown_name (data->name_id);
 		data->name_id = 0;
 	}
+
+	for (i = 0; i < NUM_SENSOR_TYPES; i++) {
+		if (data->drivers[i] != NULL)
+			data->drivers[i]->close ();
+		g_clear_object (&data->devices[i]);
+	}
+
 	g_clear_pointer (&data->introspection_data, g_dbus_node_info_unref);
 	g_clear_object (&data->connection);
 	g_clear_pointer (&data->loop, g_main_loop_unref);
 	g_free (data);
 }
 
+static gboolean
+any_sensors_left (SensorData *data)
+{
+	guint i;
+	gboolean exists = FALSE;
+
+	for (i = 0; i < NUM_SENSOR_TYPES; i++) {
+		if (data->drivers[i] != NULL) {
+			exists = TRUE;
+			break;
+		}
+	}
+
+	return exists;
+}
+
+static void
+sensor_changes (GUdevClient *client,
+		gchar       *action,
+		GUdevDevice *device,
+		SensorData  *data)
+{
+	guint i;
+
+	if (g_strcmp0 (action, "remove") == 0) {
+		for (i = 0; i < NUM_SENSOR_TYPES; i++) {
+			GUdevDevice *dev = data->devices[i];
+
+			if (!dev)
+				continue;
+
+			if (g_strcmp0 (g_udev_device_get_sysfs_path (device), g_udev_device_get_sysfs_path (dev)) == 0) {
+				g_debug ("Sensor type %s got removed (%s)",
+					 driver_type_to_str (i),
+					 g_udev_device_get_sysfs_path (dev));
+				g_clear_object (&data->devices[i]);
+				data->drivers[i] = NULL;
+			}
+		}
+
+		if (!any_sensors_left (data))
+			g_main_loop_quit (data->loop);
+	} else if (g_strcmp0 (action, "add") == 0) {
+		guint i;
+
+		for (i = 0; i < G_N_ELEMENTS(drivers); i++) {
+			SensorDriver *driver = (SensorDriver *) drivers[i];
+			if (data->drivers[driver->type] == NULL &&
+			    driver->discover (device)) {
+				g_debug ("Found hotplugged device %s of type %s at %s",
+					 g_udev_device_get_sysfs_path (device),
+					 driver_type_to_str (driver->type),
+					 driver->name);
+
+				if (driver->open (device,
+						  driver_type_to_callback_func (driver->type),
+						  data)) {
+					data->devices[driver->type] = g_object_ref (device);
+					data->drivers[driver->type] = (SensorDriver *) driver;
+				}
+				break;
+			}
+		}
+	}
+}
+
 int main (int argc, char **argv)
 {
-	OrientationData *data;
+	SensorData *data;
 	GUdevClient *client;
-	GUdevDevice *dev;
-	SensorDriver *driver;
 	int ret = 0;
+	const gchar * const subsystems[] = { "iio", "input", NULL };
+	guint i;
 
 	/* g_setenv ("G_MESSAGES_DEBUG", "all", TRUE); */
 
-	client = g_udev_client_new (NULL);
-	dev = find_accel (client, &driver);
-	if (!dev) {
-		g_debug ("Could not find IIO accelerometer");
+	data = g_new0 (SensorData, 1);
+	data->previous_orientation = ORIENTATION_UNDEFINED;
+
+	client = g_udev_client_new (subsystems);
+	if (!find_sensors (client, data)) {
+		g_debug ("Could not find any supported sensors");
 		return 0;
 	}
+	g_signal_connect (G_OBJECT (client), "uevent",
+			  G_CALLBACK (sensor_changes), data);
 
-	data = g_new0 (OrientationData, 1);
-	data->previous_orientation = ORIENTATION_UNDEFINED;
-	data->driver = driver;
-
-	/* Open up the accelerometer */
-	if (!data->driver->open (dev,
-				 accel_changed_func,
-				 data)) {
-		ret = 1;
-		goto out;
+	for (i = 0; i < NUM_SENSOR_TYPES; i++) {
+		if (data->drivers[i] == NULL)
+			continue;
+		if (!data->drivers[i]->open (data->devices[i],
+					     driver_type_to_callback_func (data->drivers[i]->type),
+					     data)) {
+			data->drivers[i] = NULL;
+			g_clear_object (&data->devices[i]);
+		}
 	}
+
+	if (!any_sensors_left (data))
+		goto out;
 
 	/* Set up D-Bus */
 	if (!setup_dbus (data)) {
@@ -296,9 +449,6 @@ int main (int argc, char **argv)
 	g_main_loop_run (data->loop);
 
 out:
-	data->driver->close ();
-
-	g_object_unref (dev);
 	free_orientation_data (data);
 
 	return ret;

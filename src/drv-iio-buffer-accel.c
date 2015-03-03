@@ -529,6 +529,7 @@ process_scan (SensorData data, DrvData *or_data)
 	int i;
 	int accel_x, accel_y, accel_z;
 	gboolean present_x, present_y, present_z;
+	AccelReadings readings;
 
 	if (data.read_size < 0) {
 		g_warning ("Couldn't read from device: %s", g_strerror (errno));
@@ -557,7 +558,10 @@ process_scan (SensorData data, DrvData *or_data)
 	accel_y = -accel_y;
 
 	//FIXME report errors
-	or_data->callback_func (&iio_buffer_accel, accel_x, accel_y, accel_z, or_data->user_data);
+	readings.accel_x = accel_x;
+	readings.accel_y = accel_y;
+	readings.accel_z = accel_z;
+	or_data->callback_func (&iio_buffer_accel, (gpointer) &readings, or_data->user_data);
 
 	return 1;
 }

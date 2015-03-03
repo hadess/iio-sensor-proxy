@@ -11,6 +11,7 @@
 
 typedef enum {
 	DRIVER_TYPE_ACCEL,
+	DRIVER_TYPE_LIGHT
 } DriverType;
 
 /* Driver types */
@@ -21,12 +22,24 @@ typedef enum {
 	DRIVER_TYPE_ACCEL_INPUT
 } DriverAccelType;
 
+typedef enum {
+	DRIVER_TYPE_LIGHT_IIO
+} DriverLightType;
+
 typedef struct SensorDriver SensorDriver;
 
+typedef struct {
+	int accel_x;
+	int accel_y;
+	int accel_z;
+} AccelReadings;
+
+typedef struct {
+	gdouble level;
+} LightReadings;
+
 typedef void (*ReadingsUpdateFunc) (SensorDriver *driver,
-				    int           x,
-				    int           y,
-				    int           z,
+				    gpointer      readings,
 				    gpointer      user_data);
 
 struct SensorDriver {

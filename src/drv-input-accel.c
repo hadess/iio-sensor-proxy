@@ -54,6 +54,7 @@ accelerometer_changed (void)
 	struct input_absinfo abs_info;
 	int accel_x = 0, accel_y = 0, accel_z = 0;
 	int fd, r;
+	AccelReadings readings;
 
 	fd = open (drv_data->dev_path, O_RDONLY|O_CLOEXEC);
 	if (fd < 0)
@@ -65,7 +66,10 @@ accelerometer_changed (void)
 
 	close (fd);
 
-	drv_data->callback_func (&input_accel, accel_x, accel_y, accel_z, drv_data->user_data);
+	readings.accel_x = accel_x;
+	readings.accel_y = accel_y;
+	readings.accel_z = accel_z;
+	drv_data->callback_func (&input_accel, (gpointer) &readings, drv_data->user_data);
 }
 
 static void

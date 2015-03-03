@@ -54,6 +54,7 @@ poll_orientation (gpointer user_data)
 {
 	DrvData *data = user_data;
 	int accel_x, accel_y, accel_z;
+	AccelReadings readings;
 
 	accel_x = sysfs_get_int (data->dev, "in_accel_x_raw") * data->scale;
 	accel_y = sysfs_get_int (data->dev, "in_accel_y_raw") * data->scale;
@@ -63,10 +64,16 @@ poll_orientation (gpointer user_data)
 	if (g_strcmp0 ("i2c-SMO8500:00", g_udev_device_get_sysfs_attr (data->dev, "name")) == 0) {
 		/* Quirk for i2c-SMO8500:00 device,
 		 * swap x and y */
-		data->callback_func (&iio_poll_accel, accel_y, accel_x, accel_z, data->user_data);
+		readings.accel_x = accel_y;
+		readings.accel_y = accel_x;
+		readings.accel_z = accel_z;
 	} else {
-		data->callback_func (&iio_poll_accel, accel_x, accel_y, accel_z, data->user_data);
+		readings.accel_x = accel_x;
+		readings.accel_y = accel_y;
+		readings.accel_z = accel_z;
 	}
+
+	drv_data->callback_func (&iio_poll_accel, (gpointer) &readings, drv_data->user_data);
 
 	return G_SOURCE_CONTINUE;
 }
@@ -83,8 +90,8 @@ iio_poll_accel_discover (GUdevDevice *device)
 
 static gboolean
 iio_poll_accel_open (GUdevDevice        *device,
-		       ReadingsUpdateFunc  callback_func,
-		       gpointer            user_data)
+		     ReadingsUpdateFunc  callback_func,
+		     gpointer            user_data)
 {
 	drv_data = g_new0 (DrvData, 1);
 	drv_data->dev = g_object_ref (device);
