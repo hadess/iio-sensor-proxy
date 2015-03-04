@@ -11,3 +11,14 @@ iio_sensor_proxy_CPPFLAGS =			\
 	$(IIO_SENSOR_PROXY_CFLAGS)		\
 	$(WARN_CFLAGS)
 iio_sensor_proxy_LDADD = $(IIO_SENSOR_PROXY_LIBS) -lm
+
+noinst_PROGRAMS = fake-input-accelerometer
+
+fake_input_accelerometer_SOURCES =		\
+	fake-input-accelerometer.c		\
+	uinput.h
+
+fake_input_accelerometer_CPPFLAGS =		\
+	$(IIO_SENSOR_PROXY_CFLAGS)		\
+	$(WARN_CFLAGS)
+fake_input_accelerometer_LDADD = $(IIO_SENSOR_PROXY_LIBS)
