@@ -24,3 +24,5 @@ fake_input_accelerometer_CPPFLAGS =		\
 	$(IIO_SENSOR_PROXY_CFLAGS)		\
 	$(WARN_CFLAGS)
 fake_input_accelerometer_LDADD = $(IIO_SENSOR_PROXY_LIBS)
+
+EXTRA_DIST = test-orientation.c
