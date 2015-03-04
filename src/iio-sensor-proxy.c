@@ -44,9 +44,20 @@
 #include <math.h>
 #include <stdio.h>
 
+#include <gio/gio.h>
 #include <gudev/gudev.h>
-#include "uinput.h"
 #include "drivers.h"
+
+#define SENSOR_PROXY_DBUS_NAME "net.hadess.SensorProxy"
+#define SENSOR_PROXY_DBUS_PATH "/net/hadess/SensorProxy"
+
+static const gchar introspection_xml[] =
+"<node>"
+"  <interface name='net.hadess.SensorProxy'>"
+"    <property name='HasAccelerometer' type='b' access='read'/>"
+"    <property name='AccelerometerOrientation' type='s' access='read'/>"
+"  </interface>"
+"</node>";
 
 typedef enum {
         ORIENTATION_UNDEFINED,
@@ -136,14 +147,13 @@ orientation_calc (OrientationUp prev,
 
 typedef struct {
 	GMainLoop *loop;
+	GDBusNodeInfo *introspection_data;
+	GDBusConnection *connection;
+	guint name_id;
 
+	/* Accelerometer */
 	SensorDriver *driver;
-
-	int uinput;
 	int accel_x, accel_y, accel_z;
-	GUdevClient *client;
-	GUdevDevice *uinput_dev;
-
 	OrientationUp previous_orientation;
 } OrientationData;
 
@@ -183,143 +193,104 @@ find_accel (GUdevClient   *client,
 	return ret;
 }
 
-static GUdevDevice *
-setup_uinput_udev (GUdevClient *client)
+static void
+send_dbus_event (OrientationData *data)
 {
-	GList *devices, *l;
-	GUdevDevice *ret = NULL;
+	GVariantBuilder props_builder;
+	GVariant *props_changed = NULL;
 
-	devices = g_udev_client_query_by_subsystem (client, "input");
-	for (l = devices; l != NULL; l = l->next) {
-		GUdevDevice *dev = l->data;
+	g_assert (data->connection);
 
-		if (g_udev_device_get_property_as_boolean (dev, "ID_INPUT_ACCELEROMETER")) {
-			ret = g_object_ref (dev);
-			break;
-		}
-	}
-	g_list_free_full (devices, g_object_unref);
+	g_variant_builder_init (&props_builder, G_VARIANT_TYPE ("a{sv}"));
 
-	return ret;
+	g_variant_builder_add (&props_builder, "{sv}", "HasAccelerometer",
+			       g_variant_new_boolean (data->driver != NULL));
+	g_variant_builder_add (&props_builder, "{sv}", "AccelerometerOrientation",
+			       g_variant_new_string (orientation_to_string (data->previous_orientation)));
+
+	props_changed = g_variant_new ("(s@a{sv}@as)", SENSOR_PROXY_DBUS_NAME,
+				       g_variant_builder_end (&props_builder),
+				       g_variant_new_strv (NULL, 0));
+
+	g_dbus_connection_emit_signal (data->connection,
+				       NULL,
+				       SENSOR_PROXY_DBUS_PATH,
+				       "org.freedesktop.DBus.Properties",
+				       "PropertiesChanged",
+				       props_changed, NULL);
 }
 
-static int
-write_sysfs_string (char *filename,
-		     char *basedir,
-		     char *val)
+static GVariant *
+handle_get_property (GDBusConnection *connection,
+		     const gchar     *sender,
+		     const gchar     *object_path,
+		     const gchar     *interface_name,
+		     const gchar     *property_name,
+		     GError         **error,
+		     gpointer         user_data)
 {
-	int ret = 0;
-	FILE *sysfsfp;
-	char *temp;
+	OrientationData *data = user_data;
 
-	temp = g_build_filename (basedir, filename, NULL);
-	sysfsfp = fopen (temp, "w");
-	if (sysfsfp == NULL) {
-		ret = -errno;
-		goto error_free;
-	}
-	fprintf(sysfsfp, "%s", val);
-	fclose(sysfsfp);
+	g_assert (data->connection);
 
-error_free:
-	g_free(temp);
+	if (g_strcmp0 (property_name, "HasAccelerometer") == 0)
+		return g_variant_new_boolean (data->driver != NULL);
+	if (g_strcmp0 (property_name, "AccelerometerOrientation") == 0)
+		return g_variant_new_string (orientation_to_string (data->previous_orientation));
 
-	return ret;
+	return NULL;
 }
 
-static gboolean
-send_uinput_event (OrientationData *data)
+static const GDBusInterfaceVTable interface_vtable =
 {
-	struct uinput_event ev;
+	NULL,
+	handle_get_property,
+	NULL
+};
 
-	memset(&ev, 0, sizeof(ev));
-
-	ev.type = EV_ABS;
-	ev.code = ABS_X;
-	ev.value = data->accel_x;
-	write (data->uinput, &ev, sizeof(ev));
-
-	ev.code = ABS_Y;
-	ev.value = data->accel_y;
-	write (data->uinput, &ev, sizeof(ev));
-
-	ev.code = ABS_Z;
-	ev.value = data->accel_z;
-	write (data->uinput, &ev, sizeof(ev));
-
-	memset(&ev, 0, sizeof(ev));
-	gettimeofday(&ev.time, NULL);
-	ev.type = EV_SYN;
-	ev.code = SYN_REPORT;
-	write (data->uinput, &ev, sizeof(ev));
-
-	if (!data->uinput_dev)
-		data->uinput_dev = setup_uinput_udev (data->client);
-	if (!data->uinput_dev)
-		return FALSE;
-
-	if (write_sysfs_string ("uevent", (char *) g_udev_device_get_sysfs_path (data->uinput_dev), "change") < 0) {
-		g_warning ("Failed to write uevent");
-		return FALSE;
-	}
-
-	return TRUE;
+static void
+name_lost_handler (GDBusConnection *connection,
+		   const gchar *name,
+		   gpointer user_data)
+{
+	g_warning ("Failed to setup D-Bus");
+	exit (1);
 }
 
 static gboolean
-setup_uinput (OrientationData *data)
+setup_dbus (OrientationData *data)
 {
-	struct uinput_dev dev;
-	int fd;
+	GError *error = NULL;
 
-	fd = open("/dev/uinput", O_RDWR);
-	if (fd < 0) {
-		g_warning ("Could not open uinput");
+	data->introspection_data = g_dbus_node_info_new_for_xml (introspection_xml, NULL);
+	g_assert (data->introspection_data != NULL);
+
+	data->connection = g_bus_get_sync (G_BUS_TYPE_SYSTEM,
+					   NULL,
+					   &error);
+	if (!data->connection) {
+		g_warning ("Failed to setup D-Bus: %s", error->message);
+		g_clear_error (&error);
 		return FALSE;
 	}
 
-	memset (&dev, 0, sizeof(dev));
-	snprintf (dev.name, sizeof (dev.name), "%s", "IIO Accelerometer Proxy");
-	dev.id.bustype = BUS_VIRTUAL;
-	dev.id.vendor = 0x01; //FIXME
-	dev.id.product = 0x02;
+	g_dbus_connection_register_object (data->connection,
+					   SENSOR_PROXY_DBUS_PATH,
+					   data->introspection_data->interfaces[0],
+					   &interface_vtable,
+					   data,
+					   NULL,
+					   NULL);
 
-	/* 1G accel is reported as ~256, so clamp to 2G */
-	dev.absmin[ABS_X] = dev.absmin[ABS_Y] = dev.absmin[ABS_Z] = -512;
-	dev.absmax[ABS_X] = dev.absmax[ABS_Y] = dev.absmax[ABS_Z] = 512;
-
-	if (write (fd, &dev, sizeof(dev)) != sizeof(dev)) {
-		g_warning ("Error creating uinput device");
-		goto bail;
-	}
-
-	/* enabling key events */
-	if (ioctl (fd, UI_SET_EVBIT, EV_ABS) < 0) {
-		g_warning ("Error enabling uinput absolute events");
-		goto bail;
-	}
-
-	/* enabling keys */
-	if (ioctl (fd, UI_SET_ABSBIT, ABS_X) < 0 ||
-	    ioctl (fd, UI_SET_ABSBIT, ABS_Y) < 0 ||
-	    ioctl (fd, UI_SET_ABSBIT, ABS_Z) < 0) {
-		g_warning ("Couldn't enable uinput axis");
-		goto bail;
-	}
-
-	/* creating the device */
-	if (ioctl (fd, UI_DEV_CREATE) < 0) {
-		g_warning ("Error creating uinput device");
-		goto bail;
-	}
-
-	data->uinput = fd;
+	data->name_id = g_bus_own_name_on_connection (data->connection,
+						      SENSOR_PROXY_DBUS_NAME,
+						      G_BUS_NAME_OWNER_FLAGS_NONE,
+						      NULL,
+						      name_lost_handler,
+						      NULL,
+						      NULL);
 
 	return TRUE;
-
-bail:
-	close (fd);
-	return FALSE;
 }
 
 static void
@@ -342,14 +313,14 @@ accel_changed_func (SensorDriver *driver,
 	data->accel_z = accel_z;
 
 	if (data->previous_orientation != orientation) {
-		/* If we failed to send the uevent,
-		 * we'll try again a bit later */
-		if (send_uinput_event (data)) {
-			g_debug ("Emitted orientation changed: from %s to %s",
-				 orientation_to_string (data->previous_orientation),
-				 orientation_to_string (orientation));
-			data->previous_orientation = orientation;
-		}
+		OrientationUp tmp;
+
+		tmp = data->previous_orientation;
+		data->previous_orientation = orientation;
+		send_dbus_event (data);
+		g_debug ("Emitted orientation changed: from %s to %s",
+			 orientation_to_string (tmp),
+			 orientation_to_string (data->previous_orientation));
 	}
 }
 
@@ -358,10 +329,13 @@ free_orientation_data (OrientationData *data)
 {
 	if (data == NULL)
 		return;
-	if (data->uinput > 0)
-		close (data->uinput);
-	g_clear_object (&data->uinput_dev);
-	g_clear_object (&data->client);
+
+	if (data->name_id != 0) {
+		g_bus_unown_name (data->name_id);
+		data->name_id = 0;
+	}
+	g_clear_pointer (&data->introspection_data, g_dbus_node_info_unref);
+	g_clear_object (&data->connection);
 	g_clear_pointer (&data->loop, g_main_loop_unref);
 	g_free (data);
 }
@@ -386,7 +360,6 @@ int main (int argc, char **argv)
 
 	data = g_new0 (OrientationData, 1);
 	data->previous_orientation = ORIENTATION_UNDEFINED;
-	data->client = client;
 	data->driver = driver;
 
 	/* Open up the accelerometer */
@@ -397,12 +370,12 @@ int main (int argc, char **argv)
 		goto out;
 	}
 
-	/* Set up uinput */
-	if (!setup_uinput (data)) {
+	/* Set up D-Bus */
+	if (!setup_dbus (data)) {
 		ret = 1;
 		goto out;
 	}
-	send_uinput_event (data);
+	send_dbus_event (data);
 
 	data->loop = g_main_loop_new (NULL, TRUE);
 	g_main_loop_run (data->loop);

@@ -2,7 +2,6 @@ sbin_PROGRAMS = iio-sensor-proxy
 
 iio_sensor_proxy_SOURCES =			\
 	iio-sensor-proxy.c			\
-	uinput.h				\
 	drivers.h				\
 	drv-iio-buffer-accel.c			\
 	drv-iio-poll-accel.c

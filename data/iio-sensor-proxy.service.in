@@ -2,5 +2,6 @@
 Description=IIO Sensor Proxy service
 
 [Service]
-Type=simple
+Type=dbus
+BusName=net.hadess.SensorProxy
 ExecStart=@sbindir@/iio-sensor-proxy
