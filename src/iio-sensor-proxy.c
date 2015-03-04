@@ -40,13 +40,12 @@
 #include <errno.h>
 #include <string.h>
 #include <stdlib.h>
-#include <stdint.h>
-#include <math.h>
 #include <stdio.h>
 
 #include <gio/gio.h>
 #include <gudev/gudev.h>
 #include "drivers.h"
+#include "orientation.h"
 
 #define SENSOR_PROXY_DBUS_NAME "net.hadess.SensorProxy"
 #define SENSOR_PROXY_DBUS_PATH "/net/hadess/SensorProxy"
@@ -58,92 +57,6 @@ static const gchar introspection_xml[] =
 "    <property name='AccelerometerOrientation' type='s' access='read'/>"
 "  </interface>"
 "</node>";
-
-typedef enum {
-        ORIENTATION_UNDEFINED,
-        ORIENTATION_NORMAL,
-        ORIENTATION_BOTTOM_UP,
-        ORIENTATION_LEFT_UP,
-        ORIENTATION_RIGHT_UP
-} OrientationUp;
-
-static const char *orientations[] = {
-        "undefined",
-        "normal",
-        "bottom-up",
-        "left-up",
-        "right-up",
-        NULL
-};
-
-#define ORIENTATION_UP_UP ORIENTATION_NORMAL
-
-#define RADIANS_TO_DEGREES 180.0/M_PI
-#define SAME_AXIS_LIMIT 5
-
-#define THRESHOLD_LANDSCAPE  35
-#define THRESHOLD_PORTRAIT  35
-
-static const char *
-orientation_to_string (OrientationUp o)
-{
-        return orientations[o];
-}
-
-#if 0
-static OrientationUp
-string_to_orientation (const char *orientation)
-{
-        int i;
-
-        if (orientation == NULL)
-                return ORIENTATION_UNDEFINED;
-        for (i = 0; orientations[i] != NULL; i++) {
-                if (g_str_equal (orientation, orientations[i]))
-                        return i;
-        }
-        return ORIENTATION_UNDEFINED;
-}
-#endif
-
-static OrientationUp
-orientation_calc (OrientationUp prev,
-                  int x, int y, int z)
-{
-        int rotation;
-        OrientationUp ret = prev;
-
-        /* Portrait check */
-        rotation = round(atan((double) x / sqrt(y * y + z * z)) * RADIANS_TO_DEGREES);
-
-        if (abs(rotation) > THRESHOLD_PORTRAIT) {
-                ret = (rotation < 0) ? ORIENTATION_LEFT_UP : ORIENTATION_RIGHT_UP;
-
-                /* Some threshold to switching between portrait modes */
-                if (prev == ORIENTATION_LEFT_UP || prev == ORIENTATION_RIGHT_UP) {
-                        if (abs(rotation) < SAME_AXIS_LIMIT) {
-                                ret = prev;
-                        }
-                }
-
-        } else {
-                /* Landscape check */
-                rotation = round(atan((double) y / sqrt(x * x + z * z)) * RADIANS_TO_DEGREES);
-
-                if (abs(rotation) > THRESHOLD_LANDSCAPE) {
-                        ret = (rotation < 0) ? ORIENTATION_BOTTOM_UP : ORIENTATION_NORMAL;
-
-                        /* Some threshold to switching between landscape modes */
-                        if (prev == ORIENTATION_BOTTOM_UP || prev == ORIENTATION_NORMAL) {
-                                if (abs(rotation) < SAME_AXIS_LIMIT) {
-                                        ret = prev;
-                                }
-                        }
-                }
-        }
-
-        return ret;
-}
 
 typedef struct {
 	GMainLoop *loop;

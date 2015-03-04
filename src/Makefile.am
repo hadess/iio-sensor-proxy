@@ -3,6 +3,8 @@ sbin_PROGRAMS = iio-sensor-proxy
 iio_sensor_proxy_SOURCES =			\
 	iio-sensor-proxy.c			\
 	drivers.h				\
+	orientation.c				\
+	orientation.h				\
 	drv-iio-buffer-accel.c			\
 	drv-iio-poll-accel.c			\
 	drv-input-accel.c
