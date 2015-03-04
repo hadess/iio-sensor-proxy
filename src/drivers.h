@@ -10,7 +10,8 @@
 #include <gudev/gudev.h>
 
 typedef enum {
-	DRIVER_TYPE_ACCEL_IIO
+	DRIVER_TYPE_ACCEL_IIO,
+	DRIVER_TYPE_ACCEL_INPUT
 } DriverType;
 
 typedef struct SensorDriver SensorDriver;
@@ -34,3 +35,4 @@ struct SensorDriver {
 
 extern SensorDriver iio_buffer_accel;
 extern SensorDriver iio_poll_accel;
+extern SensorDriver input_accel;

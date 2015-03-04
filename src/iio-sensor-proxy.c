@@ -159,18 +159,21 @@ typedef struct {
 
 static const SensorDriver * const drivers[] = {
 	&iio_buffer_accel,
-	&iio_poll_accel
+	&iio_poll_accel,
+	&input_accel
 };
 
 static GUdevDevice *
 find_accel (GUdevClient   *client,
 	    SensorDriver **driver)
 {
-	GList *devices, *l;
+	GList *devices, *input, *l;
 	GUdevDevice *ret = NULL;
 
 	*driver = NULL;
 	devices = g_udev_client_query_by_subsystem (client, "iio");
+	input = g_udev_client_query_by_subsystem (client, "input");
+	devices = g_list_concat (devices, input);
 
 	/* Find the accelerometer */
 	for (l = devices; l != NULL; l = l->next) {
@@ -346,12 +349,11 @@ int main (int argc, char **argv)
 	GUdevClient *client;
 	GUdevDevice *dev;
 	SensorDriver *driver;
-	const gchar * const subsystems[] = { "iio", NULL };
 	int ret = 0;
 
 	/* g_setenv ("G_MESSAGES_DEBUG", "all", TRUE); */
 
-	client = g_udev_client_new (subsystems);
+	client = g_udev_client_new (NULL);
 	dev = find_accel (client, &driver);
 	if (!dev) {
 		g_debug ("Could not find IIO accelerometer");
