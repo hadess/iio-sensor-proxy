@@ -7,7 +7,8 @@ iio_sensor_proxy_SOURCES =			\
 	orientation.h				\
 	drv-iio-buffer-accel.c			\
 	drv-iio-poll-accel.c			\
-	drv-input-accel.c
+	drv-input-accel.c			\
+	drv-fake-light.c
 
 iio_sensor_proxy_CPPFLAGS =			\
 	$(IIO_SENSOR_PROXY_CFLAGS)		\
