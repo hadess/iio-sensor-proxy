@@ -36,7 +36,8 @@ typedef struct {
 } AccelReadings;
 
 typedef struct {
-	gdouble level;
+	gdouble  level;
+	gboolean uses_lux;
 } LightReadings;
 
 typedef void (*ReadingsUpdateFunc) (SensorDriver *driver,

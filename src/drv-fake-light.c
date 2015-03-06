@@ -50,6 +50,7 @@ light_changed (void)
 	 * replicate real readings from a device */
 	level += 1.0;
 	readings.level = level;
+	readings.uses_lux = TRUE;
 	drv_data->callback_func (&fake_light, (gpointer) &readings, drv_data->user_data);
 
 	return G_SOURCE_CONTINUE;

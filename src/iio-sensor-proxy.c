@@ -56,6 +56,7 @@ static const gchar introspection_xml[] =
 "    <property name='HasAccelerometer' type='b' access='read'/>"
 "    <property name='AccelerometerOrientation' type='s' access='read'/>"
 "    <property name='HasAmbientLight' type='b' access='read'/>"
+"    <property name='LightLevelUnit' type='s' access='read'/>"
 "    <property name='LightLevel' type='d' access='read'/>"
 "  </interface>"
 "</node>";
@@ -77,6 +78,7 @@ typedef struct {
 
 	/* Light */
 	gdouble previous_level;
+	gboolean uses_lux;
 } SensorData;
 
 static const SensorDriver * const drivers[] = {
@@ -155,6 +157,8 @@ send_dbus_event (SensorData *data)
 			       g_variant_new_string (orientation_to_string (data->previous_orientation)));
 	g_variant_builder_add (&props_builder, "{sv}", "HasAmbientLight",
 			       g_variant_new_boolean (data->drivers[DRIVER_TYPE_LIGHT] != NULL));
+	g_variant_builder_add (&props_builder, "{sv}", "LightLevelUnit",
+			       g_variant_new_string (data->uses_lux ? "lux" : "vendor"));
 	g_variant_builder_add (&props_builder, "{sv}", "LightLevel",
 			       g_variant_new_double (data->previous_level));
 
@@ -189,6 +193,8 @@ handle_get_property (GDBusConnection *connection,
 		return g_variant_new_string (orientation_to_string (data->previous_orientation));
 	if (g_strcmp0 (property_name, "HasAmbientLight") == 0)
 		return g_variant_new_boolean (data->drivers[DRIVER_TYPE_LIGHT] != NULL);
+	if (g_strcmp0 (property_name, "LightLevelUnit") == 0)
+		return g_variant_new_string (data->uses_lux ? "lux" : "vendor");
 	if (g_strcmp0 (property_name, "LightLevel") == 0)
 		return g_variant_new_double (data->previous_level);
 
@@ -286,16 +292,20 @@ light_changed_func (SensorDriver *driver,
 	LightReadings *readings = (LightReadings *) readings_data;
 
 	//FIXME handle errors
-	g_debug ("Light level sent by driver (quirk applied): %lf", readings->level);
+	g_debug ("Light level sent by driver (quirk applied): %lf (unit: %s)",
+		 readings->level, data->uses_lux ? "lux" : "vendor");
 
-	if (data->previous_level != readings->level) {
+	if (data->previous_level != readings->level ||
+	    data->uses_lux != readings->uses_lux) {
 		gdouble tmp;
 
 		tmp = data->previous_level;
 		data->previous_level = readings->level;
 
+		data->uses_lux = readings->uses_lux;
+
 		send_dbus_event (data);
-		g_debug ("Emitted orientation changed: from %lf to %lf",
+		g_debug ("Emitted light changed: from %lf to %lf",
 			 tmp, data->previous_level);
 	}
 }
@@ -416,6 +426,7 @@ int main (int argc, char **argv)
 
 	data = g_new0 (SensorData, 1);
 	data->previous_orientation = ORIENTATION_UNDEFINED;
+	data->uses_lux = TRUE;
 
 	client = g_udev_client_new (subsystems);
 	if (!find_sensors (client, data)) {
