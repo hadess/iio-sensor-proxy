@@ -76,7 +76,7 @@ fake_light_open (GUdevDevice        *device,
 	drv_data->callback_func = callback_func;
 	drv_data->user_data = user_data;
 
-	g_idle_add (first_values, NULL);
+	drv_data->timeout_id = g_idle_add (first_values, NULL);
 
 	return TRUE;
 }
