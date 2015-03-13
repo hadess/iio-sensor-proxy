@@ -31,6 +31,9 @@ fake_light_discover (GUdevDevice *device)
 	if (g_getenv ("FAKE_LIGHT_SENSOR") == NULL)
 		return FALSE;
 
+	if (g_strcmp0 (g_udev_device_get_subsystem (device), "input") != 0)
+		return FALSE;
+
 	/* "Lid switch" is a random input device to latch onto */
 	if (g_strcmp0 (g_udev_device_get_name (device), "Lid Switch") == 0)
 		return FALSE;

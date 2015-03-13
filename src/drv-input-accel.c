@@ -32,6 +32,9 @@ input_accel_discover (GUdevDevice *device)
 {
 	const char *path;
 
+	if (g_strcmp0 (g_udev_device_get_subsystem (device), "input") != 0)
+		return FALSE;
+
 	if (!g_udev_device_get_property_as_boolean (device, "ID_INPUT_ACCELEROMETER"))
 		return FALSE;
 

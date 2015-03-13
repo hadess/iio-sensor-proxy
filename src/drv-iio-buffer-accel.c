@@ -755,6 +755,8 @@ read_orientation (gpointer user_data)
 static gboolean
 iio_buffer_accel_discover (GUdevDevice *device)
 {
+	if (g_strcmp0 (g_udev_device_get_subsystem (device), "iio") != 0)
+		return FALSE;
 
 	if (g_strcmp0 ("accel_3d", g_udev_device_get_sysfs_attr (device, "name")) != 0)
 		return FALSE;
