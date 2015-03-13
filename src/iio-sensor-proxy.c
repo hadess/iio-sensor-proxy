@@ -85,6 +85,7 @@ static const SensorDriver * const drivers[] = {
 	&iio_buffer_accel,
 	&iio_poll_accel,
 	&input_accel,
+	&iio_poll_light,
 	&fake_light
 };
 

@@ -60,3 +60,4 @@ extern SensorDriver iio_buffer_accel;
 extern SensorDriver iio_poll_accel;
 extern SensorDriver input_accel;
 extern SensorDriver fake_light;
+extern SensorDriver iio_poll_light;

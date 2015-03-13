@@ -8,7 +8,8 @@ iio_sensor_proxy_SOURCES =			\
 	drv-iio-buffer-accel.c			\
 	drv-iio-poll-accel.c			\
 	drv-input-accel.c			\
-	drv-fake-light.c
+	drv-fake-light.c			\
+	drv-iio-poll-light.c
 
 iio_sensor_proxy_CPPFLAGS =			\
 	$(IIO_SENSOR_PROXY_CFLAGS)		\
