@@ -20,7 +20,7 @@ typedef struct DrvData {
 	ReadingsUpdateFunc callback_func;
 	gpointer           user_data;
 
-	guint timeout_id;
+	guint              timeout_id;
 } DrvData;
 
 static DrvData *drv_data = NULL;
@@ -69,8 +69,8 @@ first_values (gpointer user_data)
 
 static gboolean
 fake_light_open (GUdevDevice        *device,
-		  ReadingsUpdateFunc  callback_func,
-		  gpointer            user_data)
+		 ReadingsUpdateFunc  callback_func,
+		 gpointer            user_data)
 {
 	drv_data = g_new0 (DrvData, 1);
 	drv_data->callback_func = callback_func;
