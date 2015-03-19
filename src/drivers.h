@@ -24,7 +24,8 @@ typedef enum {
 
 typedef enum {
 	DRIVER_TYPE_LIGHT_IIO,
-	DRIVER_TYPE_LIGHT_FAKE
+	DRIVER_TYPE_LIGHT_FAKE,
+	DRIVER_TYPE_LIGHT_HWMON
 } DriverLightType;
 
 typedef struct SensorDriver SensorDriver;
@@ -61,3 +62,4 @@ extern SensorDriver iio_poll_accel;
 extern SensorDriver input_accel;
 extern SensorDriver fake_light;
 extern SensorDriver iio_poll_light;
+extern SensorDriver hwmon_light;

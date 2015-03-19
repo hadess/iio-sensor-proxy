@@ -86,6 +86,7 @@ static const SensorDriver * const drivers[] = {
 	&iio_poll_accel,
 	&input_accel,
 	&iio_poll_light,
+	&hwmon_light,
 	&fake_light
 };
 
@@ -106,12 +107,14 @@ static gboolean
 find_sensors (GUdevClient *client,
 	      SensorData  *data)
 {
-	GList *devices, *input, *l;
+	GList *devices, *input, *platform, *l;
 	gboolean found = FALSE;
 
 	devices = g_udev_client_query_by_subsystem (client, "iio");
 	input = g_udev_client_query_by_subsystem (client, "input");
+	platform = g_udev_client_query_by_subsystem (client, "platform");
 	devices = g_list_concat (devices, input);
+	devices = g_list_concat (devices, platform);
 
 	/* Find the devices */
 	for (l = devices; l != NULL; l = l->next) {
@@ -420,7 +423,7 @@ int main (int argc, char **argv)
 	SensorData *data;
 	GUdevClient *client;
 	int ret = 0;
-	const gchar * const subsystems[] = { "iio", "input", NULL };
+	const gchar * const subsystems[] = { "iio", "input", "platform", NULL };
 	guint i;
 
 	/* g_setenv ("G_MESSAGES_DEBUG", "all", TRUE); */
