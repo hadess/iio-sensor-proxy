@@ -10,7 +10,9 @@ iio_sensor_proxy_SOURCES =			\
 	drv-input-accel.c			\
 	drv-fake-light.c			\
 	drv-iio-poll-light.c			\
-	drv-hwmon-light.c
+	drv-hwmon-light.c			\
+	iio-buffer-utils.h			\
+	iio-buffer-utils.c
 
 iio_sensor_proxy_CPPFLAGS =			\
 	$(IIO_SENSOR_PROXY_CFLAGS)		\
