@@ -125,7 +125,7 @@ iio_poll_light_close (void)
 }
 
 SensorDriver iio_poll_light = {
-	.name = "IIO Buffer Light sensor",
+	.name = "IIO Polling Light sensor",
 	.type = DRIVER_TYPE_LIGHT,
 	.specific_type = DRIVER_TYPE_LIGHT_IIO,
 
