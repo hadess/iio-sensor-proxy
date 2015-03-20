@@ -68,6 +68,7 @@ typedef struct {
 	GDBusNodeInfo *introspection_data;
 	GDBusConnection *connection;
 	guint name_id;
+	gboolean init_done;
 
 	SensorDriver *drivers[NUM_SENSOR_TYPES];
 	GUdevDevice  *devices[NUM_SENSOR_TYPES];
@@ -214,31 +215,21 @@ static const GDBusInterfaceVTable interface_vtable =
 
 static void
 name_lost_handler (GDBusConnection *connection,
-		   const gchar *name,
-		   gpointer user_data)
+		   const gchar     *name,
+		   gpointer         user_data)
 {
-	g_warning ("Failed to setup D-Bus");
-	exit (1);
+	g_debug ("iio-sensor-proxy is already running");
+	exit (0);
 }
 
-static gboolean
-setup_dbus (SensorData *data)
+static void
+bus_acquired_handler (GDBusConnection *connection,
+		      const gchar     *name,
+		      gpointer         user_data)
 {
-	GError *error = NULL;
+	SensorData *data = user_data;
 
-	data->introspection_data = g_dbus_node_info_new_for_xml (introspection_xml, NULL);
-	g_assert (data->introspection_data != NULL);
-
-	data->connection = g_bus_get_sync (G_BUS_TYPE_SYSTEM,
-					   NULL,
-					   &error);
-	if (!data->connection) {
-		g_warning ("Failed to setup D-Bus: %s", error->message);
-		g_clear_error (&error);
-		return FALSE;
-	}
-
-	g_dbus_connection_register_object (data->connection,
+	g_dbus_connection_register_object (connection,
 					   SENSOR_PROXY_DBUS_PATH,
 					   data->introspection_data->interfaces[0],
 					   &interface_vtable,
@@ -246,13 +237,34 @@ setup_dbus (SensorData *data)
 					   NULL,
 					   NULL);
 
-	data->name_id = g_bus_own_name_on_connection (data->connection,
-						      SENSOR_PROXY_DBUS_NAME,
-						      G_BUS_NAME_OWNER_FLAGS_NONE,
-						      NULL,
-						      name_lost_handler,
-						      NULL,
-						      NULL);
+	data->connection = g_object_ref (connection);
+}
+
+static void
+name_acquired_handler (GDBusConnection *connection,
+		       const gchar     *name,
+		       gpointer         user_data)
+{
+	SensorData *data = user_data;
+
+	if (data->init_done)
+		send_dbus_event (data);
+}
+
+static gboolean
+setup_dbus (SensorData *data)
+{
+	data->introspection_data = g_dbus_node_info_new_for_xml (introspection_xml, NULL);
+	g_assert (data->introspection_data != NULL);
+
+	data->name_id = g_bus_own_name (G_BUS_TYPE_SYSTEM,
+					SENSOR_PROXY_DBUS_NAME,
+					G_BUS_NAME_OWNER_FLAGS_NONE,
+					bus_acquired_handler,
+					name_acquired_handler,
+					name_lost_handler,
+					data,
+					NULL);
 
 	return TRUE;
 }
@@ -432,6 +444,9 @@ int main (int argc, char **argv)
 	data->previous_orientation = ORIENTATION_UNDEFINED;
 	data->uses_lux = TRUE;
 
+	/* Set up D-Bus */
+	setup_dbus (data);
+
 	client = g_udev_client_new (subsystems);
 	if (!find_sensors (client, data)) {
 		g_debug ("Could not find any supported sensors");
@@ -454,12 +469,9 @@ int main (int argc, char **argv)
 	if (!any_sensors_left (data))
 		goto out;
 
-	/* Set up D-Bus */
-	if (!setup_dbus (data)) {
-		ret = 1;
-		goto out;
-	}
-	send_dbus_event (data);
+	data->init_done = TRUE;
+	if (data->connection)
+		send_dbus_event (data);
 
 	data->loop = g_main_loop_new (NULL, TRUE);
 	g_main_loop_run (data->loop);
