@@ -11,6 +11,7 @@ iio_sensor_proxy_SOURCES =			\
 	drv-fake-light.c			\
 	drv-iio-poll-light.c			\
 	drv-hwmon-light.c			\
+	drv-iio-buffer-light.c			\
 	iio-buffer-utils.h			\
 	iio-buffer-utils.c
 
