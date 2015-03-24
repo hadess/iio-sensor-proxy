@@ -56,3 +56,4 @@ Tested on
 - Lenovo Yoga Pro 2
 - Onda v975w
 - Dell Venue 8 Pro
+- Lenovo ThinkPad Twist
