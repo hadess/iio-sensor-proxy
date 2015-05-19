@@ -239,6 +239,18 @@ send_dbus_event (SensorData     *data,
 				       props_changed, NULL);
 }
 
+static void
+send_driver_changed_dbus_event (SensorData   *data,
+				DriverType    driver_type)
+{
+	if (driver_type == DRIVER_TYPE_ACCEL)
+		send_dbus_event (data, PROP_HAS_ACCELEROMETER);
+	else if (driver_type == DRIVER_TYPE_LIGHT)
+		send_dbus_event (data, PROP_HAS_AMBIENT_LIGHT);
+	else
+		g_assert_not_reached ();
+}
+
 static gboolean
 any_sensors_left (SensorData *data)
 {
@@ -604,6 +616,7 @@ sensor_changes (GUdevClient *client,
 					 g_udev_device_get_sysfs_path (dev));
 				g_clear_object (&DEVICE_FOR_TYPE(i));
 				DRIVER_FOR_TYPE(i) = NULL;
+				send_driver_changed_dbus_event (data, i);
 			}
 		}
 
@@ -625,6 +638,7 @@ sensor_changes (GUdevClient *client,
 						 driver_type_to_callback_func (driver->type), data)) {
 					DEVICE_FOR_TYPE(driver->type) = g_object_ref (device);
 					DRIVER_FOR_TYPE(driver->type) = (SensorDriver *) driver;
+					send_driver_changed_dbus_event (data, driver->type);
 				}
 				break;
 			}
