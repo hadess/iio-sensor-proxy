@@ -10,4 +10,4 @@ dbus_confdir = /etc/dbus-1/system.d
 dbus_conf_DATA = net.hadess.SensorProxy.conf
 
 CLEANFILES = iio-sensor-proxy.service
-EXTRA_DIST = $(rules_DATA) $(dbus_conf_DATA) iio-sensor-proxy.service.in
+EXTRA_DIST = $(rules_DATA) $(dbus_conf_DATA) iio-sensor-proxy.service.in net.hadess.SensorProxy.xml

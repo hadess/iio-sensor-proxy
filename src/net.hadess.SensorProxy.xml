@@ -1,0 +1,104 @@
+<!DOCTYPE node PUBLIC "-//freedesktop//DTD D-BUS Object Introspection 1.0//EN"
+"http://www.freedesktop.org/standards/dbus/1.0/introspect.dtd">
+
+<node>
+
+  <!--
+      net.hadess.SensorProxy:
+      @short_description: D-Bus proxy to access hardware sensors
+
+      After checking the availability of the sensor type you want to monitor,
+      call the net.hadess.SensorProxy.Claim() method to start receiving signals about the readings.
+  -->
+  <interface name="net.hadess.SensorProxy">
+    <!--
+        HasAccelerometer:
+
+        Whether a supported accelerometer is present on the system.
+    -->
+    <property name="HasAccelerometer" type="b" access="read"/>
+
+    <!--
+        AccelerometerOrientation:
+
+        The detected orientation of the tablet or laptop.
+        Possible values are:
+        - undefined
+        - normal
+        - bottom-up
+        - left-up
+        - right-up
+    -->
+    <property name="AccelerometerOrientation" type="s" access="read"/>
+
+    <!--
+        HasAmbientLight:
+
+        Whether a supported ambient light sensor is present on the system.
+    -->
+    <property name="HasAmbientLight" type="b" access="read"/>
+
+    <!--
+        LightLevelUnit:
+
+        The unit used in Ambient Light Sensor readings. It is
+        one of either "lux" or "vendor".
+
+        Note that different hardware will have different readings in the
+        same condition, so values should be taken as relative.
+
+        When the unit is "vendor", readings will be a percentage with 100% being the
+        maximum reading.
+    -->
+    <property name="LightLevelUnit" type="s" access="read"/>
+
+    <!--
+        LightLevel:
+
+        The ambient light sensor reading, in the unit exported in the
+        "LightLevelUnit" property.
+    -->
+    <property name="LightLevel" type="d" access="read"/>
+
+    <!--
+       Claim:
+       @DriverType: the driver type to receive updates for.
+
+       To start receiving sensor reading updates from the proxy, the application
+       must call the net.hadess.SensorProxy.Claim() method with the type of sensor
+       they're interested in monitoring.
+
+       Applications should call net.hadess.SensorProxy.Release() when readings are
+       not required anymore. For example, an application that monitors the orientation
+       of the main screen should stop monitoring for updates when that screen has
+       been turned off.
+
+       This prevents the sensor proxy from polling the device, thus increasing wake-ups
+       and reducing battery life.
+
+       The @DriverType value is one of:
+       - accel (for accelerometers)
+       or
+       - light (for ambient light sensors)
+    -->
+    <method name="Claim">
+      <arg type="s" name="DriverType" direction="in"/>
+    </method>
+
+    <!--
+        Release:
+        @DriverType: the driver type to stop receiving updates for.
+
+        This should be called as soon as readings are not required anymore. Note
+        that resources are freed up if a monitoring application exits without
+        calling net.hadess.SensorProxy.Release(), or crashes.
+
+        The possible values for @DriverType are the same as listed in
+        net.hadess.SensorProxy.Claim()
+    -->
+    <method name="Release">
+      <arg type="s" name="DriverType" direction="in"/>
+    </method>
+
+  </interface>
+</node>

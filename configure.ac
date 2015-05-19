@@ -14,11 +14,17 @@ AM_PROG_CC_C_O
 
 GNOME_COMPILE_WARNINGS([maximum])
 
+GTK_DOC_CHECK(1.0)
+
 PKG_CHECK_MODULES(IIO_SENSOR_PROXY, gio-2.0 gudev-1.0)
+
+AC_PATH_PROG([GDBUS_CODEGEN],[gdbus-codegen])
 
 AC_CONFIG_FILES([
 	Makefile
 	data/Makefile
 	src/Makefile
+	docs/Makefile
+	docs/version.xml
 ])
 AC_OUTPUT
