@@ -166,26 +166,66 @@ find_sensors (GUdevClient *client,
 	return found;
 }
 
+typedef enum {
+	PROP_HAS_ACCELEROMETER		= 1 << 0,
+	PROP_ACCELEROMETER_ORIENTATION  = 1 << 1,
+	PROP_HAS_AMBIENT_LIGHT		= 1 << 2,
+	PROP_LIGHT_LEVEL		= 1 << 3
+} PropertiesMask;
+
+#define PROP_ALL (PROP_HAS_ACCELEROMETER | PROP_ACCELEROMETER_ORIENTATION | PROP_HAS_AMBIENT_LIGHT | PROP_LIGHT_LEVEL)
+
 static void
-send_dbus_event (SensorData *data)
+send_dbus_event (SensorData     *data,
+		 PropertiesMask  mask)
 {
 	GVariantBuilder props_builder;
 	GVariant *props_changed = NULL;
 
 	g_assert (data->connection);
 
+	if (mask == 0)
+		return;
+
 	g_variant_builder_init (&props_builder, G_VARIANT_TYPE ("a{sv}"));
 
-	g_variant_builder_add (&props_builder, "{sv}", "HasAccelerometer",
-			       g_variant_new_boolean (driver_type_exists (data, DRIVER_TYPE_ACCEL)));
-	g_variant_builder_add (&props_builder, "{sv}", "AccelerometerOrientation",
-			       g_variant_new_string (orientation_to_string (data->previous_orientation)));
-	g_variant_builder_add (&props_builder, "{sv}", "HasAmbientLight",
-			       g_variant_new_boolean (driver_type_exists (data, DRIVER_TYPE_LIGHT)));
-	g_variant_builder_add (&props_builder, "{sv}", "LightLevelUnit",
-			       g_variant_new_string (data->uses_lux ? "lux" : "vendor"));
-	g_variant_builder_add (&props_builder, "{sv}", "LightLevel",
-			       g_variant_new_double (data->previous_level));
+	if (mask & PROP_HAS_ACCELEROMETER) {
+		gboolean has_accel;
+
+		has_accel = driver_type_exists (data, DRIVER_TYPE_ACCEL);
+		g_variant_builder_add (&props_builder, "{sv}", "HasAccelerometer",
+				       g_variant_new_boolean (has_accel));
+
+		/* Send the orientation when the device appears */
+		if (has_accel)
+			mask |= PROP_ACCELEROMETER_ORIENTATION;
+		else
+			data->previous_orientation = ORIENTATION_UNDEFINED;
+	}
+
+	if (mask & PROP_ACCELEROMETER_ORIENTATION) {
+		g_variant_builder_add (&props_builder, "{sv}", "AccelerometerOrientation",
+				       g_variant_new_string (orientation_to_string (data->previous_orientation)));
+	}
+
+	if (mask & PROP_HAS_AMBIENT_LIGHT) {
+		gboolean has_als;
+
+		has_als = driver_type_exists (data, DRIVER_TYPE_LIGHT);
+		g_variant_builder_add (&props_builder, "{sv}", "HasAmbientLight",
+				       g_variant_new_boolean (has_als));
+
+		/* Send the light level when the device appears */
+		if (has_als)
+			mask |= PROP_LIGHT_LEVEL;
+	}
+
+	if (mask & PROP_LIGHT_LEVEL) {
+		g_variant_builder_add (&props_builder, "{sv}", "LightLevelUnit",
+				       g_variant_new_string (data->uses_lux ? "lux" : "vendor"));
+		g_variant_builder_add (&props_builder, "{sv}", "LightLevel",
+				       g_variant_new_double (data->previous_level));
+	}
 
 	props_changed = g_variant_new ("(s@a{sv}@as)", SENSOR_PROXY_DBUS_NAME,
 				       g_variant_builder_end (&props_builder),
@@ -426,7 +466,7 @@ name_acquired_handler (GDBusConnection *connection,
 	SensorData *data = user_data;
 
 	if (data->init_done)
-		send_dbus_event (data);
+		send_dbus_event (data, PROP_ALL);
 }
 
 static gboolean
@@ -470,7 +510,7 @@ accel_changed_func (SensorDriver *driver,
 
 		tmp = data->previous_orientation;
 		data->previous_orientation = orientation;
-		send_dbus_event (data);
+		send_dbus_event (data, PROP_ACCELEROMETER_ORIENTATION);
 		g_debug ("Emitted orientation changed: from %s to %s",
 			 orientation_to_string (tmp),
 			 orientation_to_string (data->previous_orientation));
@@ -498,7 +538,7 @@ light_changed_func (SensorDriver *driver,
 
 		data->uses_lux = readings->uses_lux;
 
-		send_dbus_event (data);
+		send_dbus_event (data, PROP_LIGHT_LEVEL);
 		g_debug ("Emitted light changed: from %lf to %lf",
 			 tmp, data->previous_level);
 	}
@@ -639,7 +679,7 @@ int main (int argc, char **argv)
 
 	data->init_done = TRUE;
 	if (data->connection)
-		send_dbus_event (data);
+		send_dbus_event (data, PROP_ALL);
 
 	data->loop = g_main_loop_new (NULL, TRUE);
 	g_main_loop_run (data->loop);
