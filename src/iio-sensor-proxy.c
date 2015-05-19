@@ -180,6 +180,22 @@ send_dbus_event (SensorData *data)
 				       props_changed, NULL);
 }
 
+static gboolean
+any_sensors_left (SensorData *data)
+{
+	guint i;
+	gboolean exists = FALSE;
+
+	for (i = 0; i < NUM_SENSOR_TYPES; i++) {
+		if (data->drivers[i] != NULL) {
+			exists = TRUE;
+			break;
+		}
+	}
+
+	return exists;
+}
+
 static GVariant *
 handle_get_property (GDBusConnection *connection,
 		     const gchar     *sender,
@@ -363,22 +379,6 @@ free_orientation_data (SensorData *data)
 	g_clear_object (&data->connection);
 	g_clear_pointer (&data->loop, g_main_loop_unref);
 	g_free (data);
-}
-
-static gboolean
-any_sensors_left (SensorData *data)
-{
-	guint i;
-	gboolean exists = FALSE;
-
-	for (i = 0; i < NUM_SENSOR_TYPES; i++) {
-		if (data->drivers[i] != NULL) {
-			exists = TRUE;
-			break;
-		}
-	}
-
-	return exists;
 }
 
 static void
