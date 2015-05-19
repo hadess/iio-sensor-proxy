@@ -10,6 +10,7 @@
 #include <gio/gio.h>
 
 static GMainLoop *loop;
+static guint watch_id;
 static GDBusProxy *iio_proxy;
 static gboolean accel_claimed, als_claimed;
 
@@ -19,12 +20,48 @@ properties_changed (GDBusProxy *proxy,
 		    GStrv       invalidated_properties,
 		    gpointer    user_data)
 {
+	GVariant *v;
+
+	if (accel_claimed) {
+		v = g_dbus_proxy_get_cached_property (iio_proxy, "AccelerometerOrientation");
+		g_message ("Accelerometer orientation changed: %s", g_variant_get_string (v, NULL));
+		g_variant_unref (v);
+	}
+	if (als_claimed) {
+		GVariant *unit;
+
+		v = g_dbus_proxy_get_cached_property (iio_proxy, "LightLevel");
+		unit = g_dbus_proxy_get_cached_property (iio_proxy, "LightLevelUnit");
+		g_message ("Light changed: %lf (%s)", g_variant_get_double (v), g_variant_get_string (unit, NULL));
+		g_variant_unref (v);
+		g_variant_unref (unit);
+	}
+}
+
+static void
+appeared_cb (GDBusConnection *connection,
+	     const gchar     *name,
+	     const gchar     *name_owner,
+	     gpointer         user_data)
+{
 	GError *error = NULL;
 	gboolean has_accel, has_als;
 	GVariant *v;
 
 	has_accel = has_als = FALSE;
 
+	iio_proxy = g_dbus_proxy_new_for_bus_sync (G_BUS_TYPE_SYSTEM,
+						   G_DBUS_PROXY_FLAGS_NONE,
+						   NULL,
+						   "net.hadess.SensorProxy",
+						   "/net/hadess/SensorProxy",
+						   "net.hadess.SensorProxy",
+						   NULL, NULL);
+
+	g_signal_connect (G_OBJECT (iio_proxy), "g-properties-changed",
+			  G_CALLBACK (properties_changed), NULL);
+
+	/* Accelerometer */
 	v = g_dbus_proxy_get_cached_property (iio_proxy, "HasAccelerometer");
 	if (v) {
 		has_accel = g_variant_get_boolean (v);
@@ -41,6 +78,7 @@ properties_changed (GDBusProxy *proxy,
 		accel_claimed = TRUE;
 	}
 
+	/* ALS */
 	v = g_dbus_proxy_get_cached_property (iio_proxy, "HasAmbientLight");
 	if (v) {
 		has_als = g_variant_get_boolean (v);
@@ -58,27 +96,24 @@ properties_changed (GDBusProxy *proxy,
 	}
 }
 
+static void
+vanished_cb (GDBusConnection *connection,
+	     const gchar *name,
+	     gpointer user_data)
+{
+	g_clear_object (&iio_proxy);
+}
+
 int main (int argc, char **argv)
 {
-	iio_proxy = g_dbus_proxy_new_for_bus_sync (G_BUS_TYPE_SYSTEM,
-						   G_DBUS_PROXY_FLAGS_NONE,
-						   NULL,
-						   "net.hadess.SensorProxy",
-						   "/net/hadess/SensorProxy",
-						   "net.hadess.SensorProxy",
-						   NULL, NULL);
-
-	if (!iio_proxy) {
-		g_message ("iio-sensor-proxy not running");
-		return 0;
-	}
-
-	g_signal_connect (G_OBJECT (iio_proxy), "g-properties-changed",
-			  G_CALLBACK (properties_changed), NULL);
+	watch_id = g_bus_watch_name (G_BUS_TYPE_SYSTEM,
+				     "net.hadess.SensorProxy",
+				     G_BUS_NAME_WATCHER_FLAGS_NONE,
+				     appeared_cb,
+				     vanished_cb,
+				     NULL, NULL);
 
 	accel_claimed = als_claimed = FALSE;
-
-	properties_changed (iio_proxy, NULL, NULL, NULL);
 
 	loop = g_main_loop_new (NULL, TRUE);
 	g_main_loop_run (loop);
