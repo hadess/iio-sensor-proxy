@@ -627,7 +627,7 @@ sensor_changes (GUdevClient *client,
 
 		for (i = 0; i < G_N_ELEMENTS(drivers); i++) {
 			SensorDriver *driver = (SensorDriver *) drivers[i];
-			if (!driver_type_exists (data, i) &&
+			if (!driver_type_exists (data, driver->type) &&
 			    driver_discover (driver, device)) {
 				g_debug ("Found hotplugged device %s of type %s at %s",
 					 g_udev_device_get_sysfs_path (device),
