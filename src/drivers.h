@@ -58,6 +58,52 @@ struct SensorDriver {
 	void     (*close)       (void);
 };
 
+inline gboolean
+driver_discover (SensorDriver *driver,
+		 GUdevDevice  *device)
+{
+	g_return_val_if_fail (driver, FALSE);
+	g_return_val_if_fail (driver->discover, FALSE);
+	g_return_val_if_fail (device, FALSE);
+
+	return driver->discover (device);
+}
+
+inline gboolean
+driver_open (SensorDriver       *driver,
+	     GUdevDevice        *device,
+	     ReadingsUpdateFunc  callback_func,
+	     gpointer            user_data)
+{
+	g_return_val_if_fail (driver, FALSE);
+	g_return_val_if_fail (driver->open, FALSE);
+	g_return_val_if_fail (device, FALSE);
+	g_return_val_if_fail (callback_func, FALSE);
+
+	return driver->open (device, callback_func, user_data);
+}
+
+inline void
+driver_set_polling (SensorDriver *driver,
+		    gboolean      state)
+{
+	g_return_if_fail (driver);
+
+	if (!driver->set_polling)
+		return;
+
+	driver->set_polling (state);
+}
+
+inline void
+driver_close (SensorDriver *driver)
+{
+	g_return_if_fail (driver);
+	g_return_if_fail (driver->close);
+
+	driver->close ();
+}
+
 extern SensorDriver iio_buffer_accel;
 extern SensorDriver iio_poll_accel;
 extern SensorDriver input_accel;

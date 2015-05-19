@@ -114,6 +114,16 @@ driver_type_to_str (DriverType type)
 	}
 }
 
+#define DRIVER_FOR_TYPE(driver_type) data->drivers[driver_type]
+#define DEVICE_FOR_TYPE(driver_type) data->devices[driver_type]
+
+static gboolean
+driver_type_exists (SensorData *data,
+		    DriverType  driver_type)
+{
+	return (DRIVER_FOR_TYPE(driver_type) != NULL);
+}
+
 static gboolean
 find_sensors (GUdevClient *client,
 	      SensorData  *data)
@@ -134,21 +144,21 @@ find_sensors (GUdevClient *client,
 
 		for (i = 0; i < G_N_ELEMENTS(drivers); i++) {
 			SensorDriver *driver = (SensorDriver *) drivers[i];
-			if (data->drivers[driver->type] == NULL &&
-			    driver->discover (dev)) {
+			if (!driver_type_exists(data, driver->type) &&
+			    driver_discover (driver, dev)) {
 				g_debug ("Found device %s of type %s at %s",
 					 g_udev_device_get_sysfs_path (dev),
 					 driver_type_to_str (driver->type),
 					 driver->name);
-				data->devices[driver->type] = g_object_ref (dev);
-				data->drivers[driver->type] = (SensorDriver *) driver;
+				DEVICE_FOR_TYPE(driver->type) = g_object_ref (dev);
+				DRIVER_FOR_TYPE(driver->type) = (SensorDriver *) driver;
 
 				found = TRUE;
 			}
 		}
 
-		if (data->drivers[DRIVER_TYPE_ACCEL] &&
-		    data->drivers[DRIVER_TYPE_LIGHT])
+		if (driver_type_exists (data, DRIVER_TYPE_ACCEL) &&
+		    driver_type_exists (data, DRIVER_TYPE_LIGHT))
 			break;
 	}
 
@@ -167,11 +177,11 @@ send_dbus_event (SensorData *data)
 	g_variant_builder_init (&props_builder, G_VARIANT_TYPE ("a{sv}"));
 
 	g_variant_builder_add (&props_builder, "{sv}", "HasAccelerometer",
-			       g_variant_new_boolean (data->drivers[DRIVER_TYPE_ACCEL] != NULL));
+			       g_variant_new_boolean (driver_type_exists (data, DRIVER_TYPE_ACCEL)));
 	g_variant_builder_add (&props_builder, "{sv}", "AccelerometerOrientation",
 			       g_variant_new_string (orientation_to_string (data->previous_orientation)));
 	g_variant_builder_add (&props_builder, "{sv}", "HasAmbientLight",
-			       g_variant_new_boolean (data->drivers[DRIVER_TYPE_LIGHT] != NULL));
+			       g_variant_new_boolean (driver_type_exists (data, DRIVER_TYPE_LIGHT)));
 	g_variant_builder_add (&props_builder, "{sv}", "LightLevelUnit",
 			       g_variant_new_string (data->uses_lux ? "lux" : "vendor"));
 	g_variant_builder_add (&props_builder, "{sv}", "LightLevel",
@@ -196,7 +206,7 @@ any_sensors_left (SensorData *data)
 	gboolean exists = FALSE;
 
 	for (i = 0; i < NUM_SENSOR_TYPES; i++) {
-		if (data->drivers[i] != NULL) {
+		if (driver_type_exists (data, i)) {
 			exists = TRUE;
 			break;
 		}
@@ -231,10 +241,8 @@ client_release (SensorData            *data,
 	g_bus_unwatch_name (watch_id);
 	g_hash_table_remove (ht, sender);
 
-	if (g_hash_table_size (ht) == 0) {
-		if (data->drivers[driver_type]->set_polling)
-			data->drivers[driver_type]->set_polling (FALSE);
-	}
+	if (g_hash_table_size (ht) == 0)
+		driver_set_polling (DRIVER_FOR_TYPE(driver_type), FALSE);
 
 	return TRUE;
 }
@@ -308,7 +316,7 @@ handle_method_call (GDBusConnection       *connection,
 	}
 
 	/* Check if we have a sensor for that type */
-	if (data->drivers[driver_type] == NULL) {
+	if (!driver_type_exists (data, driver_type)) {
 		g_dbus_method_invocation_return_error (invocation,
 						       G_DBUS_ERROR,
 						       G_DBUS_ERROR_INVALID_ARGS,
@@ -330,10 +338,8 @@ handle_method_call (GDBusConnection       *connection,
 		}
 
 		/* No other clients for this sensor? Start it */
-		if (g_hash_table_size (ht) == 0) {
-			if (data->drivers[driver_type]->set_polling)
-				data->drivers[driver_type]->set_polling (TRUE);
-		}
+		if (g_hash_table_size (ht) == 0)
+			driver_set_polling (DRIVER_FOR_TYPE(driver_type), TRUE);
 
 		watch_id = g_bus_watch_name_on_connection (data->connection,
 							   sender,
@@ -365,11 +371,11 @@ handle_get_property (GDBusConnection *connection,
 	g_assert (data->connection);
 
 	if (g_strcmp0 (property_name, "HasAccelerometer") == 0)
-		return g_variant_new_boolean (data->drivers[DRIVER_TYPE_ACCEL] != NULL);
+		return g_variant_new_boolean (driver_type_exists (data, DRIVER_TYPE_ACCEL));
 	if (g_strcmp0 (property_name, "AccelerometerOrientation") == 0)
 		return g_variant_new_string (orientation_to_string (data->previous_orientation));
 	if (g_strcmp0 (property_name, "HasAmbientLight") == 0)
-		return g_variant_new_boolean (data->drivers[DRIVER_TYPE_LIGHT] != NULL);
+		return g_variant_new_boolean (driver_type_exists (data, DRIVER_TYPE_LIGHT));
 	if (g_strcmp0 (property_name, "LightLevelUnit") == 0)
 		return g_variant_new_string (data->uses_lux ? "lux" : "vendor");
 	if (g_strcmp0 (property_name, "LightLevel") == 0)
@@ -525,9 +531,9 @@ free_orientation_data (SensorData *data)
 	}
 
 	for (i = 0; i < NUM_SENSOR_TYPES; i++) {
-		if (data->drivers[i] != NULL)
-			data->drivers[i]->close ();
-		g_clear_object (&data->devices[i]);
+		if (driver_type_exists (data, i))
+			driver_close (DRIVER_FOR_TYPE(i));
+		g_clear_object (&DEVICE_FOR_TYPE(i));
 		g_clear_pointer (&data->clients[i], g_hash_table_unref);
 	}
 
@@ -547,7 +553,7 @@ sensor_changes (GUdevClient *client,
 
 	if (g_strcmp0 (action, "remove") == 0) {
 		for (i = 0; i < NUM_SENSOR_TYPES; i++) {
-			GUdevDevice *dev = data->devices[i];
+			GUdevDevice *dev = DEVICE_FOR_TYPE(i);
 
 			if (!dev)
 				continue;
@@ -556,8 +562,8 @@ sensor_changes (GUdevClient *client,
 				g_debug ("Sensor type %s got removed (%s)",
 					 driver_type_to_str (i),
 					 g_udev_device_get_sysfs_path (dev));
-				g_clear_object (&data->devices[i]);
-				data->drivers[i] = NULL;
+				g_clear_object (&DEVICE_FOR_TYPE(i));
+				DRIVER_FOR_TYPE(i) = NULL;
 			}
 		}
 
@@ -568,18 +574,17 @@ sensor_changes (GUdevClient *client,
 
 		for (i = 0; i < G_N_ELEMENTS(drivers); i++) {
 			SensorDriver *driver = (SensorDriver *) drivers[i];
-			if (data->drivers[driver->type] == NULL &&
-			    driver->discover (device)) {
+			if (!driver_type_exists (data, i) &&
+			    driver_discover (driver, device)) {
 				g_debug ("Found hotplugged device %s of type %s at %s",
 					 g_udev_device_get_sysfs_path (device),
 					 driver_type_to_str (driver->type),
 					 driver->name);
 
-				if (driver->open (device,
-						  driver_type_to_callback_func (driver->type),
-						  data)) {
-					data->devices[driver->type] = g_object_ref (device);
-					data->drivers[driver->type] = (SensorDriver *) driver;
+				if (driver_open (driver, device,
+						 driver_type_to_callback_func (driver->type), data)) {
+					DEVICE_FOR_TYPE(driver->type) = g_object_ref (device);
+					DRIVER_FOR_TYPE(driver->type) = (SensorDriver *) driver;
 				}
 				break;
 			}
@@ -618,14 +623,14 @@ int main (int argc, char **argv)
 							  g_free,
 							  NULL);
 
-		if (data->drivers[i] == NULL)
+		if (!driver_type_exists (data, i))
 			continue;
 
-		if (!data->drivers[i]->open (data->devices[i],
+		if (!data->drivers[i]->open (DEVICE_FOR_TYPE(i),
 					     driver_type_to_callback_func (data->drivers[i]->type),
 					     data)) {
-			data->drivers[i] = NULL;
-			g_clear_object (&data->devices[i]);
+			DRIVER_FOR_TYPE(i) = NULL;
+			g_clear_object (&DEVICE_FOR_TYPE(i));
 		}
 	}
 
