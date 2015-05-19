@@ -31,4 +31,14 @@ fake_input_accelerometer_CPPFLAGS =		\
 	$(WARN_CFLAGS)
 fake_input_accelerometer_LDADD = $(IIO_SENSOR_PROXY_LIBS)
 
+bin_PROGRAMS = monitor-sensor
+
+monitor_sensor_SOURCES =			\
+	monitor-sensor.c
+
+monitor_sensor_CPPFLAGS =			\
+	$(IIO_SENSOR_PROXY_CFLAGS)		\
+	$(WARN_CFLAGS)
+monitor_sensor_LDADD = $(IIO_SENSOR_PROXY_LIBS)
+
 EXTRA_DIST = test-orientation.c
