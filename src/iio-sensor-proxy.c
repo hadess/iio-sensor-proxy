@@ -53,6 +53,12 @@
 static const gchar introspection_xml[] =
 "<node>"
 "  <interface name='net.hadess.SensorProxy'>"
+"    <method name='Claim'>"
+"      <arg type='s' name='driver-type' direction='in'/>"
+"    </method>"
+"    <method name='Release'>"
+"      <arg type='s' name='driver-type' direction='in'/>"
+"    </method>"
 "    <property name='HasAccelerometer' type='b' access='read'/>"
 "    <property name='AccelerometerOrientation' type='s' access='read'/>"
 "    <property name='HasAmbientLight' type='b' access='read'/>"
@@ -72,6 +78,7 @@ typedef struct {
 
 	SensorDriver *drivers[NUM_SENSOR_TYPES];
 	GUdevDevice  *devices[NUM_SENSOR_TYPES];
+	GHashTable   *clients[NUM_SENSOR_TYPES]; /* key = D-Bus name, value = watch ID */
 
 	/* Accelerometer */
 	int accel_x, accel_y, accel_z;
@@ -91,6 +98,8 @@ static const SensorDriver * const drivers[] = {
 	&hwmon_light,
 	&fake_light
 };
+
+static ReadingsUpdateFunc driver_type_to_callback_func (DriverType type);
 
 static const char *
 driver_type_to_str (DriverType type)
@@ -196,6 +205,152 @@ any_sensors_left (SensorData *data)
 	return exists;
 }
 
+static gboolean
+client_release (SensorData            *data,
+		const char            *sender,
+		DriverType             driver_type,
+		GDBusMethodInvocation *invocation)
+{
+	GHashTable *ht;
+	guint watch_id;
+
+	ht = data->clients[driver_type];
+
+	watch_id = GPOINTER_TO_UINT (g_hash_table_lookup (ht, sender));
+	if (watch_id == 0) {
+		if (invocation) {
+			g_dbus_method_invocation_return_error (invocation,
+							       G_DBUS_ERROR,
+							       G_DBUS_ERROR_FAILED,
+							       "D-Bus client '%s' is not monitoring %s",
+							       sender, driver_type_to_str (driver_type));
+		}
+		return FALSE;
+	}
+
+	g_bus_unwatch_name (watch_id);
+	g_hash_table_remove (ht, sender);
+
+	if (g_hash_table_size (ht) == 0) {
+		if (data->drivers[driver_type]->set_polling)
+			data->drivers[driver_type]->set_polling (FALSE);
+	}
+
+	return TRUE;
+}
+
+static void
+client_vanished_cb (GDBusConnection *connection,
+		    const gchar     *name,
+		    gpointer         user_data)
+{
+	SensorData *data = user_data;
+	guint i;
+	char *sender;
+
+	if (name == NULL)
+		return;
+
+	sender = g_strdup (name);
+
+	for (i = 0; i < NUM_SENSOR_TYPES; i++) {
+		GHashTable *ht;
+		guint watch_id;
+
+		ht = data->clients[i];
+		g_assert (ht);
+
+		watch_id = GPOINTER_TO_UINT (g_hash_table_lookup (ht, sender));
+		if (watch_id > 0)
+			client_release (data, sender, i, NULL);
+	}
+
+	g_free (sender);
+}
+
+static void
+handle_method_call (GDBusConnection       *connection,
+		    const gchar           *sender,
+		    const gchar           *object_path,
+		    const gchar           *interface_name,
+		    const gchar           *method_name,
+		    GVariant              *parameters,
+		    GDBusMethodInvocation *invocation,
+		    gpointer               user_data)
+{
+	SensorData *data = user_data;
+	const char *driver_name;
+	DriverType driver_type;
+	GHashTable *ht;
+	guint watch_id;
+
+	if (g_strcmp0 (method_name, "Claim") != 0 &&
+	    g_strcmp0 (method_name, "Release") != 0) {
+		g_dbus_method_invocation_return_error (invocation,
+						       G_DBUS_ERROR,
+						       G_DBUS_ERROR_UNKNOWN_METHOD,
+						       "Method '%s' does not exist", method_name);
+		return;
+	}
+
+	/* Verify arguments */
+	g_variant_get_child (parameters, 0, "&s", &driver_name);
+	if (g_strcmp0 (driver_name, "accel") == 0) {
+		driver_type = DRIVER_TYPE_ACCEL;
+	} else if (g_strcmp0 (driver_name, "light") == 0) {
+		driver_type = DRIVER_TYPE_LIGHT;
+	} else {
+		g_dbus_method_invocation_return_error (invocation,
+						       G_DBUS_ERROR,
+						       G_DBUS_ERROR_INVALID_ARGS,
+						       "Driver type '%s' is not supported", driver_name);
+		return;
+	}
+
+	/* Check if we have a sensor for that type */
+	if (data->drivers[driver_type] == NULL) {
+		g_dbus_method_invocation_return_error (invocation,
+						       G_DBUS_ERROR,
+						       G_DBUS_ERROR_INVALID_ARGS,
+						       "Driver type '%s' is not present", driver_name);
+		return;
+	}
+
+	ht = data->clients[driver_type];
+
+	if (g_strcmp0 (method_name, "Claim") == 0) {
+		watch_id = GPOINTER_TO_UINT (g_hash_table_lookup (ht, sender));
+		if (watch_id > 0) {
+			g_dbus_method_invocation_return_error (invocation,
+							       G_DBUS_ERROR,
+							       G_DBUS_ERROR_LIMITS_EXCEEDED,
+							       "D-Bus client '%s' is already monitoring %s",
+							       sender, driver_type_to_str (driver_type));
+			return;
+		}
+
+		/* No other clients for this sensor? Start it */
+		if (g_hash_table_size (ht) == 0) {
+			if (data->drivers[driver_type]->set_polling)
+				data->drivers[driver_type]->set_polling (TRUE);
+		}
+
+		watch_id = g_bus_watch_name_on_connection (data->connection,
+							   sender,
+							   G_BUS_NAME_WATCHER_FLAGS_NONE,
+							   NULL,
+							   client_vanished_cb,
+							   data,
+							   NULL);
+		g_hash_table_insert (ht, g_strdup (sender), GUINT_TO_POINTER (watch_id));
+
+		g_dbus_method_invocation_return_value (invocation, NULL);
+	} else if (g_strcmp0 (method_name, "Release") == 0) {
+		if (client_release (data, sender, driver_type, invocation))
+			g_dbus_method_invocation_return_value (invocation, NULL);
+	}
+}
+
 static GVariant *
 handle_get_property (GDBusConnection *connection,
 		     const gchar     *sender,
@@ -225,7 +380,7 @@ handle_get_property (GDBusConnection *connection,
 
 static const GDBusInterfaceVTable interface_vtable =
 {
-	NULL,
+	handle_method_call,
 	handle_get_property,
 	NULL
 };
@@ -373,6 +528,7 @@ free_orientation_data (SensorData *data)
 		if (data->drivers[i] != NULL)
 			data->drivers[i]->close ();
 		g_clear_object (&data->devices[i]);
+		g_clear_pointer (&data->clients[i], g_hash_table_unref);
 	}
 
 	g_clear_pointer (&data->introspection_data, g_dbus_node_info_unref);
@@ -457,8 +613,14 @@ int main (int argc, char **argv)
 			  G_CALLBACK (sensor_changes), data);
 
 	for (i = 0; i < NUM_SENSOR_TYPES; i++) {
+		data->clients[i] = g_hash_table_new_full (g_str_hash,
+							  g_str_equal,
+							  g_free,
+							  NULL);
+
 		if (data->drivers[i] == NULL)
 			continue;
+
 		if (!data->drivers[i]->open (data->devices[i],
 					     driver_type_to_callback_func (data->drivers[i]->type),
 					     data)) {
