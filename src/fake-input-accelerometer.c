@@ -293,6 +293,12 @@ int main (int argc, char **argv)
 		ret = 1;
 		goto out;
 	}
+
+	/* Start with the 'normal' orientation */
+	data->accel_x = 0;
+	data->accel_y = ONEG;
+	data->accel_z = 0;
+
 	send_uinput_event (data);
 	keyboard_usage ();
 
