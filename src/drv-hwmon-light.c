@@ -93,20 +93,32 @@ hwmon_light_open (GUdevDevice        *device,
 	drv_data->light_path = g_build_filename (g_udev_device_get_sysfs_path (device),
 						 "light", NULL);
 
-	drv_data->timeout_id = g_timeout_add (DEFAULT_POLL_TIME,
-					      (GSourceFunc) light_changed,
-					      NULL);
-
 	return TRUE;
+}
+
+static void
+hwmon_light_set_polling (gboolean state)
+{
+	if (drv_data->timeout_id > 0 && state)
+		return;
+	if (drv_data->timeout_id == 0 && !state)
+		return;
+
+	if (drv_data->timeout_id) {
+		g_source_remove (drv_data->timeout_id);
+		drv_data->timeout_id = 0;
+	}
+
+	if (state) {
+		drv_data->timeout_id = g_idle_add ((GSourceFunc) light_changed, NULL);
+		g_source_set_name_by_id (drv_data->timeout_id, "[hwmon_light_set_polling] light_changed");
+	}
 }
 
 static void
 hwmon_light_close (void)
 {
-	if (drv_data->timeout_id != 0) {
-		g_source_remove (drv_data->timeout_id);
-		drv_data->timeout_id = 0;
-	}
+	hwmon_light_set_polling (FALSE);
 	g_clear_pointer (&drv_data->light_path, g_free);
 	g_clear_pointer (&drv_data, g_free);
 }
@@ -118,5 +130,6 @@ SensorDriver hwmon_light = {
 
 	.discover = hwmon_light_discover,
 	.open = hwmon_light_open,
+	.set_polling = hwmon_light_set_polling,
 	.close = hwmon_light_close,
 };

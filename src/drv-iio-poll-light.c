@@ -21,6 +21,7 @@ typedef struct DrvData {
 	gpointer            user_data;
 
 	char               *input_path;
+	guint               interval;
 	guint               timeout_id;
 } DrvData;
 
@@ -91,24 +92,40 @@ get_interval (GUdevDevice *device)
 	return (time * 1000);
 }
 
+static void
+iio_poll_light_set_polling (gboolean state)
+{
+	if (drv_data->timeout_id > 0 && state)
+		return;
+	if (drv_data->timeout_id == 0 && !state)
+		return;
+
+	if (drv_data->timeout_id) {
+		g_source_remove (drv_data->timeout_id);
+		drv_data->timeout_id = 0;
+	}
+
+	if (state) {
+		drv_data->timeout_id = g_timeout_add (drv_data->interval,
+						      (GSourceFunc) light_changed,
+						      NULL);
+		g_source_set_name_by_id (drv_data->timeout_id, "[iio_poll_light_set_polling] light_changed");
+	}
+}
+
 static gboolean
 iio_poll_light_open (GUdevDevice        *device,
 		     ReadingsUpdateFunc  callback_func,
 		     gpointer            user_data)
 {
-	guint interval;
-
 	drv_data = g_new0 (DrvData, 1);
 	drv_data->callback_func = callback_func;
 	drv_data->user_data = user_data;
 
-	interval = get_interval (device);
+	drv_data->interval = get_interval (device);
 	drv_data->input_path = g_build_filename (g_udev_device_get_sysfs_path (device),
 						 "in_illuminance_input",
 						 NULL);
-	drv_data->timeout_id = g_timeout_add (interval,
-					      (GSourceFunc) light_changed,
-					      NULL);
 
 	return TRUE;
 }
@@ -116,10 +133,7 @@ iio_poll_light_open (GUdevDevice        *device,
 static void
 iio_poll_light_close (void)
 {
-	if (drv_data->timeout_id != 0) {
-		g_source_remove (drv_data->timeout_id);
-		drv_data->timeout_id = 0;
-	}
+	iio_poll_light_set_polling (FALSE);
 	g_clear_pointer (&drv_data->input_path, g_free);
 	g_clear_pointer (&drv_data, g_free);
 }
@@ -131,5 +145,6 @@ SensorDriver iio_poll_light = {
 
 	.discover = iio_poll_light_discover,
 	.open = iio_poll_light_open,
+	.set_polling = iio_poll_light_set_polling,
 	.close = iio_poll_light_close,
 };

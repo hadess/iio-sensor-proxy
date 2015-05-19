@@ -46,15 +46,16 @@ typedef void (*ReadingsUpdateFunc) (SensorDriver *driver,
 				    gpointer      user_data);
 
 struct SensorDriver {
-	const char          *name;
-	DriverType           type;
-	DriverSpecificType   specific_type;
+	const char             *name;
+	DriverType              type;
+	DriverSpecificType      specific_type;
 
-	gboolean (*discover) (GUdevDevice        *device);
-	gboolean (*open)     (GUdevDevice        *device,
-			      ReadingsUpdateFunc  callback_func,
-			      gpointer            user_data);
-	void     (*close)    (void);
+	gboolean (*discover)    (GUdevDevice        *device);
+	gboolean (*open)        (GUdevDevice        *device,
+			         ReadingsUpdateFunc  callback_func,
+			         gpointer            user_data);
+	void     (*set_polling) (gboolean            state);
+	void     (*close)       (void);
 };
 
 extern SensorDriver iio_buffer_accel;

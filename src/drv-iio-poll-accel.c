@@ -91,6 +91,25 @@ iio_poll_accel_discover (GUdevDevice *device)
 	return TRUE;
 }
 
+static void
+iio_poll_accel_set_polling (gboolean state)
+{
+	if (drv_data->timeout_id > 0 && state)
+		return;
+	if (drv_data->timeout_id == 0 && !state)
+		return;
+
+	if (drv_data->timeout_id) {
+		g_source_remove (drv_data->timeout_id);
+		drv_data->timeout_id = 0;
+	}
+
+	if (state) {
+		drv_data->timeout_id = g_timeout_add (700, poll_orientation, drv_data);
+		g_source_set_name_by_id (drv_data->timeout_id, "[iio_poll_accel_set_polling] poll_orientation");
+	}
+}
+
 static gboolean
 iio_poll_accel_open (GUdevDevice        *device,
 		     ReadingsUpdateFunc  callback_func,
@@ -105,16 +124,13 @@ iio_poll_accel_open (GUdevDevice        *device,
 	if (drv_data->scale == 0.0)
 		drv_data->scale = 1.0;
 
-	drv_data->timeout_id = g_timeout_add (700, poll_orientation, drv_data);
-	g_source_set_name_by_id (drv_data->timeout_id, "poll_orientation");
-
 	return TRUE;
 }
 
 static void
 iio_poll_accel_close (void)
 {
-	g_source_remove (drv_data->timeout_id);
+	iio_poll_accel_set_polling (FALSE);
 	g_clear_object (&drv_data->dev);
 	g_clear_pointer (&drv_data, g_free);
 }
@@ -126,5 +142,6 @@ SensorDriver iio_poll_accel = {
 
 	.discover = iio_poll_accel_discover,
 	.open = iio_poll_accel_open,
+	.set_polling = iio_poll_accel_set_polling,
 	.close = iio_poll_accel_close,
 };

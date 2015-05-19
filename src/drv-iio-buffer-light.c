@@ -153,6 +153,25 @@ iio_buffer_light_discover (GUdevDevice *device)
 	return TRUE;
 }
 
+static void
+iio_buffer_light_set_polling (gboolean state)
+{
+	if (drv_data->timeout_id > 0 && state)
+		return;
+	if (drv_data->timeout_id == 0 && !state)
+		return;
+
+	if (drv_data->timeout_id) {
+		g_source_remove (drv_data->timeout_id);
+		drv_data->timeout_id = 0;
+	}
+
+	if (state) {
+		drv_data->timeout_id = g_timeout_add (700, read_light, drv_data);
+		g_source_set_name_by_id (drv_data->timeout_id, "[iio_buffer_light_set_polling] read_light");
+	}
+}
+
 static gboolean
 iio_buffer_light_open (GUdevDevice        *device,
                        ReadingsUpdateFunc  callback_func,
@@ -182,16 +201,13 @@ iio_buffer_light_open (GUdevDevice        *device,
 	drv_data->callback_func = callback_func;
 	drv_data->user_data = user_data;
 
-	drv_data->timeout_id = g_timeout_add (700, read_light, drv_data);
-	g_source_set_name_by_id (drv_data->timeout_id, "read_light");
-
 	return TRUE;
 }
 
 static void
 iio_buffer_light_close (void)
 {
-	g_source_remove (drv_data->timeout_id);
+	iio_buffer_light_set_polling (FALSE);
 	g_clear_pointer (&drv_data->buffer_data, buffer_drv_data_free);
 	g_clear_object (&drv_data->dev);
 	g_clear_pointer (&drv_data, g_free);
@@ -204,5 +220,6 @@ SensorDriver iio_buffer_light = {
 
 	.discover = iio_buffer_light_discover,
 	.open = iio_buffer_light_open,
+	.set_polling = iio_buffer_light_set_polling,
 	.close = iio_buffer_light_close,
 };
