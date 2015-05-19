@@ -21,13 +21,26 @@ properties_changed (GDBusProxy *proxy,
 		    gpointer    user_data)
 {
 	GVariant *v;
+	GVariantDict dict;
 
-	if (accel_claimed) {
+	g_variant_dict_init (&dict, changed_properties);
+
+	if (g_variant_dict_contains (&dict, "HasAccelerometer")) {
+		v = g_dbus_proxy_get_cached_property (iio_proxy, "HasAccelerometer");
+		g_message ("Accelerometer %s", g_variant_get_boolean (v) ? "appeared" : "disappeared");
+		g_variant_unref (v);
+	}
+	if (g_variant_dict_contains (&dict, "AccelerometerOrientation")) {
 		v = g_dbus_proxy_get_cached_property (iio_proxy, "AccelerometerOrientation");
 		g_message ("Accelerometer orientation changed: %s", g_variant_get_string (v, NULL));
 		g_variant_unref (v);
 	}
-	if (als_claimed) {
+	if (g_variant_dict_contains (&dict, "HasAmbientLight")) {
+		v = g_dbus_proxy_get_cached_property (iio_proxy, "HasAmbientLight");
+		g_message ("Light sensor %s", g_variant_get_boolean (v) ? "appeared" : "disappeared");
+		g_variant_unref (v);
+	}
+	if (g_variant_dict_contains (&dict, "LightLevel")) {
 		GVariant *unit;
 
 		v = g_dbus_proxy_get_cached_property (iio_proxy, "LightLevel");
