@@ -1,24 +1,5 @@
 /*
- * Modified from industrialio buffer test code, and Lenovo Yoga (2 Pro) orientation helper
- * Copyright (c) 2008 Jonathan Cameron
- * Copyright (c) 2014 Peter F. Patel-Schneider
  * Copyright (c) 2011, 2014 Bastien Nocera <hadess@hadess.net>
- *
- * Every 700 msec, read data from an IIO accelerometer, and
- * from the accelerometer values, as well as the previous
- * orientation, calculate the device's new orientation.
- *
- * Possible values are:
- * * undefined
- * * normal
- * * bottom-up
- * * left-up
- * * right-up
- *
- * The property will be persistent across sessions, and the new
- * orientations can be deducted from the previous one (it allows
- * for a threshold for switching between opposite ends of the
- * orientation).
  *
  * orientation_calc() from the sensorfw package
  * Copyright (C) 2009-2010 Nokia Corporation

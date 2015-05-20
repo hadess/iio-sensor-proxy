@@ -1,4 +1,7 @@
 /*
+ * Modified from industrialio buffer test code, and Lenovo Yoga (2 Pro) orientation helper
+ * Copyright (c) 2008 Jonathan Cameron
+ * Copyright (c) 2014 Peter F. Patel-Schneider
  * Copyright (c) 2014 Bastien Nocera <hadess@hadess.net>
  * Copyright (c) 2015 Elad Alfassa <elad@fedoraproject.org>
  *
@@ -6,6 +9,7 @@
  * under the terms of the GNU General Public License version 2 as published by
  * the Free Software Foundation.
  */
+
 #include "iio-buffer-utils.h"
 
 #include <fcntl.h>
