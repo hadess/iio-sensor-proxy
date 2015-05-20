@@ -47,25 +47,10 @@
 #include "drivers.h"
 #include "orientation.h"
 
+#include "iio-sensor-proxy-resources.h"
+
 #define SENSOR_PROXY_DBUS_NAME "net.hadess.SensorProxy"
 #define SENSOR_PROXY_DBUS_PATH "/net/hadess/SensorProxy"
-
-static const gchar introspection_xml[] =
-"<node>"
-"  <interface name='net.hadess.SensorProxy'>"
-"    <method name='Claim'>"
-"      <arg type='s' name='driver-type' direction='in'/>"
-"    </method>"
-"    <method name='Release'>"
-"      <arg type='s' name='driver-type' direction='in'/>"
-"    </method>"
-"    <property name='HasAccelerometer' type='b' access='read'/>"
-"    <property name='AccelerometerOrientation' type='s' access='read'/>"
-"    <property name='HasAmbientLight' type='b' access='read'/>"
-"    <property name='LightLevelUnit' type='s' access='read'/>"
-"    <property name='LightLevel' type='d' access='read'/>"
-"  </interface>"
-"</node>";
 
 #define NUM_SENSOR_TYPES DRIVER_TYPE_LIGHT + 1
 
@@ -484,7 +469,13 @@ name_acquired_handler (GDBusConnection *connection,
 static gboolean
 setup_dbus (SensorData *data)
 {
-	data->introspection_data = g_dbus_node_info_new_for_xml (introspection_xml, NULL);
+	GBytes *bytes;
+
+	bytes = g_resources_lookup_data ("/net/hadess/SensorProxy/net.hadess.SensorProxy.xml",
+					 G_RESOURCE_LOOKUP_FLAGS_NONE,
+					 NULL);
+	data->introspection_data = g_dbus_node_info_new_for_xml (g_bytes_get_data (bytes, NULL), NULL);
+	g_bytes_unref (bytes);
 	g_assert (data->introspection_data != NULL);
 
 	data->name_id = g_bus_own_name (G_BUS_TYPE_SYSTEM,

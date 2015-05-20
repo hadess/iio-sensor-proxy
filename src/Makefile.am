@@ -1,3 +1,13 @@
+BUILT_SOURCES =					\
+	iio-sensor-proxy-resources.c		\
+	iio-sensor-proxy-resources.h
+
+resource_files = $(shell glib-compile-resources --sourcedir=$(srcdir) --generate-dependencies $(srcdir)/iio-sensor-proxy.gresource.xml)
+iio-sensor-proxy-resources.c: iio-sensor-proxy.gresource.xml $(resource_files)
+	$(AM_V_GEN) glib-compile-resources --target=$@ --sourcedir=$(srcdir) --generate-source --c-name iio_sensor_proxy $<
+iio-sensor-proxy-resources.h: iio-sensor-proxy.gresource.xml $(resource_files)
+	$(AM_V_GEN) glib-compile-resources --target=$@ --sourcedir=$(srcdir) --generate-header --c-name iio_sensor_proxy $<
+
 sbin_PROGRAMS = iio-sensor-proxy
 
 iio_sensor_proxy_SOURCES =			\
@@ -13,7 +23,8 @@ iio_sensor_proxy_SOURCES =			\
 	drv-hwmon-light.c			\
 	drv-iio-buffer-light.c			\
 	iio-buffer-utils.h			\
-	iio-buffer-utils.c
+	iio-buffer-utils.c			\
+	$(BUILT_SOURCES)
 
 iio_sensor_proxy_CPPFLAGS =			\
 	$(IIO_SENSOR_PROXY_CFLAGS)		\
@@ -41,4 +52,7 @@ monitor_sensor_CPPFLAGS =			\
 	$(WARN_CFLAGS)
 monitor_sensor_LDADD = $(IIO_SENSOR_PROXY_LIBS)
 
-EXTRA_DIST = test-orientation.c
+EXTRA_DIST =					\
+	test-orientation.c			\
+	$(resource_files)			\
+	iio-sensor-proxy.gresource.xml
