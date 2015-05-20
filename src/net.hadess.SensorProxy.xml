@@ -8,7 +8,9 @@
       @short_description: D-Bus proxy to access hardware sensors
 
       After checking the availability of the sensor type you want to monitor,
-      call the net.hadess.SensorProxy.Claim() method to start receiving signals about the readings.
+      call the net.hadess.SensorProxy.ClaimAccelerometer() or the
+      net.hadess.SensorProxy.ClaimLight() method to start updating the properties
+      from the hardware readings.
   -->
   <interface name="net.hadess.SensorProxy">
     <!--
@@ -61,44 +63,54 @@
     <property name="LightLevel" type="d" access="read"/>
 
     <!--
-       Claim:
-       @DriverType: the driver type to receive updates for.
+       ClaimAccelerometer:
 
-       To start receiving sensor reading updates from the proxy, the application
-       must call the net.hadess.SensorProxy.Claim() method with the type of sensor
-       they're interested in monitoring.
+       To start receiving accelerometer reading updates from the proxy, the application
+       must call the net.hadess.SensorProxy.ClaimAccelerometer() method.
 
-       Applications should call net.hadess.SensorProxy.Release() when readings are
-       not required anymore. For example, an application that monitors the orientation
-       of the main screen should stop monitoring for updates when that screen has
-       been turned off.
+       Applications should call net.hadess.SensorProxy.ReleaseAccelerometer() when
+       readings are not required anymore. For example, an application that monitors
+       the orientation of the main screen should stop monitoring for updates when that
+       screen has been turned off.
 
        This prevents the sensor proxy from polling the device, thus increasing wake-ups
        and reducing battery life.
-
-       The @DriverType value is one of:
-       - accel (for accelerometers)
-       or
-       - light (for ambient light sensors)
     -->
-    <method name="Claim">
-      <arg type="s" name="DriverType" direction="in"/>
-    </method>
+    <method name="ClaimAccelerometer"/>
 
     <!--
-        Release:
-        @DriverType: the driver type to stop receiving updates for.
+        ReleaseAccelerometer:
 
         This should be called as soon as readings are not required anymore. Note
         that resources are freed up if a monitoring application exits without
         calling net.hadess.SensorProxy.Release(), or crashes.
-
-        The possible values for @DriverType are the same as listed in
-        net.hadess.SensorProxy.Claim()
     -->
-    <method name="Release">
-      <arg type="s" name="DriverType" direction="in"/>
-    </method>
+    <method name="ReleaseAccelerometer"/>
+
+    <!--
+       ClaimLight:
+
+       To start receiving ambient light sensor reading updates from the proxy, the
+       application must call the net.hadess.SensorProxy.ClaimLight() method.
+
+       Applications should call net.hadess.SensorProxy.ReleaseLight() when readings are
+       not required anymore. For example, an application that monitors the ambient light
+       to change the screen brightness should stop monitoring for updates when that screen
+       has been turned off.
+
+       This prevents the sensor proxy from polling the device, thus increasing wake-ups
+       and reducing battery life.
+    -->
+    <method name="ClaimLight"/>
+
+    <!--
+        ReleaseLight:
+
+        This should be called as soon as readings are not required anymore. Note
+        that resources are freed up if a monitoring application exits without
+        calling net.hadess.SensorProxy.Release(), or crashes.
+    -->
+    <method name="ReleaseLight"/>
 
   </interface>
 </node>

@@ -82,8 +82,8 @@ appeared_cb (GDBusConnection *connection,
 	}
 	if (has_accel && !accel_claimed) {
 		g_dbus_proxy_call_sync (iio_proxy,
-					"Claim",
-					g_variant_new ("(&s)", "accel"),
+					"ClaimAccelerometer",
+					NULL,
 					G_DBUS_CALL_FLAGS_NONE,
 					-1,
 					NULL, &error);
@@ -99,8 +99,8 @@ appeared_cb (GDBusConnection *connection,
 	}
 	if (has_als && !als_claimed) {
 		g_dbus_proxy_call_sync (iio_proxy,
-					"Claim",
-					g_variant_new ("(&s)", "light"),
+					"ClaimLight",
+					NULL,
 					G_DBUS_CALL_FLAGS_NONE,
 					-1,
 					NULL, &error);

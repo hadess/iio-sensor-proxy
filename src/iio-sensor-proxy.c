@@ -305,31 +305,21 @@ handle_method_call (GDBusConnection       *connection,
 		    gpointer               user_data)
 {
 	SensorData *data = user_data;
-	const char *driver_name;
 	DriverType driver_type;
 	GHashTable *ht;
 	guint watch_id;
 
-	if (g_strcmp0 (method_name, "Claim") != 0 &&
-	    g_strcmp0 (method_name, "Release") != 0) {
+	if (g_strcmp0 (method_name, "ClaimAccelerometer") == 0 ||
+	    g_strcmp0 (method_name, "ReleaseAccelerometer") == 0)
+		driver_type = DRIVER_TYPE_ACCEL;
+	else if (g_strcmp0 (method_name, "ClaimLight") == 0 ||
+		 g_strcmp0 (method_name, "ClaimAccelerometer") == 0)
+		driver_type = DRIVER_TYPE_LIGHT;
+	else {
 		g_dbus_method_invocation_return_error (invocation,
 						       G_DBUS_ERROR,
 						       G_DBUS_ERROR_UNKNOWN_METHOD,
 						       "Method '%s' does not exist", method_name);
-		return;
-	}
-
-	/* Verify arguments */
-	g_variant_get_child (parameters, 0, "&s", &driver_name);
-	if (g_strcmp0 (driver_name, "accel") == 0) {
-		driver_type = DRIVER_TYPE_ACCEL;
-	} else if (g_strcmp0 (driver_name, "light") == 0) {
-		driver_type = DRIVER_TYPE_LIGHT;
-	} else {
-		g_dbus_method_invocation_return_error (invocation,
-						       G_DBUS_ERROR,
-						       G_DBUS_ERROR_INVALID_ARGS,
-						       "Driver type '%s' is not supported", driver_name);
 		return;
 	}
 
@@ -338,13 +328,13 @@ handle_method_call (GDBusConnection       *connection,
 		g_dbus_method_invocation_return_error (invocation,
 						       G_DBUS_ERROR,
 						       G_DBUS_ERROR_INVALID_ARGS,
-						       "Driver type '%s' is not present", driver_name);
+						       "Driver type '%s' is not present", driver_type_to_str (driver_type));
 		return;
 	}
 
 	ht = data->clients[driver_type];
 
-	if (g_strcmp0 (method_name, "Claim") == 0) {
+	if (g_str_has_prefix (method_name, "Claim")) {
 		watch_id = GPOINTER_TO_UINT (g_hash_table_lookup (ht, sender));
 		if (watch_id > 0) {
 			g_dbus_method_invocation_return_error (invocation,
@@ -369,7 +359,7 @@ handle_method_call (GDBusConnection       *connection,
 		g_hash_table_insert (ht, g_strdup (sender), GUINT_TO_POINTER (watch_id));
 
 		g_dbus_method_invocation_return_value (invocation, NULL);
-	} else if (g_strcmp0 (method_name, "Release") == 0) {
+	} else if (g_str_has_prefix (method_name, "Release")) {
 		if (client_release (data, sender, driver_type, invocation))
 			g_dbus_method_invocation_return_value (invocation, NULL);
 	}
