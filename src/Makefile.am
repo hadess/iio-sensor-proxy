@@ -54,5 +54,5 @@ monitor_sensor_LDADD = $(IIO_SENSOR_PROXY_LIBS)
 
 EXTRA_DIST =					\
 	test-orientation.c			\
-	$(resource_files)			\
+	net.hadess.SensorProxy.xml		\
 	iio-sensor-proxy.gresource.xml
