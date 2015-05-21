@@ -333,11 +333,7 @@ handle_method_call (GDBusConnection       *connection,
 	if (g_str_has_prefix (method_name, "Claim")) {
 		watch_id = GPOINTER_TO_UINT (g_hash_table_lookup (ht, sender));
 		if (watch_id > 0) {
-			g_dbus_method_invocation_return_error (invocation,
-							       G_DBUS_ERROR,
-							       G_DBUS_ERROR_LIMITS_EXCEEDED,
-							       "D-Bus client '%s' is already monitoring %s",
-							       sender, driver_type_to_str (driver_type));
+			g_dbus_method_invocation_return_value (invocation, NULL);
 			return;
 		}
 
