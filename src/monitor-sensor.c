@@ -58,10 +58,6 @@ appeared_cb (GDBusConnection *connection,
 	     gpointer         user_data)
 {
 	GError *error = NULL;
-	gboolean has_accel, has_als;
-	GVariant *v;
-
-	has_accel = has_als = FALSE;
 
 	iio_proxy = g_dbus_proxy_new_for_bus_sync (G_BUS_TYPE_SYSTEM,
 						   G_DBUS_PROXY_FLAGS_NONE,
@@ -75,38 +71,22 @@ appeared_cb (GDBusConnection *connection,
 			  G_CALLBACK (properties_changed), NULL);
 
 	/* Accelerometer */
-	v = g_dbus_proxy_get_cached_property (iio_proxy, "HasAccelerometer");
-	if (v) {
-		has_accel = g_variant_get_boolean (v);
-		g_variant_unref (v);
-	}
-	if (has_accel && !accel_claimed) {
-		g_dbus_proxy_call_sync (iio_proxy,
-					"ClaimAccelerometer",
-					NULL,
-					G_DBUS_CALL_FLAGS_NONE,
-					-1,
-					NULL, &error);
-		g_assert_no_error (error);
-		accel_claimed = TRUE;
-	}
+	g_dbus_proxy_call_sync (iio_proxy,
+				"ClaimAccelerometer",
+				NULL,
+				G_DBUS_CALL_FLAGS_NONE,
+				-1,
+				NULL, &error);
+	g_assert_no_error (error);
 
 	/* ALS */
-	v = g_dbus_proxy_get_cached_property (iio_proxy, "HasAmbientLight");
-	if (v) {
-		has_als = g_variant_get_boolean (v);
-		g_variant_unref (v);
-	}
-	if (has_als && !als_claimed) {
-		g_dbus_proxy_call_sync (iio_proxy,
-					"ClaimLight",
-					NULL,
-					G_DBUS_CALL_FLAGS_NONE,
-					-1,
-					NULL, &error);
-		g_assert_no_error (error);
-		als_claimed = TRUE;
-	}
+	g_dbus_proxy_call_sync (iio_proxy,
+				"ClaimLight",
+				NULL,
+				G_DBUS_CALL_FLAGS_NONE,
+				-1,
+				NULL, &error);
+	g_assert_no_error (error);
 }
 
 static void

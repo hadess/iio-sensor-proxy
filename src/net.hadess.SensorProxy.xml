@@ -66,7 +66,9 @@
        ClaimAccelerometer:
 
        To start receiving accelerometer reading updates from the proxy, the application
-       must call the net.hadess.SensorProxy.ClaimAccelerometer() method.
+       must call the net.hadess.SensorProxy.ClaimAccelerometer() method. It can do so
+       whether an accelerometer is available or not, updates would then be sent when an
+       accelerometer appears.
 
        Applications should call net.hadess.SensorProxy.ReleaseAccelerometer() when
        readings are not required anymore. For example, an application that monitors
@@ -83,7 +85,7 @@
 
         This should be called as soon as readings are not required anymore. Note
         that resources are freed up if a monitoring application exits without
-        calling net.hadess.SensorProxy.Release(), or crashes.
+        calling net.hadess.SensorProxy.Release(), crashes or the sensor disappears.
     -->
     <method name="ReleaseAccelerometer"/>
 
@@ -91,7 +93,9 @@
        ClaimLight:
 
        To start receiving ambient light sensor reading updates from the proxy, the
-       application must call the net.hadess.SensorProxy.ClaimLight() method.
+       application must call the net.hadess.SensorProxy.ClaimLight() method. It can do so
+       whether an ambient light sensor is available or not, updates would then be sent
+       when such a sensor appears.
 
        Applications should call net.hadess.SensorProxy.ReleaseLight() when readings are
        not required anymore. For example, an application that monitors the ambient light
@@ -108,7 +112,7 @@
 
         This should be called as soon as readings are not required anymore. Note
         that resources are freed up if a monitoring application exits without
-        calling net.hadess.SensorProxy.Release(), or crashes.
+        calling net.hadess.SensorProxy.Release(), crashes or the sensor disappears.
     -->
     <method name="ReleaseLight"/>
 

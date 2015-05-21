@@ -132,6 +132,23 @@ find_sensors (GUdevClient *client,
 	return found;
 }
 
+static void
+free_client_watch (gpointer data)
+{
+	guint watch_id = GPOINTER_TO_UINT (data);
+
+	if (watch_id == 0)
+		return;
+	g_bus_unwatch_name (watch_id);
+}
+
+static GHashTable *
+create_clients_hash_table (void)
+{
+	return g_hash_table_new_full (g_str_hash, g_str_equal,
+				      g_free, free_client_watch);
+}
+
 typedef enum {
 	PROP_HAS_ACCELEROMETER		= 1 << 0,
 	PROP_ACCELEROMETER_ORIENTATION  = 1 << 1,
@@ -233,11 +250,10 @@ any_sensors_left (SensorData *data)
 	return exists;
 }
 
-static gboolean
+static void
 client_release (SensorData            *data,
 		const char            *sender,
-		DriverType             driver_type,
-		GDBusMethodInvocation *invocation)
+		DriverType             driver_type)
 {
 	GHashTable *ht;
 	guint watch_id;
@@ -245,24 +261,13 @@ client_release (SensorData            *data,
 	ht = data->clients[driver_type];
 
 	watch_id = GPOINTER_TO_UINT (g_hash_table_lookup (ht, sender));
-	if (watch_id == 0) {
-		if (invocation) {
-			g_dbus_method_invocation_return_error (invocation,
-							       G_DBUS_ERROR,
-							       G_DBUS_ERROR_FAILED,
-							       "D-Bus client '%s' is not monitoring %s",
-							       sender, driver_type_to_str (driver_type));
-		}
-		return FALSE;
-	}
+	if (watch_id == 0)
+		return;
 
-	g_bus_unwatch_name (watch_id);
 	g_hash_table_remove (ht, sender);
 
 	if (g_hash_table_size (ht) == 0)
 		driver_set_polling (DRIVER_FOR_TYPE(driver_type), FALSE);
-
-	return TRUE;
 }
 
 static void
@@ -288,7 +293,7 @@ client_vanished_cb (GDBusConnection *connection,
 
 		watch_id = GPOINTER_TO_UINT (g_hash_table_lookup (ht, sender));
 		if (watch_id > 0)
-			client_release (data, sender, i, NULL);
+			client_release (data, sender, i);
 	}
 
 	g_free (sender);
@@ -323,15 +328,6 @@ handle_method_call (GDBusConnection       *connection,
 		return;
 	}
 
-	/* Check if we have a sensor for that type */
-	if (!driver_type_exists (data, driver_type)) {
-		g_dbus_method_invocation_return_error (invocation,
-						       G_DBUS_ERROR,
-						       G_DBUS_ERROR_INVALID_ARGS,
-						       "Driver type '%s' is not present", driver_type_to_str (driver_type));
-		return;
-	}
-
 	ht = data->clients[driver_type];
 
 	if (g_str_has_prefix (method_name, "Claim")) {
@@ -346,7 +342,8 @@ handle_method_call (GDBusConnection       *connection,
 		}
 
 		/* No other clients for this sensor? Start it */
-		if (g_hash_table_size (ht) == 0)
+		if (driver_type_exists (data, driver_type) &&
+		    g_hash_table_size (ht) == 0)
 			driver_set_polling (DRIVER_FOR_TYPE(driver_type), TRUE);
 
 		watch_id = g_bus_watch_name_on_connection (data->connection,
@@ -360,8 +357,8 @@ handle_method_call (GDBusConnection       *connection,
 
 		g_dbus_method_invocation_return_value (invocation, NULL);
 	} else if (g_str_has_prefix (method_name, "Release")) {
-		if (client_release (data, sender, driver_type, invocation))
-			g_dbus_method_invocation_return_value (invocation, NULL);
+		client_release (data, sender, driver_type);
+		g_dbus_method_invocation_return_value (invocation, NULL);
 	}
 }
 
@@ -576,8 +573,13 @@ sensor_changes (GUdevClient *client,
 				g_debug ("Sensor type %s got removed (%s)",
 					 driver_type_to_str (i),
 					 g_udev_device_get_sysfs_path (dev));
+
 				g_clear_object (&DEVICE_FOR_TYPE(i));
 				DRIVER_FOR_TYPE(i) = NULL;
+
+				g_clear_pointer (&data->clients[i], g_hash_table_unref);
+				data->clients[i] = create_clients_hash_table ();
+
 				send_driver_changed_dbus_event (data, i);
 			}
 		}
@@ -598,9 +600,16 @@ sensor_changes (GUdevClient *client,
 
 				if (driver_open (driver, device,
 						 driver_type_to_callback_func (driver->type), data)) {
+					GHashTable *ht;
+
 					DEVICE_FOR_TYPE(driver->type) = g_object_ref (device);
 					DRIVER_FOR_TYPE(driver->type) = (SensorDriver *) driver;
 					send_driver_changed_dbus_event (data, driver->type);
+
+					ht = data->clients[driver->type];
+
+					if (g_hash_table_size (ht) > 0)
+						driver_set_polling (DRIVER_FOR_TYPE(driver->type), TRUE);
 				}
 				break;
 			}
@@ -634,10 +643,7 @@ int main (int argc, char **argv)
 			  G_CALLBACK (sensor_changes), data);
 
 	for (i = 0; i < NUM_SENSOR_TYPES; i++) {
-		data->clients[i] = g_hash_table_new_full (g_str_hash,
-							  g_str_equal,
-							  g_free,
-							  NULL);
+		data->clients[i] = create_clients_hash_table ();
 
 		if (!driver_type_exists (data, i))
 			continue;
