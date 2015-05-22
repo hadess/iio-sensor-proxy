@@ -16,6 +16,12 @@ GNOME_COMPILE_WARNINGS([maximum])
 
 GTK_DOC_CHECK([1.11],[--flavour no-tmpl])
 
+AC_ARG_WITH([udevrulesdir],
+	    AS_HELP_STRING([--with-udevrulesdir=DIR], [Directory for udev rules]),
+	    [],
+	    [with_udevrulesdir=$($PKG_CONFIG --variable=udevdir udev)"/rules.d"])
+AC_SUBST([udevrulesdir], [$with_udevrulesdir])
+
 PKG_CHECK_MODULES(IIO_SENSOR_PROXY, gio-2.0 gudev-1.0)
 
 AC_PATH_PROG([GDBUS_CODEGEN],[gdbus-codegen])
