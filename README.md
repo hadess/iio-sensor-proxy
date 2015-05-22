@@ -1,7 +1,7 @@
 iio-sensor-proxy
 ================
 
-IIO accelerometer sensor to input device proxy
+IIO sensors to D-Bus proxy
 
 Installation
 ------------
