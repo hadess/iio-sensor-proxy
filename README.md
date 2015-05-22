@@ -14,8 +14,9 @@ It requires libgudev and systemd.
 Usage
 -----
 
-With a new enough version of systemd[1], and a GNOME 3 based system,
-orientation changes will automatically be applied when rotating the panel.
+With a new enough version of systemd[1], and a GNOME 3.16 (or newer) based
+system, orientation changes will automatically be applied when rotating
+the panel.
 
 Note that a number of kernel bugs will prevent it from working correctly on
 some machines with the 3.16 kernel (kernel crashes on the Surface Pro, sensor
@@ -46,7 +47,7 @@ and attach the output of:
 `G_MESSAGES_DEBUG=all /usr/sbin/iio-sensor-proxy`
 
 [1]: One including this patch:
-http://cgit.freedesktop.org/systemd/systemd/commit/?id=a545c6e1aa31b4d7e80c9d3609d9fc4fc9921498
+http://thread.gmane.org/gmane.comp.sysutils.systemd.devel/32047
 
 Tested on
 ---------
