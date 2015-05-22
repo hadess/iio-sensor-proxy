@@ -1,3 +1,9 @@
+1.0
+---
+
+This is the first stable release of iio-sensor-proxy. It now uses a D-Bus API,
+and supports accelerometers and ambient light sensors.
+
 0.1
 ---
 
