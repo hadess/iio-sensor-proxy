@@ -6,8 +6,8 @@ systemdservice_DATA = iio-sensor-proxy.service
 iio-sensor-proxy.service: iio-sensor-proxy.service.in Makefile
 	$(AM_V_GEN) $(SED) -e "s|\@sbindir\@|$(sbindir)|" $< > $@
 
-dbus_confdir = /etc/dbus-1/system.d
-dbus_conf_DATA = net.hadess.SensorProxy.conf
+dbusconfdir = $(sysconfdir)/dbus-1/system.d
+dbusconf_DATA = net.hadess.SensorProxy.conf
 
 CLEANFILES = iio-sensor-proxy.service
-EXTRA_DIST = $(udevrules_DATA) $(dbus_conf_DATA) $(systemdservice_in_files)
+EXTRA_DIST = $(udevrules_DATA) $(dbusconf_DATA) $(systemdservice_in_files)
