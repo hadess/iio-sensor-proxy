@@ -644,9 +644,8 @@ int main (int argc, char **argv)
 		if (!driver_type_exists (data, i))
 			continue;
 
-		if (!data->drivers[i]->open (DEVICE_FOR_TYPE(i),
-					     driver_type_to_callback_func (data->drivers[i]->type),
-					     data)) {
+		if (!driver_open (DRIVER_FOR_TYPE(i), DEVICE_FOR_TYPE(i),
+				  driver_type_to_callback_func (data->drivers[i]->type), data)) {
 			DRIVER_FOR_TYPE(i) = NULL;
 			g_clear_object (&DEVICE_FOR_TYPE(i));
 		}
