@@ -22,6 +22,14 @@ AC_ARG_WITH([udevrulesdir],
 	    [with_udevrulesdir=$($PKG_CONFIG --variable=udevdir udev)"/rules.d"])
 AC_SUBST([udevrulesdir], [$with_udevrulesdir])
 
+AC_ARG_WITH([systemdsystemunitdir],
+	    AS_HELP_STRING([--with-systemdsystemunitdir=DIR], [Directory for systemd service files]),
+	    [],
+	    [with_systemdsystemunitdir=$($PKG_CONFIG --variable=systemdsystemunitdir systemd)])
+if test x$with_systemdsystemunitdir != xno; then
+	AC_SUBST([systemdsystemunitdir], [$with_systemdsystemunitdir])
+fi
+
 PKG_CHECK_MODULES(IIO_SENSOR_PROXY, gio-2.0 gudev-1.0)
 
 AC_PATH_PROG([GDBUS_CODEGEN],[gdbus-codegen])
