@@ -14,7 +14,7 @@ AM_PROG_CC_C_O
 
 GNOME_COMPILE_WARNINGS([maximum])
 
-GTK_DOC_CHECK(1.0)
+GTK_DOC_CHECK([1.11],[--flavour no-tmpl])
 
 PKG_CHECK_MODULES(IIO_SENSOR_PROXY, gio-2.0 gudev-1.0)
 
