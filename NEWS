@@ -1,0 +1,5 @@
+0.1
+---
+
+This is the first version of iio-sensor-proxy. It supports accelerometers,
+proxying IIO sensors, and mimicking input device accelerometers.
