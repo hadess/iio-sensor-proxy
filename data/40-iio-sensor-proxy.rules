@@ -3,4 +3,4 @@
 
 ACTION=="add", SUBSYSTEM=="iio", TAG+="systemd", ENV{SYSTEMD_WANTS}+="iio-sensor-proxy.service"
 SUBSYSTEM=="input", ACTION=="add", TAG+="systemd", ENV{ID_INPUT_ACCELEROMETER}=="1", ENV{SYSTEMD_WANTS}+="iio-sensor-proxy.service"
-SUBSYSTEM=="platform", ACTION=="add", ENV{MODALIAS}=="platform:applesmc", TAG+="systemd", ENV{SYSTEMD_WANTS}+="iio-sensor-proxy.service"
+SUBSYSTEM=="hwmon", ACTION=="add", TAG+="systemd", ENV{SYSTEMD_WANTS}+="iio-sensor-proxy.service"
