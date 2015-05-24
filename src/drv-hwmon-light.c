@@ -110,8 +110,11 @@ hwmon_light_set_polling (gboolean state)
 	}
 
 	if (state) {
-		drv_data->timeout_id = g_idle_add ((GSourceFunc) light_changed, NULL);
+		drv_data->timeout_id = g_timeout_add (DEFAULT_POLL_TIME, (GSourceFunc) light_changed, NULL);
 		g_source_set_name_by_id (drv_data->timeout_id, "[hwmon_light_set_polling] light_changed");
+
+		/* And send a reading straight away */
+		light_changed ();
 	}
 }
 
