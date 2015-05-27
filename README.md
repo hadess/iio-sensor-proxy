@@ -6,6 +6,7 @@ IIO sensors to D-Bus proxy
 Installation
 ------------
 ```
+./autogen.sh --prefix=/usr --sysconfdir=/etc
 make
 make install
 ```
@@ -58,3 +59,4 @@ Tested on
 - Onda v975w
 - Dell Venue 8 Pro
 - Lenovo ThinkPad Twist
+- MacBook Pro (8.2)
