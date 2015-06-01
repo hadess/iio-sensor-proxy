@@ -22,6 +22,7 @@ iio_sensor_proxy_SOURCES =			\
 	drv-iio-poll-light.c			\
 	drv-hwmon-light.c			\
 	drv-iio-buffer-light.c			\
+	drv-iio-buffer-compass.c		\
 	iio-buffer-utils.h			\
 	iio-buffer-utils.c			\
 	$(BUILT_SOURCES)

@@ -120,3 +120,4 @@ extern SensorDriver fake_light;
 extern SensorDriver iio_poll_light;
 extern SensorDriver hwmon_light;
 extern SensorDriver iio_buffer_light;
+extern SensorDriver iio_buffer_compass;
