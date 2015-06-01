@@ -63,6 +63,23 @@
     <property name="LightLevel" type="d" access="read"/>
 
     <!--
+        HasCompass:
+
+        Whether a supported compass is present on the system.
+    -->
+    <property name='HasCompass' type='b' access='read'/>
+
+    <!--
+        CompassHeading:
+
+        The compass heading in degrees with respect to magnetic North direction, in
+        clockwise order. That means North becomes 0 degree, East: 90 degrees,
+        South: 180 degrees, West: 270 degrees and so on. When unknown,
+        it's set to -1.0.
+    -->
+    <property name='CompassHeading' type='d' access='read'/>
+
+    <!--
        ClaimAccelerometer:
 
        To start receiving accelerometer reading updates from the proxy, the application
@@ -115,6 +132,32 @@
         calling net.hadess.SensorProxy.Release(), crashes or the sensor disappears.
     -->
     <method name="ReleaseLight"/>
+
+    <!--
+       ClaimCompass:
+
+       To start receiving compass heading updates from the proxy, the
+       application must call the net.hadess.SensorProxy.ClaimCompass() method. It can do so
+       whether a compass is available or not, updates would then be sent
+       when such a sensor appears.
+
+       Applications should call net.hadess.SensorProxy.ReleaseCompass() when readings are
+       not required anymore. This prevents the sensor proxy from polling the device, thus
+       increasing wake-ups and reducing battery life.
+
+       Note that Compass information is only available to Geoclue by default, which will
+       proxy the magnetic heading information, and transform it to True North heading.
+    -->
+    <method name="ClaimCompass"/>
+
+    <!--
+        ReleaseCompass:
+
+        This should be called as soon as readings are not required anymore. Note
+        that resources are freed up if a monitoring application exits without
+        calling net.hadess.SensorProxy.ReleaseCompass(), crashes or the sensor disappears.
+    -->
+    <method name="ReleaseCompass"/>
 
   </interface>
 </node>

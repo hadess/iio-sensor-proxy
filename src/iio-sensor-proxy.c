@@ -33,7 +33,7 @@
 #define SENSOR_PROXY_DBUS_NAME "net.hadess.SensorProxy"
 #define SENSOR_PROXY_DBUS_PATH "/net/hadess/SensorProxy"
 
-#define NUM_SENSOR_TYPES DRIVER_TYPE_LIGHT + 1
+#define NUM_SENSOR_TYPES DRIVER_TYPE_COMPASS + 1
 
 typedef struct {
 	GMainLoop *loop;
@@ -53,6 +53,9 @@ typedef struct {
 	/* Light */
 	gdouble previous_level;
 	gboolean uses_lux;
+
+	/* Compass */
+	gdouble previous_heading;
 } SensorData;
 
 static const SensorDriver * const drivers[] = {
@@ -62,7 +65,8 @@ static const SensorDriver * const drivers[] = {
 	&iio_poll_light,
 	&iio_buffer_light,
 	&hwmon_light,
-	&fake_light
+	&fake_light,
+	&iio_buffer_compass
 };
 
 static ReadingsUpdateFunc driver_type_to_callback_func (DriverType type);
@@ -75,6 +79,8 @@ driver_type_to_str (DriverType type)
 		return "accelerometer";
 	case DRIVER_TYPE_LIGHT:
 		return "ambient light sensor";
+	case DRIVER_TYPE_COMPASS:
+		return "compass";
 	default:
 		g_assert_not_reached ();
 	}
@@ -124,7 +130,8 @@ find_sensors (GUdevClient *client,
 		}
 
 		if (driver_type_exists (data, DRIVER_TYPE_ACCEL) &&
-		    driver_type_exists (data, DRIVER_TYPE_LIGHT))
+		    driver_type_exists (data, DRIVER_TYPE_LIGHT) &&
+		    driver_type_exists (data, DRIVER_TYPE_COMPASS))
 			break;
 	}
 
@@ -153,10 +160,17 @@ typedef enum {
 	PROP_HAS_ACCELEROMETER		= 1 << 0,
 	PROP_ACCELEROMETER_ORIENTATION  = 1 << 1,
 	PROP_HAS_AMBIENT_LIGHT		= 1 << 2,
-	PROP_LIGHT_LEVEL		= 1 << 3
+	PROP_LIGHT_LEVEL		= 1 << 3,
+	PROP_HAS_COMPASS                = 1 << 4,
+	PROP_COMPASS_HEADING            = 1 << 5
 } PropertiesMask;
 
-#define PROP_ALL (PROP_HAS_ACCELEROMETER | PROP_ACCELEROMETER_ORIENTATION | PROP_HAS_AMBIENT_LIGHT | PROP_LIGHT_LEVEL)
+#define PROP_ALL (PROP_HAS_ACCELEROMETER | \
+                  PROP_ACCELEROMETER_ORIENTATION | \
+                  PROP_HAS_AMBIENT_LIGHT | \
+                  PROP_LIGHT_LEVEL | \
+                  PROP_HAS_COMPASS | \
+                  PROP_COMPASS_HEADING)
 
 static void
 send_dbus_event (SensorData     *data,
@@ -209,6 +223,23 @@ send_dbus_event (SensorData     *data,
 		g_variant_builder_add (&props_builder, "{sv}", "LightLevel",
 				       g_variant_new_double (data->previous_level));
 	}
+
+	if (mask & PROP_HAS_COMPASS) {
+		gboolean has_compass;
+
+		has_compass = driver_type_exists (data, DRIVER_TYPE_COMPASS);
+		g_variant_builder_add (&props_builder, "{sv}", "HasCompass",
+				       g_variant_new_boolean (has_compass));
+
+		/* Send the heading when the device appears */
+		if (has_compass)
+			mask |= PROP_COMPASS_HEADING;
+	}
+
+        if (mask & PROP_COMPASS_HEADING) {
+            g_variant_builder_add (&props_builder, "{sv}", "CompassHeading",
+                                   g_variant_new_double (data->previous_heading));
+        }
 
 	props_changed = g_variant_new ("(s@a{sv}@as)", SENSOR_PROXY_DBUS_NAME,
 				       g_variant_builder_end (&props_builder),
@@ -320,6 +351,9 @@ handle_method_call (GDBusConnection       *connection,
 	else if (g_strcmp0 (method_name, "ClaimLight") == 0 ||
 		 g_strcmp0 (method_name, "ClaimAccelerometer") == 0)
 		driver_type = DRIVER_TYPE_LIGHT;
+	else if (g_strcmp0 (method_name, "ClaimCompass") == 0 ||
+		 g_strcmp0 (method_name, "ReleaseCompass") ==0)
+		driver_type = DRIVER_TYPE_COMPASS;
 	else {
 		g_dbus_method_invocation_return_error (invocation,
 						       G_DBUS_ERROR,
@@ -381,6 +415,10 @@ handle_get_property (GDBusConnection *connection,
 		return g_variant_new_string (data->uses_lux ? "lux" : "vendor");
 	if (g_strcmp0 (property_name, "LightLevel") == 0)
 		return g_variant_new_double (data->previous_level);
+	if (g_strcmp0 (property_name, "HasCompass") == 0)
+		return g_variant_new_boolean (data->drivers[DRIVER_TYPE_COMPASS] != NULL);
+	if (g_strcmp0 (property_name, "CompassHeading") == 0)
+		return g_variant_new_double (data->previous_heading);
 
 	return NULL;
 }
@@ -511,6 +549,30 @@ light_changed_func (SensorDriver *driver,
 	}
 }
 
+static void
+compass_changed_func (SensorDriver *driver,
+                      gpointer      readings_data,
+                      gpointer      user_data)
+{
+	SensorData *data = user_data;
+	CompassReadings *readings = (CompassReadings *) readings_data;
+
+	//FIXME handle errors
+	g_debug ("Heading sent by driver (quirk applied): %lf degrees",
+	         readings->heading);
+
+	if (data->previous_heading != readings->heading) {
+		gdouble tmp;
+
+		tmp = data->previous_heading;
+		data->previous_heading = readings->heading;
+
+		send_dbus_event (data, PROP_COMPASS_HEADING);
+		g_debug ("Emitted heading changed: from %lf to %lf",
+			 tmp, data->previous_heading);
+	}
+}
+
 static ReadingsUpdateFunc
 driver_type_to_callback_func (DriverType type)
 {
@@ -519,6 +581,8 @@ driver_type_to_callback_func (DriverType type)
 		return accel_changed_func;
 	case DRIVER_TYPE_LIGHT:
 		return light_changed_func;
+	case DRIVER_TYPE_COMPASS:
+		return compass_changed_func;
 	default:
 		g_assert_not_reached ();
 	}

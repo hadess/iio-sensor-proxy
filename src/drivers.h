@@ -11,7 +11,8 @@
 
 typedef enum {
 	DRIVER_TYPE_ACCEL,
-	DRIVER_TYPE_LIGHT
+	DRIVER_TYPE_LIGHT,
+	DRIVER_TYPE_COMPASS,
 } DriverType;
 
 /* Driver types */
@@ -28,6 +29,10 @@ typedef enum {
 	DRIVER_TYPE_LIGHT_HWMON
 } DriverLightType;
 
+typedef enum {
+  DRIVER_TYPE_COMPASS_IIO
+} DriverTypeCompass;
+
 typedef struct SensorDriver SensorDriver;
 
 typedef struct {
@@ -40,6 +45,10 @@ typedef struct {
 	gdouble  level;
 	gboolean uses_lux;
 } LightReadings;
+
+typedef struct {
+	gdouble heading;
+} CompassReadings;
 
 typedef void (*ReadingsUpdateFunc) (SensorDriver *driver,
 				    gpointer      readings,
