@@ -261,6 +261,8 @@ send_driver_changed_dbus_event (SensorData   *data,
 		send_dbus_event (data, PROP_HAS_ACCELEROMETER);
 	else if (driver_type == DRIVER_TYPE_LIGHT)
 		send_dbus_event (data, PROP_HAS_AMBIENT_LIGHT);
+	else if (driver_type == DRIVER_TYPE_COMPASS)
+		send_dbus_event (data, PROP_HAS_COMPASS);
 	else
 		g_assert_not_reached ();
 }
