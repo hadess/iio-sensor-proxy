@@ -102,7 +102,7 @@
 
         This should be called as soon as readings are not required anymore. Note
         that resources are freed up if a monitoring application exits without
-        calling net.hadess.SensorProxy.Release(), crashes or the sensor disappears.
+        calling net.hadess.SensorProxy.ReleaseAccelerometer(), crashes or the sensor disappears.
     -->
     <method name="ReleaseAccelerometer"/>
 
@@ -129,7 +129,7 @@
 
         This should be called as soon as readings are not required anymore. Note
         that resources are freed up if a monitoring application exits without
-        calling net.hadess.SensorProxy.Release(), crashes or the sensor disappears.
+        calling net.hadess.SensorProxy.ReleaseLight(), crashes or the sensor disappears.
     -->
     <method name="ReleaseLight"/>
 
