@@ -49,6 +49,16 @@ properties_changed (GDBusProxy *proxy,
 		g_variant_unref (v);
 		g_variant_unref (unit);
 	}
+	if (g_variant_dict_contains (&dict, "HasCompas")) {
+		v = g_dbus_proxy_get_cached_property (iio_proxy, "HasCompass");
+		g_message ("Compass %s", g_variant_get_boolean (v) ? "appeared" : "disappeared");
+		g_variant_unref (v);
+	}
+	if (g_variant_dict_contains (&dict, "CompassHeading")) {
+		v = g_dbus_proxy_get_cached_property (iio_proxy, "CompassHeading");
+		g_message ("Compass heading changed: %lf", g_variant_get_double (v));
+		g_variant_unref (v);
+	}
 }
 
 static void
@@ -82,6 +92,15 @@ appeared_cb (GDBusConnection *connection,
 	/* ALS */
 	g_dbus_proxy_call_sync (iio_proxy,
 				"ClaimLight",
+				NULL,
+				G_DBUS_CALL_FLAGS_NONE,
+				-1,
+				NULL, &error);
+	g_assert_no_error (error);
+
+	/* Compass */
+	g_dbus_proxy_call_sync (iio_proxy,
+				"ClaimCompass",
 				NULL,
 				G_DBUS_CALL_FLAGS_NONE,
 				-1,
