@@ -12,7 +12,6 @@
 static GMainLoop *loop;
 static guint watch_id;
 static GDBusProxy *iio_proxy;
-static gboolean accel_claimed, als_claimed;
 
 static void
 properties_changed (GDBusProxy *proxy,
@@ -124,8 +123,6 @@ int main (int argc, char **argv)
 				     appeared_cb,
 				     vanished_cb,
 				     NULL, NULL);
-
-	accel_claimed = als_claimed = FALSE;
 
 	loop = g_main_loop_new (NULL, TRUE);
 	g_main_loop_run (loop);
