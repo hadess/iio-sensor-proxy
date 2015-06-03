@@ -11,7 +11,7 @@
 
 static GMainLoop *loop;
 static guint watch_id;
-static GDBusProxy *iio_proxy;
+static GDBusProxy *iio_proxy, *iio_proxy_compass;
 
 static void
 properties_changed (GDBusProxy *proxy,
@@ -79,6 +79,19 @@ appeared_cb (GDBusConnection *connection,
 	g_signal_connect (G_OBJECT (iio_proxy), "g-properties-changed",
 			  G_CALLBACK (properties_changed), NULL);
 
+	if (g_strcmp0 (g_get_user_name (), "geoclue") == 0) {
+		iio_proxy_compass = g_dbus_proxy_new_for_bus_sync (G_BUS_TYPE_SYSTEM,
+								   G_DBUS_PROXY_FLAGS_NONE,
+								   NULL,
+								   "net.hadess.SensorProxy",
+								   "/net/hadess/SensorProxy/Compass",
+								   "net.hadess.SensorProxy.Compass",
+								   NULL, NULL);
+
+		g_signal_connect (G_OBJECT (iio_proxy_compass), "g-properties-changed",
+				  G_CALLBACK (properties_changed), NULL);
+	}
+
 	/* Accelerometer */
 	g_dbus_proxy_call_sync (iio_proxy,
 				"ClaimAccelerometer",
@@ -98,13 +111,15 @@ appeared_cb (GDBusConnection *connection,
 	g_assert_no_error (error);
 
 	/* Compass */
-	g_dbus_proxy_call_sync (iio_proxy,
-				"ClaimCompass",
-				NULL,
-				G_DBUS_CALL_FLAGS_NONE,
-				-1,
-				NULL, &error);
-	g_assert_no_error (error);
+	if (g_strcmp0 (g_get_user_name (), "geoclue") == 0) {
+		g_dbus_proxy_call_sync (iio_proxy,
+					"ClaimCompass",
+					NULL,
+					G_DBUS_CALL_FLAGS_NONE,
+					-1,
+					NULL, &error);
+		g_assert_no_error (error);
+	}
 }
 
 static void
@@ -113,6 +128,7 @@ vanished_cb (GDBusConnection *connection,
 	     gpointer user_data)
 {
 	g_clear_object (&iio_proxy);
+	g_clear_object (&iio_proxy_compass);
 }
 
 int main (int argc, char **argv)
