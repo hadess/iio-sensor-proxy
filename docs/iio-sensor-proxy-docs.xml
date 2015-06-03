@@ -64,6 +64,7 @@
       </para>
     </partintro>
     <xi:include href="docs-net.hadess.SensorProxy.xml"/>
+    <xi:include href="docs-net.hadess.SensorProxy.Compass.xml"/>
   </reference>
 
   <index>

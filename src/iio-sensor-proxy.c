@@ -30,8 +30,9 @@
 
 #include "iio-sensor-proxy-resources.h"
 
-#define SENSOR_PROXY_DBUS_NAME "net.hadess.SensorProxy"
-#define SENSOR_PROXY_DBUS_PATH "/net/hadess/SensorProxy"
+#define SENSOR_PROXY_DBUS_NAME         "net.hadess.SensorProxy"
+#define SENSOR_PROXY_DBUS_PATH         "/net/hadess/SensorProxy"
+#define SENSOR_PROXY_COMPASS_DBUS_PATH "/net/hadess/SensorProxy/Compass"
 
 #define NUM_SENSOR_TYPES DRIVER_TYPE_COMPASS + 1
 
@@ -168,9 +169,9 @@ typedef enum {
 #define PROP_ALL (PROP_HAS_ACCELEROMETER | \
                   PROP_ACCELEROMETER_ORIENTATION | \
                   PROP_HAS_AMBIENT_LIGHT | \
-                  PROP_LIGHT_LEVEL | \
-                  PROP_HAS_COMPASS | \
-                  PROP_COMPASS_HEADING)
+                  PROP_LIGHT_LEVEL)
+#define PROP_ALL_COMPASS (PROP_HAS_COMPASS | \
+			  PROP_COMPASS_HEADING)
 
 static void
 send_dbus_event (SensorData     *data,
@@ -183,6 +184,8 @@ send_dbus_event (SensorData     *data,
 
 	if (mask == 0)
 		return;
+
+	g_assert ((mask & PROP_ALL) == 0 || (mask & PROP_ALL_COMPASS) == 0);
 
 	g_variant_builder_init (&props_builder, G_VARIANT_TYPE ("a{sv}"));
 
@@ -236,10 +239,10 @@ send_dbus_event (SensorData     *data,
 			mask |= PROP_COMPASS_HEADING;
 	}
 
-        if (mask & PROP_COMPASS_HEADING) {
-            g_variant_builder_add (&props_builder, "{sv}", "CompassHeading",
-                                   g_variant_new_double (data->previous_heading));
-        }
+	if (mask & PROP_COMPASS_HEADING) {
+		g_variant_builder_add (&props_builder, "{sv}", "CompassHeading",
+				       g_variant_new_double (data->previous_heading));
+	}
 
 	props_changed = g_variant_new ("(s@a{sv}@as)", SENSOR_PROXY_DBUS_NAME,
 				       g_variant_builder_end (&props_builder),
@@ -247,7 +250,7 @@ send_dbus_event (SensorData     *data,
 
 	g_dbus_connection_emit_signal (data->connection,
 				       NULL,
-				       SENSOR_PROXY_DBUS_PATH,
+				       (mask & PROP_ALL) ? SENSOR_PROXY_DBUS_PATH : SENSOR_PROXY_COMPASS_DBUS_PATH,
 				       "org.freedesktop.DBus.Properties",
 				       "PropertiesChanged",
 				       props_changed, NULL);
@@ -334,36 +337,17 @@ client_vanished_cb (GDBusConnection *connection,
 }
 
 static void
-handle_method_call (GDBusConnection       *connection,
-		    const gchar           *sender,
-		    const gchar           *object_path,
-		    const gchar           *interface_name,
-		    const gchar           *method_name,
-		    GVariant              *parameters,
-		    GDBusMethodInvocation *invocation,
-		    gpointer               user_data)
+handle_generic_method_call (SensorData            *data,
+			    const gchar           *sender,
+			    const gchar           *object_path,
+			    const gchar           *interface_name,
+			    const gchar           *method_name,
+			    GVariant              *parameters,
+			    GDBusMethodInvocation *invocation,
+			    DriverType             driver_type)
 {
-	SensorData *data = user_data;
-	DriverType driver_type;
 	GHashTable *ht;
 	guint watch_id;
-
-	if (g_strcmp0 (method_name, "ClaimAccelerometer") == 0 ||
-	    g_strcmp0 (method_name, "ReleaseAccelerometer") == 0)
-		driver_type = DRIVER_TYPE_ACCEL;
-	else if (g_strcmp0 (method_name, "ClaimLight") == 0 ||
-		 g_strcmp0 (method_name, "ReleaseLight") == 0)
-		driver_type = DRIVER_TYPE_LIGHT;
-	else if (g_strcmp0 (method_name, "ClaimCompass") == 0 ||
-		 g_strcmp0 (method_name, "ReleaseCompass") ==0)
-		driver_type = DRIVER_TYPE_COMPASS;
-	else {
-		g_dbus_method_invocation_return_error (invocation,
-						       G_DBUS_ERROR,
-						       G_DBUS_ERROR_UNKNOWN_METHOD,
-						       "Method '%s' does not exist", method_name);
-		return;
-	}
 
 	ht = data->clients[driver_type];
 
@@ -395,6 +379,39 @@ handle_method_call (GDBusConnection       *connection,
 	}
 }
 
+static void
+handle_method_call (GDBusConnection       *connection,
+		    const gchar           *sender,
+		    const gchar           *object_path,
+		    const gchar           *interface_name,
+		    const gchar           *method_name,
+		    GVariant              *parameters,
+		    GDBusMethodInvocation *invocation,
+		    gpointer               user_data)
+{
+	SensorData *data = user_data;
+	DriverType driver_type;
+
+	if (g_strcmp0 (method_name, "ClaimAccelerometer") == 0 ||
+	    g_strcmp0 (method_name, "ReleaseAccelerometer") == 0)
+		driver_type = DRIVER_TYPE_ACCEL;
+	else if (g_strcmp0 (method_name, "ClaimLight") == 0 ||
+		 g_strcmp0 (method_name, "ReleaseLight") == 0)
+		driver_type = DRIVER_TYPE_LIGHT;
+	else {
+		g_dbus_method_invocation_return_error (invocation,
+						       G_DBUS_ERROR,
+						       G_DBUS_ERROR_UNKNOWN_METHOD,
+						       "Method '%s' does not exist on object %s",
+						       method_name, object_path);
+		return;
+	}
+
+	handle_generic_method_call (data, sender, object_path,
+				    interface_name, method_name,
+				    parameters, invocation, driver_type);
+}
+
 static GVariant *
 handle_get_property (GDBusConnection *connection,
 		     const gchar     *sender,
@@ -418,10 +435,6 @@ handle_get_property (GDBusConnection *connection,
 		return g_variant_new_string (data->uses_lux ? "lux" : "vendor");
 	if (g_strcmp0 (property_name, "LightLevel") == 0)
 		return g_variant_new_double (data->previous_level);
-	if (g_strcmp0 (property_name, "HasCompass") == 0)
-		return g_variant_new_boolean (data->drivers[DRIVER_TYPE_COMPASS] != NULL);
-	if (g_strcmp0 (property_name, "CompassHeading") == 0)
-		return g_variant_new_double (data->previous_heading);
 
 	return NULL;
 }
@@ -430,6 +443,64 @@ static const GDBusInterfaceVTable interface_vtable =
 {
 	handle_method_call,
 	handle_get_property,
+	NULL
+};
+
+static void
+handle_compass_method_call (GDBusConnection       *connection,
+			    const gchar           *sender,
+			    const gchar           *object_path,
+			    const gchar           *interface_name,
+			    const gchar           *method_name,
+			    GVariant              *parameters,
+			    GDBusMethodInvocation *invocation,
+			    gpointer               user_data)
+{
+	SensorData *data = user_data;
+	DriverType driver_type;
+
+	if (g_strcmp0 (method_name, "ClaimCompass") == 0 ||
+	    g_strcmp0 (method_name, "ReleaseCompass") ==0)
+		driver_type = DRIVER_TYPE_COMPASS;
+	else {
+		g_dbus_method_invocation_return_error (invocation,
+						       G_DBUS_ERROR,
+						       G_DBUS_ERROR_UNKNOWN_METHOD,
+						       "Method '%s' does not exist on object %s",
+						       method_name, object_path);
+		return;
+	}
+
+	handle_generic_method_call (data, sender, object_path,
+				    interface_name, method_name,
+				    parameters, invocation, driver_type);
+}
+
+static GVariant *
+handle_compass_get_property (GDBusConnection *connection,
+			     const gchar     *sender,
+			     const gchar     *object_path,
+			     const gchar     *interface_name,
+			     const gchar     *property_name,
+			     GError         **error,
+			     gpointer         user_data)
+{
+	SensorData *data = user_data;
+
+	g_assert (data->connection);
+
+	if (g_strcmp0 (property_name, "HasCompass") == 0)
+		return g_variant_new_boolean (data->drivers[DRIVER_TYPE_COMPASS] != NULL);
+	if (g_strcmp0 (property_name, "CompassHeading") == 0)
+		return g_variant_new_double (data->previous_heading);
+
+	return NULL;
+}
+
+static const GDBusInterfaceVTable compass_interface_vtable =
+{
+	handle_compass_method_call,
+	handle_compass_get_property,
 	NULL
 };
 
@@ -457,6 +528,14 @@ bus_acquired_handler (GDBusConnection *connection,
 					   NULL,
 					   NULL);
 
+	g_dbus_connection_register_object (connection,
+					   SENSOR_PROXY_COMPASS_DBUS_PATH,
+					   data->introspection_data->interfaces[1],
+					   &compass_interface_vtable,
+					   data,
+					   NULL,
+					   NULL);
+
 	data->connection = g_object_ref (connection);
 }
 
@@ -467,8 +546,10 @@ name_acquired_handler (GDBusConnection *connection,
 {
 	SensorData *data = user_data;
 
-	if (data->init_done)
+	if (data->init_done) {
 		send_dbus_event (data, PROP_ALL);
+		send_dbus_event (data, PROP_ALL_COMPASS);
+	}
 }
 
 static gboolean
@@ -722,8 +803,10 @@ int main (int argc, char **argv)
 		goto out;
 
 	data->init_done = TRUE;
-	if (data->connection)
+	if (data->connection) {
 		send_dbus_event (data, PROP_ALL);
+		send_dbus_event (data, PROP_ALL_COMPASS);
+	}
 
 	data->loop = g_main_loop_new (NULL, TRUE);
 	g_main_loop_run (data->loop);
