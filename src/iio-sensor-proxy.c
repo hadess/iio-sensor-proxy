@@ -349,7 +349,7 @@ handle_method_call (GDBusConnection       *connection,
 	    g_strcmp0 (method_name, "ReleaseAccelerometer") == 0)
 		driver_type = DRIVER_TYPE_ACCEL;
 	else if (g_strcmp0 (method_name, "ClaimLight") == 0 ||
-		 g_strcmp0 (method_name, "ClaimAccelerometer") == 0)
+		 g_strcmp0 (method_name, "ReleaseLight") == 0)
 		driver_type = DRIVER_TYPE_LIGHT;
 	else if (g_strcmp0 (method_name, "ClaimCompass") == 0 ||
 		 g_strcmp0 (method_name, "ReleaseCompass") ==0)
