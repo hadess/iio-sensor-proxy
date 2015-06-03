@@ -11,6 +11,8 @@
       call the net.hadess.SensorProxy.ClaimAccelerometer() or the
       net.hadess.SensorProxy.ClaimLight() method to start updating the properties
       from the hardware readings.
+
+      The object path will be "/net/hadess/SensorProxy".
   -->
   <interface name="net.hadess.SensorProxy">
     <!--
