@@ -112,7 +112,7 @@ appeared_cb (GDBusConnection *connection,
 
 	/* Compass */
 	if (g_strcmp0 (g_get_user_name (), "geoclue") == 0) {
-		g_dbus_proxy_call_sync (iio_proxy,
+		g_dbus_proxy_call_sync (iio_proxy_compass,
 					"ClaimCompass",
 					NULL,
 					G_DBUS_CALL_FLAGS_NONE,
