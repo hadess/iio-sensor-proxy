@@ -299,7 +299,8 @@ client_release (SensorData            *data,
 
 	g_hash_table_remove (ht, sender);
 
-	if (g_hash_table_size (ht) == 0)
+	if (driver_type_exists (data, driver_type) &&
+	    g_hash_table_size (ht) == 0)
 		driver_set_polling (DRIVER_FOR_TYPE(driver_type), FALSE);
 }
 
