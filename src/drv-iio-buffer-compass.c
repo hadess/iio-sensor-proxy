@@ -24,6 +24,8 @@ typedef struct {
 	const char         *dev_path;
 	int                 device_id;
 	BufferDrvData      *buffer_data;
+
+	gdouble             scale;
 } DrvData;
 
 static DrvData *drv_data = NULL;
@@ -32,7 +34,7 @@ static int
 process_scan (IIOSensorData data, DrvData *or_data)
 {
 	int i;
-	int raw_heading = 0;
+	int raw_heading;
 	gboolean present_level;
 	CompassReadings readings;
 
@@ -50,12 +52,10 @@ process_scan (IIOSensorData data, DrvData *or_data)
 		return 0;
 	}
 
-	process_scan_1 (data.data + or_data->buffer_data->scan_size*i, or_data->buffer_data, "in_rot_from_north_magnetic_tilt_comp", &raw_heading, &present_level);
+	process_scan_1 (data.data + or_data->buffer_data->scan_size*i, or_data->buffer_data, "in_rot_from_north_magnetic_tilt_comp_raw", &raw_heading, &present_level);
 
 	g_debug ("Read from IIO: %d", raw_heading);
-	/* FIXME:
-	 * The kernel driver should export the exponent scale but doesn't */
-	readings.heading = raw_heading / 10.0;
+	readings.heading = raw_heading * or_data->scale;
 
 	//FIXME report errors
 	or_data->callback_func (&iio_buffer_compass, (gpointer) &readings, or_data->user_data);
@@ -160,6 +160,7 @@ iio_buffer_compass_open (GUdevDevice        *device,
                          gpointer            user_data)
 {
 	char *trigger_name;
+	const char *scale_str;
 
 	drv_data = g_new0 (DrvData, 1);
 
@@ -176,6 +177,14 @@ iio_buffer_compass_open (GUdevDevice        *device,
 		g_clear_pointer (&drv_data, g_free);
 		return FALSE;
 	}
+
+	scale_str = g_udev_device_get_sysfs_attr (device, "in_rot_from_north_magnetic_tilt_comp_scale");
+	if (scale_str == NULL)
+		drv_data->scale = 1.0;
+	else
+		drv_data->scale = g_strtod (scale_str, NULL);
+
+	g_debug ("Got compass scale %lf", drv_data->scale);
 
 	drv_data->dev = g_object_ref (device);
 	drv_data->dev_path = g_udev_device_get_device_file (device);
