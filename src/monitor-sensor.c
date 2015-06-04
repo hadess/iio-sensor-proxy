@@ -48,7 +48,7 @@ properties_changed (GDBusProxy *proxy,
 		g_variant_unref (v);
 		g_variant_unref (unit);
 	}
-	if (g_variant_dict_contains (&dict, "HasCompas")) {
+	if (g_variant_dict_contains (&dict, "HasCompass")) {
 		v = g_dbus_proxy_get_cached_property (iio_proxy, "HasCompass");
 		g_message ("Compass %s", g_variant_get_boolean (v) ? "appeared" : "disappeared");
 		g_variant_unref (v);
