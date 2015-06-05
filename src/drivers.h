@@ -30,7 +30,8 @@ typedef enum {
 } DriverLightType;
 
 typedef enum {
-  DRIVER_TYPE_COMPASS_IIO
+  DRIVER_TYPE_COMPASS_IIO,
+  DRIVER_TYPE_COMPASS_FAKE
 } DriverTypeCompass;
 
 typedef struct SensorDriver SensorDriver;
@@ -116,6 +117,7 @@ driver_close (SensorDriver *driver)
 extern SensorDriver iio_buffer_accel;
 extern SensorDriver iio_poll_accel;
 extern SensorDriver input_accel;
+extern SensorDriver fake_compass;
 extern SensorDriver fake_light;
 extern SensorDriver iio_poll_light;
 extern SensorDriver hwmon_light;

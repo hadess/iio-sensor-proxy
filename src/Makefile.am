@@ -18,6 +18,7 @@ iio_sensor_proxy_SOURCES =			\
 	drv-iio-buffer-accel.c			\
 	drv-iio-poll-accel.c			\
 	drv-input-accel.c			\
+	drv-fake-compass.c			\
 	drv-fake-light.c			\
 	drv-iio-poll-light.c			\
 	drv-hwmon-light.c			\
