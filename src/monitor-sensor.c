@@ -49,12 +49,12 @@ properties_changed (GDBusProxy *proxy,
 		g_variant_unref (unit);
 	}
 	if (g_variant_dict_contains (&dict, "HasCompass")) {
-		v = g_dbus_proxy_get_cached_property (iio_proxy, "HasCompass");
+		v = g_dbus_proxy_get_cached_property (iio_proxy_compass, "HasCompass");
 		g_message ("Compass %s", g_variant_get_boolean (v) ? "appeared" : "disappeared");
 		g_variant_unref (v);
 	}
 	if (g_variant_dict_contains (&dict, "CompassHeading")) {
-		v = g_dbus_proxy_get_cached_property (iio_proxy, "CompassHeading");
+		v = g_dbus_proxy_get_cached_property (iio_proxy_compass, "CompassHeading");
 		g_message ("Compass heading changed: %lf", g_variant_get_double (v));
 		g_variant_unref (v);
 	}
