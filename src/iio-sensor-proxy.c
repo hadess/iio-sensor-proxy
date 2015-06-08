@@ -30,9 +30,11 @@
 
 #include "iio-sensor-proxy-resources.h"
 
-#define SENSOR_PROXY_DBUS_NAME         "net.hadess.SensorProxy"
-#define SENSOR_PROXY_DBUS_PATH         "/net/hadess/SensorProxy"
-#define SENSOR_PROXY_COMPASS_DBUS_PATH "/net/hadess/SensorProxy/Compass"
+#define SENSOR_PROXY_DBUS_NAME          "net.hadess.SensorProxy"
+#define SENSOR_PROXY_DBUS_PATH          "/net/hadess/SensorProxy"
+#define SENSOR_PROXY_COMPASS_DBUS_PATH  "/net/hadess/SensorProxy/Compass"
+#define SENSOR_PROXY_IFACE_NAME         SENSOR_PROXY_DBUS_NAME
+#define SENSOR_PROXY_COMPASS_IFACE_NAME SENSOR_PROXY_DBUS_NAME ".Compass"
 
 #define NUM_SENSOR_TYPES DRIVER_TYPE_COMPASS + 1
 
@@ -244,7 +246,7 @@ send_dbus_event (SensorData     *data,
 				       g_variant_new_double (data->previous_heading));
 	}
 
-	props_changed = g_variant_new ("(s@a{sv}@as)", SENSOR_PROXY_DBUS_NAME,
+	props_changed = g_variant_new ("(s@a{sv}@as)", (mask & PROP_ALL) ? SENSOR_PROXY_IFACE_NAME : SENSOR_PROXY_COMPASS_IFACE_NAME,
 				       g_variant_builder_end (&props_builder),
 				       g_variant_new_strv (NULL, 0));
 
