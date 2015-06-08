@@ -457,12 +457,9 @@ handle_compass_method_call (GDBusConnection       *connection,
 			    gpointer               user_data)
 {
 	SensorData *data = user_data;
-	DriverType driver_type;
 
-	if (g_strcmp0 (method_name, "ClaimCompass") == 0 ||
-	    g_strcmp0 (method_name, "ReleaseCompass") ==0)
-		driver_type = DRIVER_TYPE_COMPASS;
-	else {
+	if (g_strcmp0 (method_name, "ClaimCompass") != 0 &&
+	    g_strcmp0 (method_name, "ReleaseCompass") != 0) {
 		g_dbus_method_invocation_return_error (invocation,
 						       G_DBUS_ERROR,
 						       G_DBUS_ERROR_UNKNOWN_METHOD,
@@ -473,7 +470,7 @@ handle_compass_method_call (GDBusConnection       *connection,
 
 	handle_generic_method_call (data, sender, object_path,
 				    interface_name, method_name,
-				    parameters, invocation, driver_type);
+				    parameters, invocation, DRIVER_TYPE_COMPASS);
 }
 
 static GVariant *
