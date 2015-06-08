@@ -349,6 +349,9 @@ handle_generic_method_call (SensorData            *data,
 	GHashTable *ht;
 	guint watch_id;
 
+	g_debug ("Handling driver refcounting method '%s' for %s device",
+		 method_name, driver_type_to_str (driver_type));
+
 	ht = data->clients[driver_type];
 
 	if (g_str_has_prefix (method_name, "Claim")) {
