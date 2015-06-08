@@ -35,7 +35,7 @@ fake_light_discover (GUdevDevice *device)
 		return FALSE;
 
 	/* "Lid switch" is a random input device to latch onto */
-	if (g_strcmp0 (g_udev_device_get_name (device), "Lid Switch") == 0)
+	if (g_strcmp0 (g_udev_device_get_property (device, "NAME"), "\"Lid Switch\"") == 0)
 		return FALSE;
 
 	g_debug ("Found fake light at %s", g_udev_device_get_sysfs_path (device));
