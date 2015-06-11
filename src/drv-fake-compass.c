@@ -49,6 +49,8 @@ compass_changed (void)
 	CompassReadings readings;
 
 	heading += 10;
+	if (heading >= 360)
+		heading = 0;
 	g_debug ("Changed heading to %f", heading);
 	readings.heading = heading;
 
