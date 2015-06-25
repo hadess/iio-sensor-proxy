@@ -36,6 +36,7 @@ process_scan (IIOSensorData data, DrvData *or_data)
 {
 	int i;
 	int accel_x, accel_y, accel_z;
+	gdouble scale;
 	gboolean present_x, present_y, present_z;
 	AccelReadings readings;
 
@@ -53,9 +54,9 @@ process_scan (IIOSensorData data, DrvData *or_data)
 		return 0;
 	}
 
-	process_scan_1(data.data + or_data->buffer_data->scan_size*i, or_data->buffer_data, "in_accel_x", &accel_x, &present_x);
-	process_scan_1(data.data + or_data->buffer_data->scan_size*i, or_data->buffer_data, "in_accel_y", &accel_y, &present_y);
-	process_scan_1(data.data + or_data->buffer_data->scan_size*i, or_data->buffer_data, "in_accel_z", &accel_z, &present_z);
+	process_scan_1(data.data + or_data->buffer_data->scan_size*i, or_data->buffer_data, "in_accel_x", &accel_x, &scale, &present_x);
+	process_scan_1(data.data + or_data->buffer_data->scan_size*i, or_data->buffer_data, "in_accel_y", &accel_y, &scale, &present_y);
+	process_scan_1(data.data + or_data->buffer_data->scan_size*i, or_data->buffer_data, "in_accel_z", &accel_z, &scale, &present_z);
 
 	g_debug ("Read from IIO: %d, %d, %d", accel_x, accel_y, accel_z);
 

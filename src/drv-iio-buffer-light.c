@@ -33,6 +33,7 @@ process_scan (IIOSensorData data, DrvData *or_data)
 {
 	int i;
 	int level = 0;
+	gdouble scale;
 	gboolean present_level;
 	LightReadings readings;
 
@@ -50,10 +51,12 @@ process_scan (IIOSensorData data, DrvData *or_data)
 		return 0;
 	}
 
-	process_scan_1(data.data + or_data->buffer_data->scan_size*i, or_data->buffer_data, "in_intensity_both", &level, &present_level);
+	process_scan_1(data.data + or_data->buffer_data->scan_size*i, or_data->buffer_data, "in_intensity_both", &level, &scale, &present_level);
 
-	g_debug ("Read from IIO: %d", level);
+	g_debug ("Read from IIO: %f", level * scale);
 	readings.level = level;
+	if (scale)
+		readings.level *= scale;
 	readings.uses_lux = TRUE;
 
 	//FIXME report errors

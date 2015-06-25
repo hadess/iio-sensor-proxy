@@ -455,6 +455,7 @@ size_from_channelarray (iio_channel_info **channels,
  * @buffer_data:        Buffer information
  * ch_name:		name of channel to get
  * ch_val:		value for the channel
+ * ch_scale:		scale for the channel
  * ch_present:		whether the channel is present
  **/
 void
@@ -462,6 +463,7 @@ process_scan_1 (char              *data,
     BufferDrvData        *buffer_data,
 		char              *ch_name,
 		int               *ch_val,
+		gdouble           *ch_scale,
 		gboolean          *ch_present)
 {
 	int k;
@@ -484,6 +486,7 @@ process_scan_1 (char              *data,
 				if (buffer_data->channels[k]->bits_used < 32) val &= ((guint32) 1 << buffer_data->channels[k]->bits_used) - 1;
 				val = (gint32) (val << (32 - buffer_data->channels[k]->bits_used)) >> (32 - buffer_data->channels[k]->bits_used);
 				*ch_val = (int) val;
+				*ch_scale = buffer_data->channels[k]->scale;
 				*ch_present = TRUE;
 			}
 			break;
