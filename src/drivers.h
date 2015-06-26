@@ -68,7 +68,7 @@ struct SensorDriver {
 	void     (*close)       (void);
 };
 
-inline gboolean
+static inline gboolean
 driver_discover (SensorDriver *driver,
 		 GUdevDevice  *device)
 {
@@ -79,7 +79,7 @@ driver_discover (SensorDriver *driver,
 	return driver->discover (device);
 }
 
-inline gboolean
+static inline gboolean
 driver_open (SensorDriver       *driver,
 	     GUdevDevice        *device,
 	     ReadingsUpdateFunc  callback_func,
@@ -93,7 +93,7 @@ driver_open (SensorDriver       *driver,
 	return driver->open (device, callback_func, user_data);
 }
 
-inline void
+static inline void
 driver_set_polling (SensorDriver *driver,
 		    gboolean      state)
 {
@@ -105,7 +105,7 @@ driver_set_polling (SensorDriver *driver,
 	driver->set_polling (state);
 }
 
-inline void
+static inline void
 driver_close (SensorDriver *driver)
 {
 	g_return_if_fail (driver);
