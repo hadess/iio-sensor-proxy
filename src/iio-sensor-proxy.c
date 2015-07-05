@@ -512,7 +512,7 @@ name_lost_handler (GDBusConnection *connection,
 		   const gchar     *name,
 		   gpointer         user_data)
 {
-	g_debug ("iio-sensor-proxy is already running");
+	g_debug ("iio-sensor-proxy is already running, or it cannot own its D-Bus name. Verify installation.");
 	exit (0);
 }
 
