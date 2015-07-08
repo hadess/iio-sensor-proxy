@@ -15,7 +15,7 @@ It requires libgudev and systemd.
 Usage
 -----
 
-With a new enough version of systemd[1], and a GNOME 3.16 (or newer) based
+With a new enough version of systemd[1], and a GNOME 3.18 (or newer) based
 system, orientation changes will automatically be applied when rotating
 the panel.
 
