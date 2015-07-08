@@ -60,3 +60,4 @@ Tested on
 - Dell Venue 8 Pro
 - Lenovo ThinkPad Twist
 - MacBook Pro (8.2)
+- Lenovo X1 Carbon 2014 (rev2)
