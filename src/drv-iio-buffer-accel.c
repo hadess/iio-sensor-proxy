@@ -67,9 +67,9 @@ process_scan (IIOSensorData data, DrvData *or_data)
 	accel_y = -accel_y;
 
 	//FIXME report errors
-	readings.accel_x = accel_x;
-	readings.accel_y = accel_y;
-	readings.accel_z = accel_z;
+	readings.accel_x = accel_x * scale;
+	readings.accel_y = accel_y * scale;
+	readings.accel_z = accel_z * scale;
 	or_data->callback_func (&iio_buffer_accel, (gpointer) &readings, or_data->user_data);
 
 	return 1;
