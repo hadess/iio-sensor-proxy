@@ -24,8 +24,6 @@ typedef struct {
 	const char         *dev_path;
 	int                 device_id;
 	BufferDrvData      *buffer_data;
-
-	gdouble             scale;
 } DrvData;
 
 static DrvData *drv_data = NULL;
@@ -55,8 +53,8 @@ process_scan (IIOSensorData data, DrvData *or_data)
 
 	process_scan_1 (data.data + or_data->buffer_data->scan_size*i, or_data->buffer_data, "in_rot_from_north_magnetic_tilt_comp_raw", &raw_heading, &scale, &present_level);
 
-	g_debug ("Read from IIO: %d", raw_heading);
-	readings.heading = raw_heading * or_data->scale;
+	readings.heading = raw_heading * scale;
+	g_debug ("Read from IIO: %f (%d times %f scale)", readings.heading, raw_heading, scale);
 
 	//FIXME report errors
 	or_data->callback_func (&iio_buffer_compass, (gpointer) &readings, or_data->user_data);
@@ -161,7 +159,6 @@ iio_buffer_compass_open (GUdevDevice        *device,
                          gpointer            user_data)
 {
 	char *trigger_name;
-	const char *scale_str;
 
 	drv_data = g_new0 (DrvData, 1);
 
@@ -178,14 +175,6 @@ iio_buffer_compass_open (GUdevDevice        *device,
 		g_clear_pointer (&drv_data, g_free);
 		return FALSE;
 	}
-
-	scale_str = g_udev_device_get_sysfs_attr (device, "in_rot_from_north_magnetic_tilt_comp_scale");
-	if (scale_str == NULL)
-		drv_data->scale = 1.0;
-	else
-		drv_data->scale = g_strtod (scale_str, NULL);
-
-	g_debug ("Got compass scale %lf", drv_data->scale);
 
 	drv_data->dev = g_object_ref (device);
 	drv_data->dev_path = g_udev_device_get_device_file (device);
