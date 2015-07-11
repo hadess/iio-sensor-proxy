@@ -486,7 +486,10 @@ process_scan_1 (char              *data,
 				if (buffer_data->channels[k]->bits_used < 32) val &= ((guint32) 1 << buffer_data->channels[k]->bits_used) - 1;
 				val = (gint32) (val << (32 - buffer_data->channels[k]->bits_used)) >> (32 - buffer_data->channels[k]->bits_used);
 				*ch_val = (int) val;
-				*ch_scale = buffer_data->channels[k]->scale;
+				if (buffer_data->channels[k]->scale)
+					*ch_scale = buffer_data->channels[k]->scale;
+				else
+					*ch_scale = 1.0;
 				*ch_present = TRUE;
 			}
 			break;
