@@ -33,6 +33,7 @@ process_scan (IIOSensorData data, DrvData *or_data)
 {
 	int i;
 	int raw_heading;
+	char* channel_name = "in_rot_from_north_magnetic_tilt_comp";
 	gdouble scale;
 	gboolean present_level;
 	CompassReadings readings;
@@ -51,7 +52,7 @@ process_scan (IIOSensorData data, DrvData *or_data)
 		return 0;
 	}
 
-	process_scan_1 (data.data + or_data->buffer_data->scan_size*i, or_data->buffer_data, "in_rot_from_north_magnetic_tilt_comp_raw", &raw_heading, &scale, &present_level);
+	process_scan_1 (data.data + or_data->buffer_data->scan_size*i, or_data->buffer_data, channel_name, &raw_heading, &scale, &present_level);
 
 	readings.heading = raw_heading * scale;
 	g_debug ("Read from IIO: %f (%d times %f scale)", readings.heading, raw_heading, scale);
