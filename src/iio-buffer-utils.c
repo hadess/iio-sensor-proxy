@@ -501,6 +501,9 @@ process_scan_1 (char              *data,
 			break;
 		}
 	}
+
+	if (!*ch_present)
+		g_warning ("IIO channel '%s' could not be found", ch_name);
 }
 
 /**
