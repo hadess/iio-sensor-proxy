@@ -57,6 +57,11 @@ process_scan (IIOSensorData data, DrvData *or_data)
 	readings.level = level;
 	if (scale)
 		readings.level *= scale;
+
+	/* Even though the IIO kernel API declares in_intensity* values as unitless,
+	 * we use Microsoft's hid-sensors-usages.docx which mentions that Windows 8
+	 * compatible sensor proxies will be using Lux as the unit, and most sensors
+	 * will be Windows 8 compatible */
 	readings.uses_lux = TRUE;
 
 	//FIXME report errors

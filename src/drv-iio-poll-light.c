@@ -66,7 +66,13 @@ light_changed (void)
 	}
 
 	readings.level = level;
+
+	/* Even though the IIO kernel API declares in_intensity* values as unitless,
+	 * we use Microsoft's hid-sensors-usages.docx which mentions that Windows 8
+	 * compatible sensor proxies will be using Lux as the unit, and most sensors
+	 * will be Windows 8 compatible */
 	readings.uses_lux = TRUE;
+
 	drv_data->callback_func (&iio_poll_light, (gpointer) &readings, drv_data->user_data);
 
 	return G_SOURCE_CONTINUE;
