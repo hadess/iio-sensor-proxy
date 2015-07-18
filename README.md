@@ -58,6 +58,7 @@ Tested on
 - Lenovo Yoga Pro 2
 - Onda v975w
 - Dell Venue 8 Pro
+- Dell Venue 11 Pro (7140)
 - Lenovo ThinkPad Twist
 - MacBook Pro (8.2)
 - Lenovo X1 Carbon 2014 (rev2)
