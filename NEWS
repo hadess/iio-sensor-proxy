@@ -1,3 +1,13 @@
+1.1
+---
+
+This release adds support for Compasses (only accessible to GeoClue).
+
+- Fix service not starting in a number of cases
+- Fix excessive CPU usage monitoring light sensors on Macs
+- Support light sensors on some Samsung laptops
+- Fix incorrect sensor readings on some devices due to unit scaling
+
 1.0
 ---
 

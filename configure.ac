@@ -1,6 +1,6 @@
 AC_PREREQ(2.59)
 
-AC_INIT([iio-sensor-proxy], [1.0], [hadess@hadess.net])
+AC_INIT([iio-sensor-proxy], [1.1], [hadess@hadess.net])
 AM_INIT_AUTOMAKE(1.9 dist-xz no-dist-gzip check-news)
 
 # Enable silent build when available (Automake 1.11)
