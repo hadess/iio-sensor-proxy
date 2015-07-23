@@ -54,8 +54,9 @@ CLEANFILES = $(NULL)
 EXTRA_DIST = iio-sensor-proxy-docs.xml
 endif
 
-CLEANFILES +=				\
-	docs-net.hadess.SensorProxy.xml	\
+CLEANFILES +=					\
+	docs-net.hadess.SensorProxy.xml		\
+	docs-net.hadess.SensorProxy.Compass.xml	\
 	$(NULL)
 
 # Version information for marking the documentation
