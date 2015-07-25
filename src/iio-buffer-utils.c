@@ -213,6 +213,7 @@ build_channel_array (const char        *device_dir,
 	dp = g_dir_open (scan_el_dir, 0, NULL);
 	if (dp == NULL) {
 		ret = -errno;
+		g_debug ("Could not open scan_elements dir '%s'", scan_el_dir);
 		g_free (scan_el_dir);
 		return NULL;
 	}
@@ -227,12 +228,14 @@ build_channel_array (const char        *device_dir,
 			filename = g_build_filename (scan_el_dir, name, NULL);
 			sysfsfp = fopen (filename, "r");
 			if (sysfsfp == NULL) {
+				g_debug ("Could not open scan_elements file '%s'", filename);
 				g_free (filename);
 				continue;
 			}
 			fscanf (sysfsfp, "%d", &ret);
 			fclose (sysfsfp);
 			if (!ret) {
+				g_debug ("Could not read from scan_elements file '%s'", filename);
 				g_free (filename);
 				continue;
 			}
