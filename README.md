@@ -3,6 +3,9 @@ iio-sensor-proxy
 
 IIO sensors to D-Bus proxy
 
+See https://developer.gnome.org/iio-sensor-proxy/1.0/ for
+developer information.
+
 Installation
 ------------
 ```
@@ -15,40 +18,42 @@ It requires libgudev and systemd.
 Usage
 -----
 
-With a new enough version of systemd[1], and a GNOME 3.18 (or newer) based
-system, orientation changes will automatically be applied when rotating
-the panel.
+With a GNOME 3.18 (or newer) based system, orientation changes will
+automatically be applied when rotating the panel, ambient light will be used
+to change the screen brightness, and Geoclue will be able to read the compass
+data to show the direction in Maps.
 
 Note that a number of kernel bugs will prevent it from working correctly on
-some machines with the 3.16 kernel (kernel crashes on the Surface Pro, sensor
-failing to work after suspend on the Yoga Pro, etc.).
+some machines so please make sure to use the latest upstream kernel (kernel
+crashes on the Surface Pro, sensor failing to work after suspend on the Yoga
+Pro, etc.).
 
-You can verify this by running `udevadm info --export-db` and checking for
-an output resembling this one:
+You can verify that sensors are detected by running `udevadm info --export-db`
+and checking for an output resembling this one:
 ```
-P: /devices/virtual/input/input15
-E: ABS=7
-E: DEVPATH=/devices/virtual/input/input15
-E: EV=9
-E: ID_INPUT=1
-E: ID_INPUT_ACCELEROMETER=1
-E: ID_INPUT_ACCELEROMETER_ORIENTATION=normal
-E: MODALIAS=input:b0006v0001p0002e0000-e0,3,kra0,1,2,mlsfw
-E: NAME="IIO Accelerometer Proxy"
-E: PRODUCT=6/1/2/0
-E: PROP=0
-E: SUBSYSTEM=input
-E: TAGS=:seat:
-E: USEC_INITIALIZED=74243
+P: /devices/platform/80860F41:04/i2c-12/i2c-BMA250E:00/iio:device0
+N: iio:device0
+E: DEVNAME=/dev/iio:device0
+E: DEVPATH=/devices/platform/80860F41:04/i2c-12/i2c-BMA250E:00/iio:device0
+E: DEVTYPE=iio_device
+E: MAJOR=249
+E: MINOR=0
+E: SUBSYSTEM=iio
+E: SYSTEMD_WANTS=iio-sensor-proxy.service
+E: TAGS=:systemd:
+E: USEC_INITIALIZED=7750292
 ```
 
-If that doesn't work, please file an issue, make sure any running iio-sensor-proxy has been stopped:
+After that, use `monitor-sensor` to see changes in the ambient light sensor
+or the accelerometer. Note that compass changes are only available to GeoClue
+but if you need to ensure that GeoClue is getting correct data you can run:
+`su -s /bin/sh geoclue -c monitor-sensor`
+
+If that doesn't work, please file an issue, make sure any running iio-sensor-proxy
+has been stopped:
 `systemctl stop iio-sensor-proxy.service`
 and attach the output of:
 `G_MESSAGES_DEBUG=all /usr/sbin/iio-sensor-proxy`
-
-[1]: One including this patch:
-http://thread.gmane.org/gmane.comp.sysutils.systemd.devel/32047
 
 Tested on
 ---------
