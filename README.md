@@ -59,6 +59,7 @@ has been stopped:
 `systemctl stop iio-sensor-proxy.service`
 and attach the output of:
 `G_MESSAGES_DEBUG=all /usr/sbin/iio-sensor-proxy`
+running as ```root```.
 
 Tested on
 ---------
