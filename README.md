@@ -67,6 +67,7 @@ Tested on
 - Lenovo IdeaPad Yoga 13
 - Microsoft Surface Pro 2
 - Lenovo Yoga Pro 2
+- Lenovo Yoga 2 13"
 - Onda v975w
 - Dell Venue 8 Pro
 - Dell Venue 11 Pro (7140)
