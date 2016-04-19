@@ -26,17 +26,23 @@ properties_changed (GDBusProxy *proxy,
 
 	if (g_variant_dict_contains (&dict, "HasAccelerometer")) {
 		v = g_dbus_proxy_get_cached_property (iio_proxy, "HasAccelerometer");
-		g_message ("Accelerometer %s", g_variant_get_boolean (v) ? "appeared" : "disappeared");
+		if (g_variant_get_boolean (v))
+			g_message ("+++ Accelerometer appeared");
+		else
+			g_message ("--- Accelerometer disappeared");
 		g_variant_unref (v);
 	}
 	if (g_variant_dict_contains (&dict, "AccelerometerOrientation")) {
 		v = g_dbus_proxy_get_cached_property (iio_proxy, "AccelerometerOrientation");
-		g_message ("Accelerometer orientation changed: %s", g_variant_get_string (v, NULL));
+		g_message ("    Accelerometer orientation changed: %s", g_variant_get_string (v, NULL));
 		g_variant_unref (v);
 	}
 	if (g_variant_dict_contains (&dict, "HasAmbientLight")) {
 		v = g_dbus_proxy_get_cached_property (iio_proxy, "HasAmbientLight");
-		g_message ("Light sensor %s", g_variant_get_boolean (v) ? "appeared" : "disappeared");
+		if (g_variant_get_boolean (v))
+			g_message ("+++ Light sensor appeared");
+		else
+			g_message ("--- Light sensor disappeared");
 		g_variant_unref (v);
 	}
 	if (g_variant_dict_contains (&dict, "LightLevel")) {
@@ -44,18 +50,21 @@ properties_changed (GDBusProxy *proxy,
 
 		v = g_dbus_proxy_get_cached_property (iio_proxy, "LightLevel");
 		unit = g_dbus_proxy_get_cached_property (iio_proxy, "LightLevelUnit");
-		g_message ("Light changed: %lf (%s)", g_variant_get_double (v), g_variant_get_string (unit, NULL));
+		g_message ("    Light changed: %lf (%s)", g_variant_get_double (v), g_variant_get_string (unit, NULL));
 		g_variant_unref (v);
 		g_variant_unref (unit);
 	}
 	if (g_variant_dict_contains (&dict, "HasCompass")) {
 		v = g_dbus_proxy_get_cached_property (iio_proxy_compass, "HasCompass");
-		g_message ("Compass %s", g_variant_get_boolean (v) ? "appeared" : "disappeared");
+		if (g_variant_get_boolean (v))
+			g_message ("+++ Compass appeared");
+		else
+			g_message ("--- Compass disappeared");
 		g_variant_unref (v);
 	}
 	if (g_variant_dict_contains (&dict, "CompassHeading")) {
 		v = g_dbus_proxy_get_cached_property (iio_proxy_compass, "CompassHeading");
-		g_message ("Compass heading changed: %lf", g_variant_get_double (v));
+		g_message ("    Compass heading changed: %lf", g_variant_get_double (v));
 		g_variant_unref (v);
 	}
 }
