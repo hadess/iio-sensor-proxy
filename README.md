@@ -76,3 +76,4 @@ Tested on
 - Lenovo X1 Carbon 2014 (rev2)
 - MacBook Air (6,2)
 - MacBook Air (4,2)
+- Toshiba Portégé Z10t
