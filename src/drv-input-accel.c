@@ -17,15 +17,19 @@
 #include <linux/input.h>
 
 typedef struct DrvData {
+	guint              timeout_id;
 	ReadingsUpdateFunc callback_func;
 	gpointer           user_data;
 
 	GUdevClient *client;
 	GUdevDevice *dev, *parent;
 	const char *dev_path;
+	gboolean sends_kevent;
 } DrvData;
 
 static DrvData *drv_data = NULL;
+
+static void input_accel_set_polling (gboolean state);
 
 static gboolean
 input_accel_discover (GUdevDevice *device)
@@ -87,6 +91,12 @@ uevent_received (GUdevClient *client,
 	if (g_strcmp0 (g_udev_device_get_sysfs_path (device), g_udev_device_get_sysfs_path (drv_data->parent)) != 0)
 		return;
 
+	if (!drv_data->sends_kevent) {
+		drv_data->sends_kevent = TRUE;
+		g_debug ("Received kevent, let's stop polling for accelerometer data on %s", drv_data->dev_path);
+		input_accel_set_polling (FALSE);
+	}
+
 	accelerometer_changed ();
 }
 
@@ -121,9 +131,36 @@ input_accel_open (GUdevDevice        *device,
 	return TRUE;
 }
 
+static gboolean
+read_accel_poll (gpointer user_data)
+{
+	accelerometer_changed ();
+	return G_SOURCE_CONTINUE;
+}
+
+static void
+input_accel_set_polling (gboolean state)
+{
+	if (drv_data->timeout_id > 0 && state)
+		return;
+	if (drv_data->timeout_id == 0 && !state)
+		return;
+
+	if (drv_data->timeout_id) {
+		g_source_remove (drv_data->timeout_id);
+		drv_data->timeout_id = 0;
+	}
+
+	if (state && !drv_data->sends_kevent) {
+		drv_data->timeout_id = g_timeout_add (700, read_accel_poll, drv_data);
+		g_source_set_name_by_id (drv_data->timeout_id, "[input_accel_set_polling] read_accel_poll");
+	}
+}
+
 static void
 input_accel_close (void)
 {
+	input_accel_set_polling (FALSE);
 	g_clear_object (&drv_data->client);
 	g_clear_object (&drv_data->dev);
 	g_clear_object (&drv_data->parent);
@@ -139,5 +176,6 @@ SensorDriver input_accel = {
 
 	.discover = input_accel_discover,
 	.open = input_accel_open,
+	.set_polling = input_accel_set_polling,
 	.close = input_accel_close,
 };
