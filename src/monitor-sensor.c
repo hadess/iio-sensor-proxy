@@ -70,6 +70,53 @@ properties_changed (GDBusProxy *proxy,
 }
 
 static void
+print_initial_values (void)
+{
+	GVariant *v;
+
+	v = g_dbus_proxy_get_cached_property (iio_proxy, "HasAccelerometer");
+	if (g_variant_get_boolean (v)) {
+		g_variant_unref (v);
+		v = g_dbus_proxy_get_cached_property (iio_proxy, "AccelerometerOrientation");
+		g_message ("=== Has accelerometer (orientation: %s)",
+			   g_variant_get_string (v, NULL));
+	} else {
+		g_message ("=== No accelerometer");
+	}
+	g_variant_unref (v);
+
+	v = g_dbus_proxy_get_cached_property (iio_proxy, "HasAmbientLight");
+	if (g_variant_get_boolean (v)) {
+		GVariant *unit;
+
+		g_variant_unref (v);
+		v = g_dbus_proxy_get_cached_property (iio_proxy, "LightLevel");
+		unit = g_dbus_proxy_get_cached_property (iio_proxy, "LightLevelUnit");
+		g_message ("=== Has ambient light sensor (value: %lf, unit: %s)",
+			   g_variant_get_double (v),
+			   g_variant_get_string (unit, NULL));
+		g_variant_unref (unit);
+	} else {
+		g_message ("=== No ambient light sensor");
+	}
+	g_variant_unref (v);
+
+	if (!iio_proxy_compass)
+		return;
+
+	v = g_dbus_proxy_get_cached_property (iio_proxy_compass, "HasCompass");
+	if (g_variant_get_boolean (v)) {
+		g_variant_unref (v);
+		v = g_dbus_proxy_get_cached_property (iio_proxy, "CompassHeading");
+		g_message ("=== Has compass (heading: %lf)",
+			   g_variant_get_double (v));
+	} else {
+		g_message ("=== No compass");
+	}
+	g_variant_unref (v);
+}
+
+static void
 appeared_cb (GDBusConnection *connection,
 	     const gchar     *name,
 	     const gchar     *name_owner,
@@ -129,6 +176,8 @@ appeared_cb (GDBusConnection *connection,
 					NULL, &error);
 		g_assert_no_error (error);
 	}
+
+	print_initial_values ();
 }
 
 static void
