@@ -676,7 +676,7 @@ driver_type_to_callback_func (DriverType type)
 }
 
 static void
-free_orientation_data (SensorData *data)
+free_sensor_data (SensorData *data)
 {
 	guint i;
 
@@ -815,7 +815,7 @@ int main (int argc, char **argv)
 	g_main_loop_run (data->loop);
 
 out:
-	free_orientation_data (data);
+	free_sensor_data (data);
 
 	return ret;
 }
