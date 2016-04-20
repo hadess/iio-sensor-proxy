@@ -1,4 +1,4 @@
-udevrules_DATA = 40-iio-sensor-proxy.rules
+udevrules_DATA = 80-iio-sensor-proxy.rules
 
 systemdservicedir = $(systemdsystemunitdir)
 systemdservice_in_files = iio-sensor-proxy.service.in
