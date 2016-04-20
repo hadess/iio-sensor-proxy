@@ -1,6 +1,6 @@
 # iio-sensor-proxy
 # IIO accelerometer to input proxy
 
-ACTION=="add", SUBSYSTEM=="iio", TAG+="systemd", ENV{SYSTEMD_WANTS}+="iio-sensor-proxy.service"
+SUBSYSTEM=="iio", ACTION=="add", TAG+="systemd", ENV{SYSTEMD_WANTS}+="iio-sensor-proxy.service"
 SUBSYSTEM=="input", ACTION=="add", TAG+="systemd", ENV{ID_INPUT_ACCELEROMETER}=="1", ENV{SYSTEMD_WANTS}+="iio-sensor-proxy.service"
 SUBSYSTEM=="hwmon", ACTION=="add", TAG+="systemd", ENV{SYSTEMD_WANTS}+="iio-sensor-proxy.service"
