@@ -124,6 +124,8 @@ appeared_cb (GDBusConnection *connection,
 {
 	GError *error = NULL;
 
+	g_print ("+++ iio-sensor-proxy appeared\n");
+
 	iio_proxy = g_dbus_proxy_new_for_bus_sync (G_BUS_TYPE_SYSTEM,
 						   G_DBUS_PROXY_FLAGS_NONE,
 						   NULL,
@@ -185,8 +187,11 @@ vanished_cb (GDBusConnection *connection,
 	     const gchar *name,
 	     gpointer user_data)
 {
-	g_clear_object (&iio_proxy);
-	g_clear_object (&iio_proxy_compass);
+	if (iio_proxy || iio_proxy_compass) {
+		g_clear_object (&iio_proxy);
+		g_clear_object (&iio_proxy_compass);
+		g_print ("--- iio-sensor-proxy vanished, waiting for it to appear\n");
+	}
 }
 
 int main (int argc, char **argv)
@@ -198,6 +203,7 @@ int main (int argc, char **argv)
 				     vanished_cb,
 				     NULL, NULL);
 
+	g_print ("    Waiting for iio-sensor-proxy to appear\n");
 	loop = g_main_loop_new (NULL, TRUE);
 	g_main_loop_run (loop);
 
