@@ -1,5 +1,5 @@
 # iio-sensor-proxy
-# IIO accelerometer to input proxy
+# IIO sensor to D-Bus proxy
 
 SUBSYSTEM=="iio", ACTION=="add", TAG+="systemd", ENV{SYSTEMD_WANTS}+="iio-sensor-proxy.service"
 SUBSYSTEM=="input", ACTION=="add", TAG+="systemd", ENV{ID_INPUT_ACCELEROMETER}=="1", ENV{SYSTEMD_WANTS}+="iio-sensor-proxy.service"
