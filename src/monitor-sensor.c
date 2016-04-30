@@ -27,22 +27,22 @@ properties_changed (GDBusProxy *proxy,
 	if (g_variant_dict_contains (&dict, "HasAccelerometer")) {
 		v = g_dbus_proxy_get_cached_property (iio_proxy, "HasAccelerometer");
 		if (g_variant_get_boolean (v))
-			g_message ("+++ Accelerometer appeared");
+			g_print ("+++ Accelerometer appeared\n");
 		else
-			g_message ("--- Accelerometer disappeared");
+			g_print ("--- Accelerometer disappeared\n");
 		g_variant_unref (v);
 	}
 	if (g_variant_dict_contains (&dict, "AccelerometerOrientation")) {
 		v = g_dbus_proxy_get_cached_property (iio_proxy, "AccelerometerOrientation");
-		g_message ("    Accelerometer orientation changed: %s", g_variant_get_string (v, NULL));
+		g_print ("    Accelerometer orientation changed: %s\n", g_variant_get_string (v, NULL));
 		g_variant_unref (v);
 	}
 	if (g_variant_dict_contains (&dict, "HasAmbientLight")) {
 		v = g_dbus_proxy_get_cached_property (iio_proxy, "HasAmbientLight");
 		if (g_variant_get_boolean (v))
-			g_message ("+++ Light sensor appeared");
+			g_print ("+++ Light sensor appeared\n");
 		else
-			g_message ("--- Light sensor disappeared");
+			g_print ("--- Light sensor disappeared\n");
 		g_variant_unref (v);
 	}
 	if (g_variant_dict_contains (&dict, "LightLevel")) {
@@ -50,21 +50,21 @@ properties_changed (GDBusProxy *proxy,
 
 		v = g_dbus_proxy_get_cached_property (iio_proxy, "LightLevel");
 		unit = g_dbus_proxy_get_cached_property (iio_proxy, "LightLevelUnit");
-		g_message ("    Light changed: %lf (%s)", g_variant_get_double (v), g_variant_get_string (unit, NULL));
+		g_print ("    Light changed: %lf (%s)\n", g_variant_get_double (v), g_variant_get_string (unit, NULL));
 		g_variant_unref (v);
 		g_variant_unref (unit);
 	}
 	if (g_variant_dict_contains (&dict, "HasCompass")) {
 		v = g_dbus_proxy_get_cached_property (iio_proxy_compass, "HasCompass");
 		if (g_variant_get_boolean (v))
-			g_message ("+++ Compass appeared");
+			g_print ("+++ Compass appeared\n");
 		else
-			g_message ("--- Compass disappeared");
+			g_print ("--- Compass disappeared\n");
 		g_variant_unref (v);
 	}
 	if (g_variant_dict_contains (&dict, "CompassHeading")) {
 		v = g_dbus_proxy_get_cached_property (iio_proxy_compass, "CompassHeading");
-		g_message ("    Compass heading changed: %lf", g_variant_get_double (v));
+		g_print ("    Compass heading changed: %lf\n", g_variant_get_double (v));
 		g_variant_unref (v);
 	}
 }
@@ -78,10 +78,10 @@ print_initial_values (void)
 	if (g_variant_get_boolean (v)) {
 		g_variant_unref (v);
 		v = g_dbus_proxy_get_cached_property (iio_proxy, "AccelerometerOrientation");
-		g_message ("=== Has accelerometer (orientation: %s)",
+		g_print ("=== Has accelerometer (orientation: %s)\n",
 			   g_variant_get_string (v, NULL));
 	} else {
-		g_message ("=== No accelerometer");
+		g_print ("=== No accelerometer\n");
 	}
 	g_variant_unref (v);
 
@@ -92,12 +92,12 @@ print_initial_values (void)
 		g_variant_unref (v);
 		v = g_dbus_proxy_get_cached_property (iio_proxy, "LightLevel");
 		unit = g_dbus_proxy_get_cached_property (iio_proxy, "LightLevelUnit");
-		g_message ("=== Has ambient light sensor (value: %lf, unit: %s)",
+		g_print ("=== Has ambient light sensor (value: %lf, unit: %s)\n",
 			   g_variant_get_double (v),
 			   g_variant_get_string (unit, NULL));
 		g_variant_unref (unit);
 	} else {
-		g_message ("=== No ambient light sensor");
+		g_print ("=== No ambient light sensor\n");
 	}
 	g_variant_unref (v);
 
@@ -108,10 +108,10 @@ print_initial_values (void)
 	if (g_variant_get_boolean (v)) {
 		g_variant_unref (v);
 		v = g_dbus_proxy_get_cached_property (iio_proxy, "CompassHeading");
-		g_message ("=== Has compass (heading: %lf)",
+		g_print ("=== Has compass (heading: %lf)\n",
 			   g_variant_get_double (v));
 	} else {
-		g_message ("=== No compass");
+		g_print ("=== No compass\n");
 	}
 	g_variant_unref (v);
 }
