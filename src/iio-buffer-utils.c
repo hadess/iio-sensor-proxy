@@ -539,6 +539,7 @@ enable_sensors (GUdevDevice *dev,
 		/* Already enabled? */
 		path = g_strdup_printf ("scan_elements/%s", name);
 		if (g_udev_device_get_sysfs_attr_as_boolean (dev, path)) {
+			ret = TRUE;
 			g_free (path);
 			continue;
 		}
