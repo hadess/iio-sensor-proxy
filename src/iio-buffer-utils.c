@@ -521,7 +521,7 @@ enable_sensors (GUdevDevice *dev,
 	GDir *dir;
 	char *device_dir;
 	const char *name;
-	gboolean ret = TRUE;
+	gboolean ret = FALSE;
 
 	device_dir = g_build_filename (g_udev_device_get_sysfs_path (dev), "scan_elements", NULL);
 	dir = g_dir_open (device_dir, 0, NULL);
@@ -547,14 +547,19 @@ enable_sensors (GUdevDevice *dev,
 		/* Enable */
 		if (write_sysfs_int (name, device_dir, enable) < 0) {
 			g_warning ("Could not enable sensor %s/%s", device_dir, name);
-			ret = FALSE;
 			continue;
 		}
 
+		ret = TRUE;
 		g_debug ("Enabled sensor %s/%s", device_dir, name);
 	}
 	g_dir_close (dir);
 	g_free (device_dir);
+
+	if (!ret) {
+		g_warning ("Failed to enable any sensors for device '%s'",
+			   g_udev_device_get_sysfs_path (dev));
+	}
 
 	return ret;
 }
