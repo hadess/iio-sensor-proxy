@@ -571,12 +571,14 @@ enable_ring_buffer (BufferDrvData *data)
 
 	/* Setup ring buffer parameters */
 	ret = write_sysfs_int("buffer/length", data->dev_dir_name, 128);
-	if (ret < 0)
+	if (ret < 0) {
+		g_warning ("Failed to set ring buffer length for %s", data->dev_dir_name);
 		return FALSE;
+	}
 	/* Enable the buffer */
 	ret = write_sysfs_int_and_verify("buffer/enable", data->dev_dir_name, 1);
 	if (ret < 0) {
-		printf("Unable to enable the buffer %d\n", ret);
+		g_warning ("Unable to enable ring buffer for %s", data->dev_dir_name);
 		return FALSE;
 	}
 
