@@ -734,8 +734,6 @@ sensor_changes (GUdevClient *client,
 		if (!any_sensors_left (data))
 			g_main_loop_quit (data->loop);
 	} else if (g_strcmp0 (action, "add") == 0) {
-		guint i;
-
 		for (i = 0; i < G_N_ELEMENTS(drivers); i++) {
 			SensorDriver *driver = (SensorDriver *) drivers[i];
 			if (!driver_type_exists (data, driver->type) &&
