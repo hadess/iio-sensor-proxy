@@ -2,6 +2,8 @@ AC_PREREQ(2.59)
 
 AC_INIT([iio-sensor-proxy], [1.1], [hadess@hadess.net])
 
+AX_IS_RELEASE([git-directory])
+
 AC_CONFIG_MACRO_DIR([m4])
 AC_CONFIG_AUX_DIR([build-aux])
 
