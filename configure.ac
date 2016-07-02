@@ -1,6 +1,10 @@
 AC_PREREQ(2.59)
 
 AC_INIT([iio-sensor-proxy], [1.1], [hadess@hadess.net])
+
+AC_CONFIG_MACRO_DIR([m4])
+AC_CONFIG_AUX_DIR([build-aux])
+
 AM_INIT_AUTOMAKE(1.9 dist-xz no-dist-gzip check-news)
 
 # Enable silent build when available (Automake 1.11)
@@ -11,8 +15,6 @@ AC_PROG_MAKE_SET
 AC_PROG_INSTALL
 AC_PROG_SED
 AM_PROG_CC_C_O
-
-GNOME_COMPILE_WARNINGS([maximum])
 
 GTK_DOC_CHECK([1.11],[--flavour no-tmpl])
 
