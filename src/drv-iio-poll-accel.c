@@ -67,6 +67,12 @@ poll_orientation (gpointer user_data)
 		readings.accel_x = accel_y;
 		readings.accel_y = accel_x;
 		readings.accel_z = accel_z;
+	} else if (g_strcmp0 ("i2c-KIOX000A:00", g_udev_device_get_sysfs_attr (data->dev, "name")) == 0) {
+		/* Quirk for i2c-KIOX000A:00 device,
+		 * take opposite y */
+		readings.accel_x = accel_x;
+		readings.accel_y = -accel_y;
+		readings.accel_z = accel_z;
 	} else {
 		readings.accel_x = accel_x;
 		readings.accel_y = accel_y;
@@ -84,7 +90,8 @@ iio_poll_accel_discover (GUdevDevice *device)
 	if (g_strcmp0 (g_udev_device_get_subsystem (device), "iio") != 0)
 		return FALSE;
 
-	if (g_strcmp0 ("i2c-SMO8500:00", g_udev_device_get_sysfs_attr (device, "name")) != 0)
+	if (g_strcmp0 ("i2c-SMO8500:00", g_udev_device_get_sysfs_attr (device, "name")) != 0 &&
+            g_strcmp0 ("i2c-KIOX000A:00", g_udev_device_get_sysfs_attr (device, "name")) != 0)
 		return FALSE;
 
 	g_debug ("Found polling accelerometer at %s", g_udev_device_get_sysfs_path (device));
