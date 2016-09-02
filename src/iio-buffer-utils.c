@@ -193,6 +193,15 @@ channel_info_free (iio_channel_info *ci)
 	g_free (ci);
 }
 
+static int
+compare_channel_index (gconstpointer a, gconstpointer b)
+{
+	const iio_channel_info *info_1 = a;
+	const iio_channel_info *info_2 = b;
+
+	return (int) (info_1->index - info_2->index);
+}
+
 /* build_channel_array() - function to figure out what channels are present */
 static iio_channel_info **
 build_channel_array (const char        *device_dir,
@@ -298,14 +307,16 @@ build_channel_array (const char        *device_dir,
 	g_dir_close (dp);
 	g_free (scan_el_dir);
 
+	g_ptr_array_sort (array, compare_channel_index);
+
 	*counter = array->len;
 	ret_array = (iio_channel_info **) g_ptr_array_free (array, FALSE);
 
 	for (i = 0; i < *counter; i++) {
 		iio_channel_info *ci = ret_array[i];
 
-		g_debug ("Built channel array for %s: is signed: %d, bytes: %d, bits_used: %d, shift: %d, mask: 0x%" G_GUINT64_FORMAT ", be: %d",
-			 ci->name, ci->is_signed, ci->bytes, ci->bits_used, ci->shift, ci->mask, ci->be);
+		g_debug ("Built channel array for %s: index: %d, is signed: %d, bytes: %d, bits_used: %d, shift: %d, mask: 0x%" G_GUINT64_FORMAT ", be: %d",
+			 ci->name, ci->index, ci->is_signed, ci->bytes, ci->bits_used, ci->shift, ci->mask, ci->be);
 	}
 
 	return ret_array;
@@ -473,6 +484,9 @@ process_scan_1 (char              *data,
 	for (k = 0; k < buffer_data->channels_count; k++) {
 		if (strcmp (buffer_data->channels[k]->name, ch_name) != 0)
 			continue;
+
+		g_debug ("process_scan_1: channel_index: %d, chan_name: %s, channel_data_index: %d location: %d",
+			 k, buffer_data->channels[k]->name, buffer_data->channels[k]->index, buffer_data->channels[k]->location);
 
 		switch (buffer_data->channels[k]->bytes) {
 			/* only a few cases implemented so far */
