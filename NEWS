@@ -1,3 +1,12 @@
+1.2
+---
+
+This release mainly adds better debug output, and updated testing
+instructions in the README.
+
+- Fix regression with IIO accelerometer in kernel 4.8
+- Fix possible crash in compass handling
+
 1.1
 ---
 
