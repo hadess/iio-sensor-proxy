@@ -108,7 +108,7 @@ send_uinput_event (OrientationData *data)
 	if (!data->uinput_dev)
 		return FALSE;
 
-	if (write_sysfs_string ("uevent", (char *) g_udev_device_get_sysfs_path (data->uinput_dev), "change") < 0) {
+	if (write_sysfs_string ((char *) "uevent", (char *) g_udev_device_get_sysfs_path (data->uinput_dev), (char *) "change") < 0) {
 		g_warning ("Failed to write uevent");
 		return FALSE;
 	}
