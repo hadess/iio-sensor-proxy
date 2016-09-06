@@ -31,7 +31,7 @@ typedef struct {
 
 void process_scan_1                    (char              *data,
 				        BufferDrvData     *buffer_data,
-				        char              *ch_name,
+				        const char        *ch_name,
 				        int               *ch_val,
 				        gdouble           *ch_scale,
 				        gboolean          *ch_present);
