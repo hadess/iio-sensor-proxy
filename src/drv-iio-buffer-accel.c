@@ -25,6 +25,7 @@ typedef struct {
 
 	GUdevDevice *dev;
 	const char *dev_path;
+	const char *name;
 	int device_id;
 	BufferDrvData *buffer_data;
 } DrvData;
@@ -41,7 +42,7 @@ process_scan (IIOSensorData data, DrvData *or_data)
 	AccelReadings readings;
 
 	if (data.read_size < 0) {
-		g_warning ("Couldn't read from device: %s", g_strerror (errno));
+		g_warning ("Couldn't read from device '%s': %s", or_data->name, g_strerror (errno));
 		return 0;
 	}
 
@@ -50,7 +51,8 @@ process_scan (IIOSensorData data, DrvData *or_data)
 	 * Just read the last one */
 	i = (data.read_size / or_data->buffer_data->scan_size) - 1;
 	if (i < 0) {
-		g_debug ("Not enough data to read (read_size: %d scan_size: %d)", (int) data.read_size, or_data->buffer_data->scan_size);
+		g_debug ("Not enough data to read from '%s' (read_size: %d scan_size: %d)", or_data->name,
+			 (int) data.read_size, or_data->buffer_data->scan_size);
 		return 0;
 	}
 
@@ -58,7 +60,7 @@ process_scan (IIOSensorData data, DrvData *or_data)
 	process_scan_1(data.data + or_data->buffer_data->scan_size*i, or_data->buffer_data, "in_accel_y", &accel_y, &scale, &present_y);
 	process_scan_1(data.data + or_data->buffer_data->scan_size*i, or_data->buffer_data, "in_accel_z", &accel_z, &scale, &present_z);
 
-	g_debug ("Read from IIO: %d, %d, %d", accel_x, accel_y, accel_z);
+	g_debug ("Read from IIO on '%s': %d, %d, %d", or_data->name, accel_x, accel_y, accel_z);
 
 	/* To match the Pegatron accelerometer code
 	 * (see pega_accel_poll() in asus-laptop.c)
@@ -89,14 +91,14 @@ prepare_output (DrvData    *or_data,
 	/* Attempt to open non blocking to access dev */
 	fp = open (or_data->dev_path, O_RDONLY | O_NONBLOCK);
 	if (fp == -1) { /* If it isn't there make the node */
-		g_warning ("Failed to open %s : %s", or_data->dev_path, strerror(errno));
+		g_warning ("Failed to open '%s' at %s: %s", or_data->name, or_data->dev_path, g_strerror (errno));
 		goto bail;
 	}
 
 	/* Actually read the data */
 	data.read_size = read (fp, data.data, buf_len * or_data->buffer_data->scan_size);
 	if (data.read_size == -1 && errno == EAGAIN) {
-		g_debug ("No new data available");
+		g_debug ("No new data available on '%s'", or_data->name);
 	} else {
 		process_scan(data, or_data);
 	}
@@ -211,6 +213,9 @@ iio_buffer_accel_open (GUdevDevice        *device,
 
 	drv_data->dev = g_object_ref (device);
 	drv_data->dev_path = g_udev_device_get_device_file (device);
+	drv_data->name = g_udev_device_get_property (device, "NAME");
+	if (!drv_data->name)
+		drv_data->name = g_udev_device_get_name (device);
 
 	drv_data->callback_func = callback_func;
 	drv_data->user_data = user_data;
