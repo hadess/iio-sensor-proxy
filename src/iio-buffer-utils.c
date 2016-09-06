@@ -257,7 +257,7 @@ build_channel_array (const char        *device_dir,
 			current->name = g_strndup (name, strlen(name) - strlen("_en"));
 			current->generic_name = iioutils_break_up_name (current->name);
 			if (g_strcmp0(current->generic_name, "in_rot_from_north_magnetic_tilt") == 0) {
-				current->generic_name = "in_rot";
+				current->generic_name = g_strdup ("in_rot");
 			}
 
 			index_name = g_strdup_printf ("%s_index", current->name);
