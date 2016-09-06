@@ -34,7 +34,7 @@ process_scan (IIOSensorData data, DrvData *or_data)
 {
 	int i;
 	int raw_heading;
-	char* channel_name = "in_rot_from_north_magnetic_tilt_comp";
+	const char *channel_name = "in_rot_from_north_magnetic_tilt_comp";
 	gdouble scale;
 	gboolean present_level;
 	CompassReadings readings;
