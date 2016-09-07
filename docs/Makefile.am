@@ -9,7 +9,9 @@ DOC_MODULE=iio-sensor-proxy
 DOC_MAIN_SGML_FILE=iio-sensor-proxy-docs.xml
 
 # Extra options to supply to gtkdoc-scan
-SCAN_OPTIONS=--ignore-headers=config.h --rebuild-sections --rebuild-types
+SCAN_OPTIONS= \
+	--ignore-headers="config.h iio-sensor-proxy-resources.h drivers.h iio-buffer-utils.h orientation.h uinput.h" \
+	--rebuild-sections --rebuild-types
 
 # The directory containing the source code. Relative to $(srcdir)
 DOC_SOURCE_DIR=
