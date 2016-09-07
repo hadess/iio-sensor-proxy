@@ -27,9 +27,6 @@ GTKDOC_LIBS =
 # Extra options to supply to gtkdoc-mkdb
 MKDB_OPTIONS=--sgml-mode --output-format=xml
 
-# Extra options to supply to gtkdoc-mktmpl
-MKTMPL_OPTIONS=
-
 docs-net.hadess.SensorProxy.xml: $(top_srcdir)/src/net.hadess.SensorProxy.xml
 	$(AM_V_GEN)$(GDBUS_CODEGEN) --generate-docbook=docs $<
 
