@@ -60,7 +60,7 @@ process_scan (IIOSensorData data, DrvData *or_data)
 	process_scan_1(data.data + or_data->buffer_data->scan_size*i, or_data->buffer_data, "in_accel_y", &accel_y, &scale, &present_y);
 	process_scan_1(data.data + or_data->buffer_data->scan_size*i, or_data->buffer_data, "in_accel_z", &accel_z, &scale, &present_z);
 
-	g_debug ("Read from IIO on '%s': %d, %d, %d", or_data->name, accel_x, accel_y, accel_z);
+	g_debug ("Accel read from IIO on '%s': %d, %d, %d (scale %lf)", or_data->name, accel_x, accel_y, accel_z, scale);
 
 	/* To match the Pegatron accelerometer code
 	 * (see pega_accel_poll() in asus-laptop.c)

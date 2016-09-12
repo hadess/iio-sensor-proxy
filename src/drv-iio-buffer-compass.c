@@ -57,7 +57,7 @@ process_scan (IIOSensorData data, DrvData *or_data)
 	process_scan_1 (data.data + or_data->buffer_data->scan_size*i, or_data->buffer_data, channel_name, &raw_heading, &scale, &present_level);
 
 	readings.heading = raw_heading * scale;
-	g_debug ("Read from IIO on '%s': %f (%d times %f scale)", or_data->name, readings.heading, raw_heading, scale);
+	g_debug ("Heading read from IIO on '%s': %f (%d times %lf scale)", or_data->name, readings.heading, raw_heading, scale);
 
 	//FIXME report errors
 	or_data->callback_func (&iio_buffer_compass, (gpointer) &readings, or_data->user_data);

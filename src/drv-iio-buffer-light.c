@@ -55,7 +55,7 @@ process_scan (IIOSensorData data, DrvData *or_data)
 
 	process_scan_1(data.data + or_data->buffer_data->scan_size*i, or_data->buffer_data, "in_intensity_both", &level, &scale, &present_level);
 
-	g_debug ("Read from IIO on '%s': %f", or_data->name, level * scale);
+	g_debug ("Light read from IIO on '%s': %d (scale %lf) = %lf", or_data->name, level, scale, level * scale);
 	readings.level = level;
 	if (scale)
 		readings.level *= scale;
