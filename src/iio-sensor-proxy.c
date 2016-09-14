@@ -50,7 +50,6 @@ typedef struct {
 	GHashTable   *clients[NUM_SENSOR_TYPES]; /* key = D-Bus name, value = watch ID */
 
 	/* Accelerometer */
-	int accel_x, accel_y, accel_z;
 	OrientationUp previous_orientation;
 
 	/* Light */
@@ -593,10 +592,6 @@ accel_changed_func (SensorDriver *driver,
 		 readings->accel_x, readings->accel_y, readings->accel_z, readings->scale);
 
 	orientation = orientation_calc (data->previous_orientation, readings->accel_x, readings->accel_y, readings->accel_z, readings->scale);
-
-	data->accel_x = readings->accel_x;
-	data->accel_y = readings->accel_y;
-	data->accel_z = readings->accel_z;
 
 	if (data->previous_orientation != orientation) {
 		OrientationUp tmp;
