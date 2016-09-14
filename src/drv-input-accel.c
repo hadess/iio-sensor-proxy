@@ -24,6 +24,7 @@ typedef struct DrvData {
 	GUdevClient *client;
 	GUdevDevice *dev, *parent;
 	const char *dev_path;
+	const char *name;
 	gboolean sends_kevent;
 } DrvData;
 
@@ -79,6 +80,8 @@ accelerometer_changed (void)
 	/* Scale from 1G ~= 256 to a value in m/s² */
 	readings.scale = 1.0 / 256 * 9.81;
 
+	g_debug ("Accel read from input on '%s': %d, %d, %d (scale %lf)", drv_data->name, accel_x, accel_y, accel_z, readings.scale);
+
 	drv_data->callback_func (&input_accel, (gpointer) &readings, drv_data->user_data);
 }
 
@@ -121,6 +124,7 @@ input_accel_open (GUdevDevice        *device,
 	drv_data->dev = g_object_ref (device);
 	drv_data->parent = g_udev_device_get_parent (drv_data->dev);
 	drv_data->dev_path = g_udev_device_get_device_file (device);
+	drv_data->name = g_udev_device_get_property (device, "NAME");
 	drv_data->client = g_udev_client_new (subsystems);
 
 	drv_data->callback_func = callback_func;

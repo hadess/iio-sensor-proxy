@@ -20,6 +20,7 @@ typedef struct DrvData {
 	ReadingsUpdateFunc  callback_func;
 	gpointer            user_data;
 	GUdevDevice        *dev;
+	const char         *name;
 
 	double              scale;
 } DrvData;
@@ -56,6 +57,9 @@ poll_orientation (gpointer user_data)
 	accel_y = sysfs_get_int (data->dev, "in_accel_y_raw");
 	accel_z = sysfs_get_int (data->dev, "in_accel_z_raw");
 	readings.scale = data->scale;
+
+	g_debug ("Accel read from IIO on '%s': %d, %d, %d (scale %lf)", data->name,
+		 readings.accel_x, readings.accel_y, readings.accel_z, readings.scale);
 
 	//FIXME report errors
 	if (g_strcmp0 ("i2c-SMO8500:00", g_udev_device_get_sysfs_attr (data->dev, "name")) == 0) {
@@ -121,6 +125,7 @@ iio_poll_accel_open (GUdevDevice        *device,
 {
 	drv_data = g_new0 (DrvData, 1);
 	drv_data->dev = g_object_ref (device);
+	drv_data->name = g_udev_device_get_property (device, "NAME");
 
 	drv_data->callback_func = callback_func;
 	drv_data->user_data = user_data;
