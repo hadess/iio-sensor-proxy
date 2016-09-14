@@ -76,6 +76,9 @@ accelerometer_changed (void)
 	readings.accel_x = accel_x;
 	readings.accel_y = accel_y;
 	readings.accel_z = accel_z;
+	/* Scale from 1G ~= 256 to a value in m/s² */
+	readings.scale = 1.0 / 256 * 9.81;
+
 	drv_data->callback_func (&input_accel, (gpointer) &readings, drv_data->user_data);
 }
 

@@ -14,10 +14,6 @@
 #include <string.h>
 #include <errno.h>
 
-/* 1G (9.81m/s²) corresponds to "256"
- * value x scale is in m/s² */
-#define SCALE_TO_FF(scale) (scale * 256 / 9.81)
-
 typedef struct {
 	guint              timeout_id;
 	ReadingsUpdateFunc callback_func;
@@ -69,9 +65,10 @@ process_scan (IIOSensorData data, DrvData *or_data)
 	accel_y = -accel_y;
 
 	//FIXME report errors
-	readings.accel_x = accel_x * scale;
-	readings.accel_y = accel_y * scale;
-	readings.accel_z = accel_z * scale;
+	readings.accel_x = accel_x;
+	readings.accel_y = accel_y;
+	readings.accel_z = accel_z;
+	readings.scale = scale;
 	or_data->callback_func (&iio_buffer_accel, (gpointer) &readings, or_data->user_data);
 
 	return 1;

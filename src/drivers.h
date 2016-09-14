@@ -40,6 +40,7 @@ typedef struct {
 	int accel_x;
 	int accel_y;
 	int accel_z;
+	gdouble scale;
 } AccelReadings;
 
 typedef struct {

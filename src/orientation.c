@@ -56,12 +56,23 @@ string_to_orientation (const char *orientation)
 #define THRESHOLD_LANDSCAPE  35
 #define THRESHOLD_PORTRAIT  35
 
+/* First apply scale to get m/s², then
+ * convert to 1G ~= 256 as the code expects */
+#define SCALE(a) ((int) ((gdouble) a * scale * 256.0 / 9.81))
+
 OrientationUp
 orientation_calc (OrientationUp prev,
-                  int x, int y, int z)
+                  int in_x, int in_y, int in_z,
+                  gdouble scale)
 {
         int rotation;
         OrientationUp ret = prev;
+        int x, y, z;
+
+        /* this code expects 1G ~= 256 */
+        x = SCALE(in_x);
+        y = SCALE(in_y);
+        z = SCALE(in_z);
 
         /* Portrait check */
         rotation = round(atan((double) x / sqrt(y * y + z * z)) * RADIANS_TO_DEGREES);

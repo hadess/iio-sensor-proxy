@@ -30,4 +30,5 @@ OrientationUp  string_to_orientation (const char *orientation);
 OrientationUp  orientation_calc      (OrientationUp prev,
 				      int           x,
 				      int           y,
-				      int           z);
+				      int           z,
+				      gdouble       scale);
