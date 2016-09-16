@@ -196,8 +196,8 @@ channel_info_free (iio_channel_info *ci)
 static int
 compare_channel_index (gconstpointer a, gconstpointer b)
 {
-	const iio_channel_info *info_1 = a;
-	const iio_channel_info *info_2 = b;
+	const iio_channel_info *info_1 = *(iio_channel_info **) a;
+	const iio_channel_info *info_2 = *(iio_channel_info **) b;
 
 	return (int) (info_1->index - info_2->index);
 }
