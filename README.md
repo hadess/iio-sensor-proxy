@@ -80,3 +80,4 @@ Tested on
 - Toshiba Radius 11 L10WC10C
 - Dell Inspiron 13 7000
 - Cube i9
+- HP Pavilion X360
