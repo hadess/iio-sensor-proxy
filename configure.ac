@@ -22,12 +22,14 @@ AX_COMPILER_FLAGS([WARN_CFLAGS],[WARN_LDFLAGS])
 
 GTK_DOC_CHECK([1.11],[--flavour no-tmpl])
 
+PKG_CHECK_EXISTS(udev, [], [AC_MSG_ERROR(udev development libraries are required)])
 AC_ARG_WITH([udevrulesdir],
 	    AS_HELP_STRING([--with-udevrulesdir=DIR], [Directory for udev rules]),
 	    [],
 	    [with_udevrulesdir=$($PKG_CONFIG --variable=udevdir udev)"/rules.d"])
 AC_SUBST([udevrulesdir], [$with_udevrulesdir])
 
+PKG_CHECK_EXISTS(systemd, [], [AC_MSG_ERROR(systemd development libraries are required)])
 AC_ARG_WITH([systemdsystemunitdir],
 	    AS_HELP_STRING([--with-systemdsystemunitdir=DIR], [Directory for systemd service files]),
 	    [],
