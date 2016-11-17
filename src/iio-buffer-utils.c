@@ -275,7 +275,7 @@ build_channel_array (const char        *device_dir,
 							device_dir,
 							current->name,
 							current->generic_name);
-			if (ret < 0)
+			if ((ret < 0) && (ret != -ENOENT))
 				goto error;
 
 			ret = iioutils_get_param_float (&current->offset,
@@ -283,7 +283,7 @@ build_channel_array (const char        *device_dir,
 							device_dir,
 							current->name,
 							current->generic_name);
-			if (ret < 0)
+			if ((ret < 0) && (ret != -ENOENT))
 				goto error;
 
 			ret = iioutils_get_type (&current->is_signed,
