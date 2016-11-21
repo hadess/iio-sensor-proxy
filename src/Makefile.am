@@ -26,6 +26,8 @@ iio_sensor_proxy_SOURCES =			\
 	drv-iio-buffer-compass.c		\
 	iio-buffer-utils.h			\
 	iio-buffer-utils.c			\
+	accel-mount-matrix.h			\
+	accel-mount-matrix.c			\
 	$(BUILT_SOURCES)
 
 iio_sensor_proxy_CPPFLAGS =			\
