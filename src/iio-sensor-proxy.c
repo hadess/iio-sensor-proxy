@@ -768,6 +768,8 @@ int main (int argc, char **argv)
 
 	/* g_setenv ("G_MESSAGES_DEBUG", "all", TRUE); */
 
+	g_usleep (G_USEC_PER_SEC * 3);
+
 	data = g_new0 (SensorData, 1);
 	data->previous_orientation = ORIENTATION_UNDEFINED;
 	data->uses_lux = TRUE;
