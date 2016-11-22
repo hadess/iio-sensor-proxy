@@ -766,8 +766,6 @@ int main (int argc, char **argv)
 	const gchar * const subsystems[] = { "iio", "input", "platform", NULL };
 	guint i;
 
-	/* g_setenv ("G_MESSAGES_DEBUG", "all", TRUE); */
-
 	g_usleep (G_USEC_PER_SEC * 3);
 
 	data = g_new0 (SensorData, 1);

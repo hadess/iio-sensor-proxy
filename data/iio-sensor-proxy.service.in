@@ -5,3 +5,5 @@ Description=IIO Sensor Proxy service
 Type=dbus
 BusName=net.hadess.SensorProxy
 ExecStart=@sbindir@/iio-sensor-proxy
+#Uncomment this to enable debug
+#Environment="G_MESSAGES_DEBUG=all"
