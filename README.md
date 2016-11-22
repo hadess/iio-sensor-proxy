@@ -61,6 +61,12 @@ and attach the output of:
 `G_MESSAGES_DEBUG=all /usr/sbin/iio-sensor-proxy`
 running as ```root```.
 
+References
+----------
+
+- [sensorfw](https://git.merproject.org/mer-core/sensorfw/tree/master)
+- [android-iio-sensors-hal](https://github.com/01org/android-iio-sensors-hal)
+
 Tested on
 ---------
 
