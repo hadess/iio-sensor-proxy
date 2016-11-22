@@ -536,11 +536,14 @@ enable_sensors (GUdevDevice *dev,
 	char *device_dir;
 	const char *name;
 	gboolean ret = FALSE;
+	GError *error = NULL;
 
 	device_dir = g_build_filename (g_udev_device_get_sysfs_path (dev), "scan_elements", NULL);
-	dir = g_dir_open (device_dir, 0, NULL);
+	dir = g_dir_open (device_dir, 0, &error);
 	if (!dir) {
+		g_warning ("Failed to open directory '%s': %s", device_dir, error->message);
 		g_free (device_dir);
+		g_error_free (error);
 		return FALSE;
 	}
 
@@ -553,6 +556,7 @@ enable_sensors (GUdevDevice *dev,
 		/* Already enabled? */
 		path = g_strdup_printf ("scan_elements/%s", name);
 		if (g_udev_device_get_sysfs_attr_as_boolean (dev, path)) {
+			g_debug ("Already enabled sensor %s/%s", device_dir, name);
 			ret = TRUE;
 			g_free (path);
 			continue;
