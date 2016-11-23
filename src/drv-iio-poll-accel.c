@@ -88,14 +88,10 @@ poll_orientation (gpointer user_data)
 static gboolean
 iio_poll_accel_discover (GUdevDevice *device)
 {
-	if (g_strcmp0 (g_udev_device_get_subsystem (device), "iio") != 0)
+	if (g_strcmp0 (g_udev_device_get_property (device, "IIO_SENSOR_PROXY_TYPE"), "iio-poll-accel") != 0)
 		return FALSE;
 
-	if (g_strcmp0 ("i2c-SMO8500:00", g_udev_device_get_sysfs_attr (device, "name")) != 0 &&
-            g_strcmp0 ("i2c-KIOX000A:00", g_udev_device_get_sysfs_attr (device, "name")) != 0)
-		return FALSE;
-
-	g_debug ("Found polling accelerometer at %s", g_udev_device_get_sysfs_path (device));
+	g_debug ("Found IIO poll accelerometer at %s", g_udev_device_get_sysfs_path (device));
 	return TRUE;
 }
 
