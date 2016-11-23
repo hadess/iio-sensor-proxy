@@ -65,8 +65,11 @@ accelerometer_changed (void)
 	AccelReadings readings;
 
 	fd = open (drv_data->dev_path, O_RDONLY|O_CLOEXEC);
-	if (fd < 0)
+	if (fd < 0) {
+		g_warning ("Could not open input accel '%s': %s",
+			   drv_data->dev_path, g_strerror (errno));
 		return;
+	}
 
 	READ_AXIS(ABS_X, accel_x);
 	READ_AXIS(ABS_Y, accel_y);
