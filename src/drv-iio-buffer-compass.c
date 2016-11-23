@@ -146,13 +146,10 @@ read_heading (gpointer user_data)
 static gboolean
 iio_buffer_compass_discover (GUdevDevice *device)
 {
-	if (g_strcmp0 (g_udev_device_get_subsystem (device), "iio") != 0)
+	if (g_strcmp0 (g_udev_device_get_property (device, "IIO_SENSOR_PROXY_TYPE"), "iio-buffer-compass") != 0)
 		return FALSE;
 
-	if (g_strcmp0 ("magn_3d", g_udev_device_get_sysfs_attr (device, "name")) != 0)
-		return FALSE;
-
-	g_debug ("Found magn_3d at %s", g_udev_device_get_sysfs_path (device));
+	g_debug ("Found IIO buffer compass at %s", g_udev_device_get_sysfs_path (device));
 	return TRUE;
 }
 
