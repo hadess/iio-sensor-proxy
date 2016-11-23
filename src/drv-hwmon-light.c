@@ -30,21 +30,8 @@ static DrvData *drv_data = NULL;
 static gboolean
 hwmon_light_discover (GUdevDevice *device)
 {
-	char *light_path;
-
-	if (g_strcmp0 (g_udev_device_get_subsystem (device), "platform") != 0)
+	if (g_strcmp0 (g_udev_device_get_property (device, "IIO_SENSOR_PROXY_TYPE"), "hwmon-als") != 0)
 		return FALSE;
-
-	if (g_strcmp0 (g_udev_device_get_property (device, "MODALIAS"), "platform:applesmc") != 0)
-		return FALSE;
-
-	light_path = g_build_filename (g_udev_device_get_sysfs_path (device),
-				       "light", NULL);
-	if (!g_file_test (light_path, G_FILE_TEST_EXISTS)) {
-		g_free (light_path);
-		return FALSE;
-	}
-	g_free (light_path);
 
 	g_debug ("Found HWMon light at %s", g_udev_device_get_sysfs_path (device));
 	return TRUE;
