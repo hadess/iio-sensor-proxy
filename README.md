@@ -82,3 +82,4 @@ Tested on
 - Dell Inspiron 13 7000
 - Cube i9
 - HP Pavilion X360
+- Asus Zenbook UX31A, UX305
