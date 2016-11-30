@@ -19,7 +19,7 @@ value_changed (GtkSpinButton *spin_button,
 	y = gtk_spin_button_get_value (GTK_SPIN_BUTTON (scale_y));
 	z = gtk_spin_button_get_value (GTK_SPIN_BUTTON (scale_z));
 
-	o = orientation_calc (ORIENTATION_UNDEFINED, x, y, z);
+	o = orientation_calc (ORIENTATION_UNDEFINED, x, y, z, 9.81 / ONEG);
 	gtk_label_set_text (GTK_LABEL (label), orientation_to_string (o));
 }
 
