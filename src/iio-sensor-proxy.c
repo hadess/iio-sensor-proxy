@@ -1,12 +1,5 @@
 /*
- * Copyright (c) 2014-2015 Bastien Nocera <hadess@hadess.net>
- *
- * orientation_calc() from the sensorfw package
- * Copyright (C) 2009-2010 Nokia Corporation
- * Authors:
- *   Üstün Ergenoglu <ext-ustun.ergenoglu@nokia.com>
- *   Timo Rongas <ext-timo.2.rongas@nokia.com>
- *   Lihan Guo <lihan.guo@digia.com>
+ * Copyright (c) 2014-2016 Bastien Nocera <hadess@hadess.net>
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License version 3 as published by
