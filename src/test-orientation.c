@@ -46,7 +46,7 @@ int main (int argc, char **argv)
 			  G_CALLBACK (value_changed), NULL);
 	g_signal_connect (G_OBJECT (scale_y), "value-changed",
 			  G_CALLBACK (value_changed), NULL);
-	g_signal_connect (G_OBJECT (scale_y), "value-changed",
+	g_signal_connect (G_OBJECT (scale_z), "value-changed",
 			  G_CALLBACK (value_changed), NULL);
 
 	label = gtk_label_new ("");
