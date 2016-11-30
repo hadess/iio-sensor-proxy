@@ -35,6 +35,11 @@ int main (int argc, char **argv)
 	scale_y = gtk_spin_button_new_with_range (-ONEG, ONEG, 1);
 	scale_z = gtk_spin_button_new_with_range (-ONEG, ONEG, 1);
 
+	/* Set default values to "up" orientation */
+	gtk_spin_button_set_value (GTK_SPIN_BUTTON (scale_x), 0.0);
+	gtk_spin_button_set_value (GTK_SPIN_BUTTON (scale_y), ONEG);
+	gtk_spin_button_set_value (GTK_SPIN_BUTTON (scale_z), 0.0);
+
 	box = gtk_box_new (GTK_ORIENTATION_VERTICAL, 10);
 	gtk_container_add (GTK_CONTAINER (window), box);
 
