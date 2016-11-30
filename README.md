@@ -66,6 +66,7 @@ References
 
 - [sensorfw](https://git.merproject.org/mer-core/sensorfw/tree/master)
 - [android-iio-sensors-hal](https://github.com/01org/android-iio-sensors-hal)
+- [Sensor orientation on MSDN](https://msdn.microsoft.com/en-us/windows/uwp/devices-sensors/sensor-orientation)
 
 Tested on
 ---------
