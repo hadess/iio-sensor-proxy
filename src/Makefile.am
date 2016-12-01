@@ -33,7 +33,7 @@ iio_sensor_proxy_SOURCES =			\
 iio_sensor_proxy_CPPFLAGS =			\
 	$(IIO_SENSOR_PROXY_CFLAGS)		\
 	$(WARN_CFLAGS)
-iio_sensor_proxy_LDADD = $(IIO_SENSOR_PROXY_LIBS) -lm
+iio_sensor_proxy_LDADD = $(IIO_SENSOR_PROXY_LIBS) $(LIBM)
 
 noinst_PROGRAMS = fake-input-accelerometer test-mount-matrix
 
@@ -65,7 +65,7 @@ test_orientation_gtk_SOURCES =			\
 test_orientation_gtk_CPPFLAGS =			\
 	$(GTK_TESTS_CFLAGS)			\
 	$(WARN_CFLAGS)
-test_orientation_gtk_LDADD = $(GTK_TESTS_LIBS) -lm
+test_orientation_gtk_LDADD = $(GTK_TESTS_LIBS) $(LIBM)
 endif
 
 bin_PROGRAMS = monitor-sensor
