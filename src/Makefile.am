@@ -35,7 +35,7 @@ iio_sensor_proxy_CPPFLAGS =			\
 	$(WARN_CFLAGS)
 iio_sensor_proxy_LDADD = $(IIO_SENSOR_PROXY_LIBS) $(LIBM)
 
-noinst_PROGRAMS = fake-input-accelerometer test-mount-matrix
+noinst_PROGRAMS = fake-input-accelerometer test-mount-matrix test-orientation
 
 fake_input_accelerometer_SOURCES =		\
 	fake-input-accelerometer.c		\
@@ -55,6 +55,16 @@ test_mount_matrix_CPPFLAGS =			\
 	$(IIO_SENSOR_PROXY_CFLAGS)		\
 	$(WARN_CFLAGS)
 test_mount_matrix_LDADD = $(IIO_SENSOR_PROXY_LIBS)
+
+test_orientation_SOURCES =			\
+	test-orientation.c			\
+	orientation.c				\
+	orientation.h
+
+test_orientation_CPPFLAGS =			\
+	$(IIO_SENSOR_PROXY_CFLAGS)		\
+	$(WARN_CFLAGS)
+test_orientation_LDADD = $(IIO_SENSOR_PROXY_LIBS) $(LIBM)
 
 if HAVE_GTK_TESTS
 noinst_PROGRAMS += test-orientation-gtk
