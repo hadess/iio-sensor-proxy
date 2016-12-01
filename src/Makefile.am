@@ -56,6 +56,18 @@ test_mount_matrix_CPPFLAGS =			\
 	$(WARN_CFLAGS)
 test_mount_matrix_LDADD = $(IIO_SENSOR_PROXY_LIBS)
 
+if HAVE_GTK_TESTS
+noinst_PROGRAMS += test-orientation-gtk
+test_orientation_gtk_SOURCES =			\
+	test-orientation-gtk.c			\
+	orientation.c				\
+	orientation.h
+test_orientation_gtk_CPPFLAGS =			\
+	$(GTK_TESTS_CFLAGS)			\
+	$(WARN_CFLAGS)
+test_orientation_gtk_LDADD = $(GTK_TESTS_LIBS) -lm
+endif
+
 bin_PROGRAMS = monitor-sensor
 
 monitor_sensor_SOURCES =			\
@@ -67,6 +79,6 @@ monitor_sensor_CPPFLAGS =			\
 monitor_sensor_LDADD = $(IIO_SENSOR_PROXY_LIBS)
 
 EXTRA_DIST =					\
-	test-orientation.c			\
+	test-orientation-gtk.c			\
 	net.hadess.SensorProxy.xml		\
 	iio-sensor-proxy.gresource.xml

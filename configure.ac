@@ -38,6 +38,14 @@ if test x$with_systemdsystemunitdir != xno; then
 	AC_SUBST([systemdsystemunitdir], [$with_systemdsystemunitdir])
 fi
 
+AC_ARG_ENABLE([gtk-tests],
+	      [AS_HELP_STRING([--disable-gtk-tests],[do not build GTK+ test tools])],
+	      [],[enable_gtk_tests=yes])
+if test x$enable_gtk_tests = xyes; then
+	PKG_CHECK_MODULES(GTK_TESTS, gtk+-3.0)
+fi
+AM_CONDITIONAL(HAVE_GTK_TESTS, test "x$enable_gtk_tests" = "xyes")
+
 PKG_CHECK_MODULES(IIO_SENSOR_PROXY, gio-2.0 gudev-1.0)
 
 AC_PATH_PROG([GDBUS_CODEGEN],[gdbus-codegen])

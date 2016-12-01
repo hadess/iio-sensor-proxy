@@ -1,4 +1,11 @@
-// gcc -o test-orientation test-orientation.c orientation.c `pkg-config --libs --cflags gtk+-3.0` -lm
+/*
+ * Copyright (c) 2014-2016 Bastien Nocera <hadess@hadess.net>
+ *
+ * This program is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU General Public License version 3 as published by
+ * the Free Software Foundation.
+ *
+ */
 
 #include <gtk/gtk.h>
 #include "orientation.h"
