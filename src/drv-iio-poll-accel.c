@@ -62,23 +62,9 @@ poll_orientation (gpointer user_data)
 		 readings.accel_x, readings.accel_y, readings.accel_z, readings.scale);
 
 	//FIXME report errors
-	if (g_strcmp0 ("i2c-SMO8500:00", g_udev_device_get_sysfs_attr (data->dev, "name")) == 0) {
-		/* Quirk for i2c-SMO8500:00 device,
-		 * swap x and y */
-		readings.accel_x = accel_y;
-		readings.accel_y = accel_x;
-		readings.accel_z = accel_z;
-	} else if (g_strcmp0 ("i2c-KIOX000A:00", g_udev_device_get_sysfs_attr (data->dev, "name")) == 0) {
-		/* Quirk for i2c-KIOX000A:00 device,
-		 * take opposite y */
-		readings.accel_x = accel_x;
-		readings.accel_y = -accel_y;
-		readings.accel_z = accel_z;
-	} else {
-		readings.accel_x = accel_x;
-		readings.accel_y = accel_y;
-		readings.accel_z = accel_z;
-	}
+	readings.accel_x = accel_x;
+	readings.accel_y = accel_y;
+	readings.accel_z = accel_z;
 
 	drv_data->callback_func (&iio_poll_accel, (gpointer) &readings, drv_data->user_data);
 
