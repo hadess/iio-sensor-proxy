@@ -78,7 +78,7 @@ orientation_calc (OrientationUp prev,
         rotation = round(atan((double) x / sqrt(y * y + z * z)) * RADIANS_TO_DEGREES);
 
         if (abs(rotation) > THRESHOLD_PORTRAIT) {
-                ret = (rotation < 0) ? ORIENTATION_LEFT_UP : ORIENTATION_RIGHT_UP;
+                ret = (rotation > 0) ? ORIENTATION_LEFT_UP : ORIENTATION_RIGHT_UP;
 
                 /* Some threshold to switching between portrait modes */
                 if (prev == ORIENTATION_LEFT_UP || prev == ORIENTATION_RIGHT_UP) {
@@ -92,7 +92,7 @@ orientation_calc (OrientationUp prev,
                 rotation = round(atan((double) y / sqrt(x * x + z * z)) * RADIANS_TO_DEGREES);
 
                 if (abs(rotation) > THRESHOLD_LANDSCAPE) {
-                        ret = (rotation < 0) ? ORIENTATION_BOTTOM_UP : ORIENTATION_NORMAL;
+                        ret = (rotation > 0) ? ORIENTATION_BOTTOM_UP : ORIENTATION_NORMAL;
 
                         /* Some threshold to switching between landscape modes */
                         if (prev == ORIENTATION_BOTTOM_UP || prev == ORIENTATION_NORMAL) {
