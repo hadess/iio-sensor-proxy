@@ -76,7 +76,9 @@ poll_orientation (gpointer user_data)
 static gboolean
 iio_poll_accel_discover (GUdevDevice *device)
 {
-	if (g_strcmp0 (g_udev_device_get_property (device, "IIO_SENSOR_PROXY_TYPE"), "iio-poll-accel") != 0)
+	/* We also handle devices with trigger buffers, but there's no trigger available on the system */
+	if (g_strcmp0 (g_udev_device_get_property (device, "IIO_SENSOR_PROXY_TYPE"), "iio-poll-accel") != 0 &&
+	    g_strcmp0 (g_udev_device_get_property (device, "IIO_SENSOR_PROXY_TYPE"), "iio-buffer-accel") != 0)
 		return FALSE;
 
 	g_debug ("Found IIO poll accelerometer at %s", g_udev_device_get_sysfs_path (device));
