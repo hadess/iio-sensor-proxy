@@ -61,7 +61,7 @@ poll_orientation (gpointer user_data)
 	readings.scale = data->scale;
 
 	g_debug ("Accel read from IIO on '%s': %d, %d, %d (scale %lf)", data->name,
-		 readings.accel_x, readings.accel_y, readings.accel_z, readings.scale);
+		 accel_x, accel_y, accel_z, readings.scale);
 
 	//FIXME report errors
 	readings.accel_x = accel_x;
@@ -113,7 +113,7 @@ iio_poll_accel_open (GUdevDevice        *device,
 
 	drv_data = g_new0 (DrvData, 1);
 	drv_data->dev = g_object_ref (device);
-	drv_data->name = g_udev_device_get_property (device, "NAME");
+	drv_data->name = g_udev_device_get_sysfs_attr (device, "name");
 
 	mount_matrix = g_udev_device_get_property (device, "ACCEL_MOUNT_MATRIX");
 	if (!parse_mount_matrix (mount_matrix, &drv_data->mount_matrix)) {
