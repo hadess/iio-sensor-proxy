@@ -61,6 +61,17 @@ and attach the output of:
 `G_MESSAGES_DEBUG=all /usr/sbin/iio-sensor-proxy`
 running as ```root```.
 
+Accelerometer orientation
+-------------------------
+
+When the accelerometer is not mounted the same way as the screen, we need
+to modify the readings from the accelerometer to make sure that the computed
+orientation matches the screen one.
+
+`iio-sensor-proxy` reads this information from the device's
+`ACCEL_MOUNT_MATRIX` udev property. See [60-sensor.hwdb](https://github.com/systemd/systemd/blob/master/hwdb/60-sensor.hwdb)
+for details.
+
 References
 ----------
 
