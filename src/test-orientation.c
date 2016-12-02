@@ -8,6 +8,7 @@
  */
 
 #include <glib.h>
+#include <stdlib.h>
 #include "orientation.h"
 
 #define ONEG 256
@@ -56,9 +57,45 @@ test_orientation (void)
 		g_test_fail ();
 }
 
+static void
+print_orientation (const char *x_str,
+		   const char *y_str,
+		   const char *z_str,
+		   const char *scale_str)
+{
+	int x, y, z;
+	gdouble scale;
+	OrientationUp o;
+
+	if (scale_str == NULL)
+		scale = 1.0;
+	else
+		scale = g_strtod (scale_str, NULL);
+
+	x = atoi (x_str);
+	y = atoi (y_str);
+	z = atoi (z_str);
+
+	o = orientation_calc (ORIENTATION_UNDEFINED, x, y, z, scale);
+	g_print ("Orientation for %d,%d,%d (scale: %lf) is '%s'\n",
+		 x, y, z, scale, orientation_to_string (o));
+}
+
 int main (int argc, char **argv)
 {
 	g_test_init (&argc, &argv, NULL);
+
+	if (argc > 1) {
+		if (argc == 5) {
+			print_orientation (argv[1], argv[2], argv[3], argv[4]);
+		} else if (argc == 4) {
+			print_orientation (argv[1], argv[2], argv[3], "1.0");
+		} else {
+			g_printerr ("Usage: %s X Y Z [scale]\n", argv[0]);
+			return 1;
+		}
+		return 0;
+	}
 
 	g_test_add_func ("/iio-sensor-proxy/orientation", test_orientation);
 
