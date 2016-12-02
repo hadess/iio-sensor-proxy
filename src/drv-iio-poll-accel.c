@@ -7,6 +7,7 @@
  */
 
 #include "drivers.h"
+#include "accel-mount-matrix.h"
 
 #include <fcntl.h>
 #include <unistd.h>
@@ -21,6 +22,7 @@ typedef struct DrvData {
 	gpointer            user_data;
 	GUdevDevice        *dev;
 	const char         *name;
+	IioAccelVec3       *mount_matrix;
 
 	double              scale;
 } DrvData;
@@ -105,9 +107,18 @@ iio_poll_accel_open (GUdevDevice        *device,
 		     ReadingsUpdateFunc  callback_func,
 		     gpointer            user_data)
 {
+	const char *mount_matrix;
+
 	drv_data = g_new0 (DrvData, 1);
 	drv_data->dev = g_object_ref (device);
 	drv_data->name = g_udev_device_get_property (device, "NAME");
+
+	mount_matrix = g_udev_device_get_property (device, "ACCEL_MOUNT_MATRIX");
+	if (!parse_mount_matrix (mount_matrix, &drv_data->mount_matrix)) {
+		g_warning ("Invalid mount-matrix ('%s'), falling back to identity",
+			   mount_matrix);
+		parse_mount_matrix (NULL, &drv_data->mount_matrix);
+	}
 
 	drv_data->callback_func = callback_func;
 	drv_data->user_data = user_data;
@@ -123,6 +134,7 @@ iio_poll_accel_close (void)
 {
 	iio_poll_accel_set_polling (FALSE);
 	g_clear_object (&drv_data->dev);
+	g_clear_pointer (&drv_data->mount_matrix, g_free);
 	g_clear_pointer (&drv_data, g_free);
 }
 

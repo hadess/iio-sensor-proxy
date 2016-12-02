@@ -8,6 +8,7 @@
 
 #include "drivers.h"
 #include "iio-buffer-utils.h"
+#include "accel-mount-matrix.h"
 
 #include <fcntl.h>
 #include <unistd.h>
@@ -22,6 +23,7 @@ typedef struct {
 	GUdevDevice *dev;
 	const char *dev_path;
 	const char *name;
+	IioAccelVec3 *mount_matrix;
 	int device_id;
 	BufferDrvData *buffer_data;
 } DrvData;
@@ -182,6 +184,7 @@ iio_buffer_accel_open (GUdevDevice        *device,
 		       gpointer            user_data)
 {
 	char *trigger_name;
+	const char *mount_matrix;
 
 	drv_data = g_new0 (DrvData, 1);
 
@@ -197,6 +200,13 @@ iio_buffer_accel_open (GUdevDevice        *device,
 	if (!drv_data->buffer_data) {
 		g_clear_pointer (&drv_data, g_free);
 		return FALSE;
+	}
+
+	mount_matrix = g_udev_device_get_property (device, "ACCEL_MOUNT_MATRIX");
+	if (!parse_mount_matrix (mount_matrix, &drv_data->mount_matrix)) {
+		g_warning ("Invalid mount-matrix ('%s'), falling back to identity",
+			   mount_matrix);
+		parse_mount_matrix (NULL, &drv_data->mount_matrix);
 	}
 
 	drv_data->dev = g_object_ref (device);
@@ -217,6 +227,7 @@ iio_buffer_accel_close (void)
 	iio_buffer_accel_set_polling (FALSE);
 	g_clear_pointer (&drv_data->buffer_data, buffer_drv_data_free);
 	g_clear_object (&drv_data->dev);
+	g_clear_pointer (&drv_data->mount_matrix, g_free);
 	g_clear_pointer (&drv_data, g_free);
 }
 
