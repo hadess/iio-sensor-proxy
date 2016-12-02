@@ -14,13 +14,14 @@
 static void
 print_vecs (IioAccelVec3 vecs[3])
 {
-	g_debug ("%f, %f, %f; %f, %f, %f; %f, %f, %f",
-		 vecs[0].x, vecs[0].y, vecs[0].z,
-		 vecs[1].x, vecs[1].y, vecs[1].z,
-		 vecs[2].x, vecs[2].y, vecs[2].z);
+	g_test_message ("%f, %f, %f; %f, %f, %f; %f, %f, %f",
+			vecs[0].x, vecs[0].y, vecs[0].z,
+			vecs[1].x, vecs[1].y, vecs[1].z,
+			vecs[2].x, vecs[2].y, vecs[2].z);
 }
 
-int main (int argc, char **argv)
+static void
+test_mount_matrix (void)
 {
 	IioAccelVec3 *vecs;
 	IioAccelVec3 test;
@@ -52,4 +53,13 @@ int main (int argc, char **argv)
 	g_assert_cmpfloat (test.z, ==, 0.0);
 	g_assert_cmpfloat (test.y, ==, -256.0);
 	g_free (vecs);
+}
+
+int main (int argc, char **argv)
+{
+	g_test_init (&argc, &argv, NULL);
+
+	g_test_add_func ("/iio-sensor-proxy/mount-matrix", test_mount_matrix);
+
+	return g_test_run ();
 }
