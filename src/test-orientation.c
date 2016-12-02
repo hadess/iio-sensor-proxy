@@ -58,6 +58,40 @@ test_orientation (void)
 		g_test_fail ();
 }
 
+static void
+test_mount_matrix_orientation (void)
+{
+	guint i;
+	struct {
+		IioAccelVec3 readings;
+		gdouble scale;
+		const char *mount_matrix;
+		OrientationUp expected;
+	} tests[] = {
+		/* Onda v975 quirking */
+		{ { 523, 13, 5 }, 0.019163, "0, -1, 0; -1, 0, 0; 0, 0, 0", ORIENTATION_NORMAL },
+		{ { 8, 521, -67 }, 0.019163, "0, -1, 0; -1, 0, 0; 0, 0, 0", ORIENTATION_RIGHT_UP }
+	};
+
+	for (i = 0; i < G_N_ELEMENTS (tests); i++) {
+		IioAccelVec3 *vecs;
+		const char *result, *expected;
+		OrientationUp o;
+
+		g_assert_true (parse_mount_matrix (tests[i].mount_matrix, &vecs));
+		g_assert_true (apply_mount_matrix (vecs, &tests[i].readings));
+		o = orientation_calc (ORIENTATION_UNDEFINED,
+				      tests[i].readings.x,
+				      tests[i].readings.y,
+				      tests[i].readings.z,
+				      tests[i].scale);
+		result = orientation_to_string (o);
+		expected = orientation_to_string (tests[i].expected);
+		g_assert_cmpstr (result, ==, expected);
+		g_free (vecs);
+	}
+}
+
 static gboolean
 print_orientation (const char *x_str,
 		   const char *y_str,
@@ -133,6 +167,7 @@ int main (int argc, char **argv)
 	}
 
 	g_test_add_func ("/iio-sensor-proxy/orientation", test_orientation);
+	g_test_add_func ("/iio-sensor-proxy/quirking", test_mount_matrix_orientation);
 
 	return g_test_run ();
 }
