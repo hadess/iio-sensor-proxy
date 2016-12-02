@@ -199,21 +199,21 @@ check_keyboard (GIOChannel      *source,
 	switch (buf[0]) {
 	case 'u':
 		data->accel_x = 0;
-		data->accel_y = ONEG;
+		data->accel_y = -ONEG;
 		data->accel_z = 0;
 		break;
 	case 'd':
 		data->accel_x = 0;
-		data->accel_y = -ONEG;
+		data->accel_y = ONEG;
 		data->accel_z = 0;
 		break;
 	case 'l':
-		data->accel_x = -ONEG;
+		data->accel_x = ONEG;
 		data->accel_y = 0;
 		data->accel_z = 0;
 		break;
 	case 'r':
-		data->accel_x = ONEG;
+		data->accel_x = -ONEG;
 		data->accel_y = 0;
 		data->accel_z = 0;
 		break;
