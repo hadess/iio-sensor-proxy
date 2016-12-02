@@ -26,7 +26,7 @@ typedef struct DrvData {
 	GUdevDevice *dev, *parent;
 	const char *dev_path;
 	const char *name;
-	IioAccelVec3 *mount_matrix;
+	AccelVec3 *mount_matrix;
 	gboolean sends_kevent;
 } DrvData;
 

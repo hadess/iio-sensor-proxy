@@ -13,10 +13,10 @@ typedef struct {
 	float x;
 	float y;
 	float z;
-} IioAccelVec3;
+} AccelVec3;
 
-gboolean parse_mount_matrix (const char   *mtx,
-                             IioAccelVec3 *vecs[3]);
+gboolean parse_mount_matrix (const char *mtx,
+                             AccelVec3  *vecs[3]);
 
-gboolean apply_mount_matrix (const IioAccelVec3 vecs[3],
-                             IioAccelVec3       *accel);
+gboolean apply_mount_matrix (const AccelVec3  vecs[3],
+                             AccelVec3       *accel);

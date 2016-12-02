@@ -12,7 +12,7 @@
 #define SWAP_Y_Z_MATRIX "1, 0, 0; 0, 0, 1; 0, 1, 0"
 
 static void
-print_vecs (IioAccelVec3 vecs[3])
+print_vecs (AccelVec3 vecs[3])
 {
 	g_test_message ("%f, %f, %f; %f, %f, %f; %f, %f, %f",
 			vecs[0].x, vecs[0].y, vecs[0].z,
@@ -23,8 +23,8 @@ print_vecs (IioAccelVec3 vecs[3])
 static void
 test_mount_matrix (void)
 {
-	IioAccelVec3 *vecs;
-	IioAccelVec3 test;
+	AccelVec3 *vecs;
+	AccelVec3 test;
 
 	/* Swap Y/Z matrix */
 	g_assert_true (parse_mount_matrix (SWAP_Y_Z_MATRIX, &vecs));

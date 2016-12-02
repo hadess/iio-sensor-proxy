@@ -23,7 +23,7 @@ typedef struct {
 	GUdevDevice *dev;
 	const char *dev_path;
 	const char *name;
-	IioAccelVec3 *mount_matrix;
+	AccelVec3 *mount_matrix;
 	int device_id;
 	BufferDrvData *buffer_data;
 } DrvData;

@@ -63,7 +63,7 @@ test_mount_matrix_orientation (void)
 {
 	guint i;
 	struct {
-		IioAccelVec3 readings;
+		AccelVec3 readings;
 		gdouble scale;
 		const char *mount_matrix;
 		OrientationUp expected;
@@ -74,7 +74,7 @@ test_mount_matrix_orientation (void)
 	};
 
 	for (i = 0; i < G_N_ELEMENTS (tests); i++) {
-		IioAccelVec3 *vecs;
+		AccelVec3 *vecs;
 		const char *result, *expected;
 		OrientationUp o;
 
@@ -113,8 +113,8 @@ print_orientation (const char *x_str,
 	z = atoi (z_str);
 
 	if (mount_matrix) {
-		IioAccelVec3 *vecs;
-		IioAccelVec3 readings;
+		AccelVec3 *vecs;
+		AccelVec3 readings;
 
 		if (!parse_mount_matrix (mount_matrix, &vecs)) {
 			g_printerr ("Could not parse mount matrix '%s'\n",

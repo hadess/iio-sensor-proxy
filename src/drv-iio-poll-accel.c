@@ -22,7 +22,7 @@ typedef struct DrvData {
 	gpointer            user_data;
 	GUdevDevice        *dev;
 	const char         *name;
-	IioAccelVec3       *mount_matrix;
+	AccelVec3          *mount_matrix;
 
 	double              scale;
 } DrvData;

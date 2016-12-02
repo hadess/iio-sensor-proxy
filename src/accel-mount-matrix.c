@@ -16,17 +16,17 @@
  * https://git.kernel.org/cgit/linux/kernel/git/torvalds/linux.git/tree/drivers/iio/industrialio-core.c?id=dfc57732ad38f93ae6232a3b4e64fd077383a0f1#n431
  */
 
-static IioAccelVec3 id_matrix[3] = {
+static AccelVec3 id_matrix[3] = {
 	{ 1.0, 0.0, 0.0 },
 	{ 0.0, 1.0, 0.0 },
 	{ 0.0, 0.0, 1.0 }
 };
 
 gboolean
-parse_mount_matrix (const char   *mtx,
-		    IioAccelVec3 *vecs[3])
+parse_mount_matrix (const char *mtx,
+		    AccelVec3  *vecs[3])
 {
-	IioAccelVec3 *ret;
+	AccelVec3 *ret;
 
 	g_return_val_if_fail (vecs != NULL, FALSE);
 
@@ -37,7 +37,7 @@ parse_mount_matrix (const char   *mtx,
 		return TRUE;
 	}
 
-	ret = g_new0 (IioAccelVec3, 3);
+	ret = g_new0 (AccelVec3, 3);
 	if (sscanf (mtx, "%f, %f, %f; %f, %f, %f; %f, %f, %f",
 		    &ret[0].x, &ret[0].y, &ret[0].z,
 		    &ret[1].x, &ret[1].y, &ret[1].z,
@@ -53,8 +53,8 @@ parse_mount_matrix (const char   *mtx,
 }
 
 gboolean
-apply_mount_matrix (const IioAccelVec3 vecs[3],
-		    IioAccelVec3       *accel)
+apply_mount_matrix (const AccelVec3  vecs[3],
+		    AccelVec3       *accel)
 {
 	float _x, _y, _z;
 
