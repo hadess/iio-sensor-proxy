@@ -10,6 +10,7 @@
 #include <glib.h>
 #include <stdlib.h>
 #include "orientation.h"
+#include "accel-mount-matrix.h"
 
 #define ONEG 256
 
@@ -57,11 +58,12 @@ test_orientation (void)
 		g_test_fail ();
 }
 
-static void
+static gboolean
 print_orientation (const char *x_str,
 		   const char *y_str,
 		   const char *z_str,
-		   const char *scale_str)
+		   const char *scale_str,
+		   const char *mount_matrix)
 {
 	int x, y, z;
 	gdouble scale;
@@ -76,9 +78,38 @@ print_orientation (const char *x_str,
 	y = atoi (y_str);
 	z = atoi (z_str);
 
+	if (mount_matrix) {
+		IioAccelVec3 *vecs;
+		IioAccelVec3 readings;
+
+		if (!parse_mount_matrix (mount_matrix, &vecs)) {
+			g_printerr ("Could not parse mount matrix '%s'\n",
+				    mount_matrix);
+			return FALSE;
+		}
+
+		readings.x = x;
+		readings.y = y;
+		readings.z = z;
+
+		if (!apply_mount_matrix (vecs, &readings)) {
+			g_printerr ("Could not apply mount matrix '%s'\n",
+				    mount_matrix);
+			return FALSE;
+		}
+
+		x = readings.x;
+		y = readings.y;
+		z = readings.z;
+
+		g_free (vecs);
+	}
+
 	o = orientation_calc (ORIENTATION_UNDEFINED, x, y, z, scale);
 	g_print ("Orientation for %d,%d,%d (scale: %lf) is '%s'\n",
 		 x, y, z, scale, orientation_to_string (o));
+
+	return TRUE;
 }
 
 int main (int argc, char **argv)
@@ -86,15 +117,19 @@ int main (int argc, char **argv)
 	g_test_init (&argc, &argv, NULL);
 
 	if (argc > 1) {
-		if (argc == 5) {
-			print_orientation (argv[1], argv[2], argv[3], argv[4]);
+		gboolean ret;
+
+		if (argc == 6) {
+			ret = print_orientation (argv[1], argv[2], argv[3], argv[4], argv[5]);
+		} else if (argc == 5) {
+			ret = print_orientation (argv[1], argv[2], argv[3], argv[4], NULL);
 		} else if (argc == 4) {
-			print_orientation (argv[1], argv[2], argv[3], "1.0");
+			ret = print_orientation (argv[1], argv[2], argv[3], "1.0", NULL);
 		} else {
-			g_printerr ("Usage: %s X Y Z [scale]\n", argv[0]);
-			return 1;
+			g_printerr ("Usage: %s X Y Z [scale] [mount-matrix]\n", argv[0]);
+			ret = FALSE;
 		}
-		return 0;
+		return (ret == FALSE ? 1 : 0);
 	}
 
 	g_test_add_func ("/iio-sensor-proxy/orientation", test_orientation);

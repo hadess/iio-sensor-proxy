@@ -59,7 +59,9 @@ test_mount_matrix_LDADD = $(IIO_SENSOR_PROXY_LIBS)
 test_orientation_SOURCES =			\
 	test-orientation.c			\
 	orientation.c				\
-	orientation.h
+	orientation.h				\
+	accel-mount-matrix.c			\
+	accel-mount-matrix.h
 
 test_orientation_CPPFLAGS =			\
 	$(IIO_SENSOR_PROXY_CFLAGS)		\
