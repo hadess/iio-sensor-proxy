@@ -54,6 +54,7 @@ poll_orientation (gpointer user_data)
 	DrvData *data = user_data;
 	int accel_x, accel_y, accel_z;
 	AccelReadings readings;
+	AccelVec3 tmp;
 
 	accel_x = sysfs_get_int (data->dev, "in_accel_x_raw");
 	accel_y = sysfs_get_int (data->dev, "in_accel_y_raw");
@@ -63,10 +64,17 @@ poll_orientation (gpointer user_data)
 	g_debug ("Accel read from IIO on '%s': %d, %d, %d (scale %lf)", data->name,
 		 accel_x, accel_y, accel_z, readings.scale);
 
+	tmp.x = accel_x;
+	tmp.y = accel_y;
+	tmp.z = accel_z;
+
+	if (!apply_mount_matrix (drv_data->mount_matrix, &tmp))
+		g_warning ("Could not apply mount matrix");
+
 	//FIXME report errors
-	readings.accel_x = accel_x;
-	readings.accel_y = accel_y;
-	readings.accel_z = accel_z;
+	readings.accel_x = tmp.x;
+	readings.accel_y = tmp.y;
+	readings.accel_z = tmp.z;
 
 	drv_data->callback_func (&iio_poll_accel, (gpointer) &readings, drv_data->user_data);
 

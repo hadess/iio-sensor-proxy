@@ -38,6 +38,7 @@ process_scan (IIOSensorData data, DrvData *or_data)
 	gdouble scale;
 	gboolean present_x, present_y, present_z;
 	AccelReadings readings;
+	AccelVec3 tmp;
 
 	if (data.read_size < 0) {
 		g_warning ("Couldn't read from device '%s': %s", or_data->name, g_strerror (errno));
@@ -60,10 +61,17 @@ process_scan (IIOSensorData data, DrvData *or_data)
 
 	g_debug ("Accel read from IIO on '%s': %d, %d, %d (scale %lf)", or_data->name, accel_x, accel_y, accel_z, scale);
 
+	tmp.x = accel_x;
+	tmp.y = accel_y;
+	tmp.z = accel_z;
+
+	if (!apply_mount_matrix (or_data->mount_matrix, &tmp))
+		g_warning ("Could not apply mount matrix");
+
 	//FIXME report errors
-	readings.accel_x = accel_x;
-	readings.accel_y = accel_y;
-	readings.accel_z = accel_z;
+	readings.accel_x = tmp.x;
+	readings.accel_y = tmp.y;
+	readings.accel_z = tmp.z;
 	readings.scale = scale;
 	or_data->callback_func (&iio_buffer_accel, (gpointer) &readings, or_data->user_data);
 

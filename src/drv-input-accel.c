@@ -62,6 +62,7 @@ accelerometer_changed (void)
 	int accel_x = 0, accel_y = 0, accel_z = 0;
 	int fd, r;
 	AccelReadings readings;
+	AccelVec3 tmp;
 
 	fd = open (drv_data->dev_path, O_RDONLY|O_CLOEXEC);
 	if (fd < 0) {
@@ -76,13 +77,21 @@ accelerometer_changed (void)
 
 	close (fd);
 
-	readings.accel_x = accel_x;
-	readings.accel_y = accel_y;
-	readings.accel_z = accel_z;
 	/* Scale from 1G ~= 256 to a value in m/s² */
 	readings.scale = 1.0 / 256 * 9.81;
 
 	g_debug ("Accel read from input on '%s': %d, %d, %d (scale %lf)", drv_data->name, accel_x, accel_y, accel_z, readings.scale);
+
+	tmp.x = accel_x;
+	tmp.y = accel_y;
+	tmp.z = accel_z;
+
+	if (!apply_mount_matrix (drv_data->mount_matrix, &tmp))
+		g_warning ("Could not apply mount matrix");
+
+	readings.accel_x = tmp.x;
+	readings.accel_y = tmp.y;
+	readings.accel_z = tmp.z;
 
 	drv_data->callback_func (&input_accel, (gpointer) &readings, drv_data->user_data);
 }
