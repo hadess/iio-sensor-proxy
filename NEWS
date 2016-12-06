@@ -1,3 +1,18 @@
+2.0
+---
+
+This release adds build fixes, fixes the detection of a number of
+devices that should be supported, stops trying to use devices
+that shouldn't, and adds support for the "mount-matrix" property,
+which can be used to fix the orientation of accelerometers on
+devices where the default does not work.
+
+- Add support for ACCEL_MOUNT_MATRIX udev property
+- Fix startup failure on certain devices
+- Work-around possible kernel bug on certain devices
+- Better supported/unsupported sensors detection
+- Better debug output
+
 1.3
 ---
 
