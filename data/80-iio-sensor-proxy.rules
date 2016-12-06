@@ -1,7 +1,7 @@
 # iio-sensor-proxy
 # IIO sensor to D-Bus proxy
 
-ACTION!="add", GOTO="iio_sensor_proxy_end"
+ACTION=="remove", GOTO="iio_sensor_proxy_end"
 
 # Set the sensor type for all the types we recognise
 SUBSYSTEM=="hwmon", TEST=="light", ENV{IIO_SENSOR_PROXY_TYPE}="hwmon-als"
