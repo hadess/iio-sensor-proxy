@@ -100,4 +100,5 @@ Tested on
 - Dell Inspiron 13 7000
 - Cube i9
 - HP Pavilion X360
+- HP Spectre x360 (Kaby Lake)
 - Asus Zenbook UX31A, UX305
