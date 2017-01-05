@@ -7,3 +7,13 @@ BusName=net.hadess.SensorProxy
 ExecStart=@sbindir@/iio-sensor-proxy
 #Uncomment this to enable debug
 #Environment="G_MESSAGES_DEBUG=all"
+
+# Lockdown
+ProtectSystem=true
+ProtectControlGroups=true
+ProtectHome=true
+ProtectKernelModules=true
+PrivateTmp=true
+PrivateNetwork=true
+MemoryDenyWriteExecute=true
+RestrictRealtime=true
