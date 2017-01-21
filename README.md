@@ -102,3 +102,4 @@ Tested on
 - HP Pavilion X360
 - HP Spectre x360 (Kaby Lake)
 - Asus Zenbook UX31A, UX305
+- Asus Transformer Book TP500LB
