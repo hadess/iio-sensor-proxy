@@ -72,6 +72,20 @@ orientation matches the screen one.
 `ACCEL_MOUNT_MATRIX` udev property. See [60-sensor.hwdb](https://github.com/systemd/systemd/blob/master/hwdb/60-sensor.hwdb)
 for details.
 
+Compass testing
+---------------
+
+Only the Geoclue daemon (as the geoclue user) is allowed to access the `net.hadess.SensorProxy.Compass`
+interface, the results of which it will propagate to clients along with positional information.
+
+If your device does not contain a compass, you can run tests with:
+- If your device does not contain a real compass:
+  - Add FAKE_COMPASS=1 to the environment of `iio-sensor-proxy.service` if your device does not contain a real one
+  - Run the daemon manually with `systemctl start iio-sensor-proxy.service`
+- Verify that iio-sensor-proxy is running with `systemctl` or `ps`
+- As root, get a shell as the `geoclue` user with `su -s /bin/bash geoclue`
+- Run, as the `geoclue` user, `monitor-sensor`
+
 References
 ----------
 
