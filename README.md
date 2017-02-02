@@ -82,24 +82,24 @@ References
 Tested on
 ---------
 
-- Lenovo IdeaPad Yoga 13
-- Microsoft Surface Pro 2
-- Lenovo Yoga 2 Pro
-- Lenovo Yoga 2 13" and 11"
-- Lenovo Yoga 900
-- Onda v975w
-- Dell Venue 8 Pro
-- Dell Venue 11 Pro (7140)
-- Lenovo ThinkPad Twist
-- MacBook Pro (8.2)
-- Lenovo X1 Carbon 2014 (rev2)
-- MacBook Air (6,2)
-- MacBook Air (4,2)
-- Toshiba Portégé Z10t
-- Toshiba Radius 11 L10WC10C
-- Dell Inspiron 13 7000
+- Apple MacBook Air (4,2)
+- Apple MacBook Air (6,2)
+- Apple MacBook Pro (8.2)
+- Asus Transformer Book TP500LB
+- Asus Zenbook UX31A, UX305
 - Cube i9
+- Dell Inspiron 13 7000
+- Dell Venue 11 Pro (7140)
+- Dell Venue 8 Pro
 - HP Pavilion X360
 - HP Spectre x360 (Kaby Lake)
-- Asus Zenbook UX31A, UX305
-- Asus Transformer Book TP500LB
+- Lenovo IdeaPad Yoga 13
+- Lenovo ThinkPad Twist
+- Lenovo X1 Carbon 2014 (rev2)
+- Lenovo Yoga 2 13" and 11"
+- Lenovo Yoga 2 Pro
+- Lenovo Yoga 900
+- Microsoft Surface Pro 2
+- Onda v975w
+- Toshiba Portégé Z10t
+- Toshiba Radius 11 L10WC10C
