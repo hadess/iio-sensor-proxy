@@ -96,8 +96,10 @@ Tested on
 - Lenovo IdeaPad Yoga 13
 - Lenovo ThinkPad Twist
 - Lenovo X1 Carbon 2014 (rev2)
+- Lenovo X1 Tablet
 - Lenovo Yoga 2 13" and 11"
 - Lenovo Yoga 2 Pro
+- Lenovo Yoga 460
 - Lenovo Yoga 900
 - Microsoft Surface Pro 2
 - Onda v975w
