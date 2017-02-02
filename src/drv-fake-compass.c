@@ -34,8 +34,8 @@ fake_compass_discover (GUdevDevice *device)
 	if (g_strcmp0 (g_udev_device_get_subsystem (device), "input") != 0)
 		return FALSE;
 
-	/* "Lid switch" is a random input device to latch onto */
-	if (g_strcmp0 (g_udev_device_get_property (device, "NAME"), "\"Lid Switch\"") != 0)
+	/* "Power Button" is a random input device to latch onto */
+	if (g_strcmp0 (g_udev_device_get_property (device, "NAME"), "\"Power Button\"") != 0)
 		return FALSE;
 
 	g_debug ("Found fake compass at %s", g_udev_device_get_sysfs_path (device));
