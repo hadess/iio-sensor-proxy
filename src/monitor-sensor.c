@@ -108,12 +108,17 @@ print_initial_values (void)
 	if (g_variant_get_boolean (v)) {
 		g_variant_unref (v);
 		v = g_dbus_proxy_get_cached_property (iio_proxy, "CompassHeading");
-		g_print ("=== Has compass (heading: %lf)\n",
-			   g_variant_get_double (v));
+		if (v) {
+			g_print ("=== Has compass (heading: %lf)\n",
+				 g_variant_get_double (v));
+			g_variant_unref (v);
+		} else {
+			g_print ("=== Has compass (heading: unset)\n");
+		}
 	} else {
 		g_print ("=== No compass\n");
 	}
-	g_variant_unref (v);
+	g_clear_pointer (&v, g_variant_unref);
 }
 
 static void
