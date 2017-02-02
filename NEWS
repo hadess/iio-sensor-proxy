@@ -1,3 +1,14 @@
+2.1
+---
+
+This release fixes a security problem that will affect services
+other than iio-sensor-proxy, that have a system D-Bus interface.
+Upgrading to this version is highly recommended.
+
+- Make D-Bus policy rules only affect SensorProxy itself
+- Lockdown service through systemd
+- Fix startup problem on machines with a Compass device
+
 2.0
 ---
 
