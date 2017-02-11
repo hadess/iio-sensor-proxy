@@ -13,7 +13,7 @@ Installation
 make
 make install
 ```
-It requires libgudev and systemd.
+It requires libgudev and systemd (>= 233 for the accelerometer quirks).
 
 Usage
 -----
