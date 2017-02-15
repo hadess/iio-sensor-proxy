@@ -14,6 +14,6 @@ ProtectControlGroups=true
 ProtectHome=true
 ProtectKernelModules=true
 PrivateTmp=true
-PrivateNetwork=true
+RestrictAddressFamilies=AF_UNIX AF_LOCAL AF_NETLINK
 MemoryDenyWriteExecute=true
 RestrictRealtime=true
