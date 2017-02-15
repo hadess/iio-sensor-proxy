@@ -734,6 +734,9 @@ sensor_changes (GUdevClient *client,
 {
 	guint i;
 
+	g_debug ("Sensor changes: action = %s, device = %s",
+		 action, g_udev_device_get_sysfs_path (device));
+
 	if (g_strcmp0 (action, "remove") == 0) {
 		for (i = 0; i < NUM_SENSOR_TYPES; i++) {
 			GUdevDevice *dev = DEVICE_FOR_TYPE(i);
