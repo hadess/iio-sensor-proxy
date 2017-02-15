@@ -1,3 +1,10 @@
+2.2
+---
+
+This release fixes iio-sensor-proxy not receiving udev events
+because of the excessive lockdown added in version 2.1. This
+also fixes a possible crash on startup due to a race condition.
+
 2.1
 ---
 
