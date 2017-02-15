@@ -33,10 +33,11 @@
 
 typedef struct {
 	GMainLoop *loop;
+	GUdevClient *client;
 	GDBusNodeInfo *introspection_data;
 	GDBusConnection *connection;
 	guint name_id;
-	gboolean init_done;
+	int ret;
 
 	SensorDriver *drivers[NUM_SENSOR_TYPES];
 	GUdevDevice  *devices[NUM_SENSOR_TYPES];
@@ -84,6 +85,11 @@ driver_type_to_str (DriverType type)
 
 #define DRIVER_FOR_TYPE(driver_type) data->drivers[driver_type]
 #define DEVICE_FOR_TYPE(driver_type) data->devices[driver_type]
+
+static void sensor_changes (GUdevClient *client,
+			    gchar       *action,
+			    GUdevDevice *device,
+			    SensorData  *data);
 
 static gboolean
 driver_type_exists (SensorData *data,
@@ -540,11 +546,40 @@ name_acquired_handler (GDBusConnection *connection,
 		       gpointer         user_data)
 {
 	SensorData *data = user_data;
+	const gchar * const subsystems[] = { "iio", "input", "platform", NULL };
+	guint i;
 
-	if (data->init_done) {
-		send_dbus_event (data, PROP_ALL);
-		send_dbus_event (data, PROP_ALL_COMPASS);
+	data->client = g_udev_client_new (subsystems);
+	if (!find_sensors (data->client, data))
+		goto bail;
+
+	g_signal_connect (G_OBJECT (data->client), "uevent",
+			  G_CALLBACK (sensor_changes), data);
+
+	for (i = 0; i < NUM_SENSOR_TYPES; i++) {
+		data->clients[i] = create_clients_hash_table ();
+
+		if (!driver_type_exists (data, i))
+			continue;
+
+		if (!driver_open (DRIVER_FOR_TYPE(i), DEVICE_FOR_TYPE(i),
+				  driver_type_to_callback_func (data->drivers[i]->type), data)) {
+			DRIVER_FOR_TYPE(i) = NULL;
+			g_clear_object (&DEVICE_FOR_TYPE(i));
+		}
 	}
+
+	if (!any_sensors_left (data))
+		goto bail;
+
+	send_dbus_event (data, PROP_ALL);
+	send_dbus_event (data, PROP_ALL_COMPASS);
+	return;
+
+bail:
+	data->ret = 0;
+	g_debug ("Could not find any supported sensors");
+	g_main_loop_quit (data->loop);
 }
 
 static gboolean
@@ -686,6 +721,7 @@ free_sensor_data (SensorData *data)
 
 	g_clear_pointer (&data->introspection_data, g_dbus_node_info_unref);
 	g_clear_object (&data->connection);
+	g_clear_object (&data->client);
 	g_clear_pointer (&data->loop, g_main_loop_unref);
 	g_free (data);
 }
@@ -754,10 +790,7 @@ sensor_changes (GUdevClient *client,
 int main (int argc, char **argv)
 {
 	SensorData *data;
-	GUdevClient *client;
 	int ret = 0;
-	const gchar * const subsystems[] = { "iio", "input", "platform", NULL };
-	guint i;
 
 	g_usleep (G_USEC_PER_SEC * 3);
 
@@ -768,40 +801,9 @@ int main (int argc, char **argv)
 	/* Set up D-Bus */
 	setup_dbus (data);
 
-	client = g_udev_client_new (subsystems);
-	if (!find_sensors (client, data)) {
-		g_debug ("Could not find any supported sensors");
-		return 0;
-	}
-	g_signal_connect (G_OBJECT (client), "uevent",
-			  G_CALLBACK (sensor_changes), data);
-
-	for (i = 0; i < NUM_SENSOR_TYPES; i++) {
-		data->clients[i] = create_clients_hash_table ();
-
-		if (!driver_type_exists (data, i))
-			continue;
-
-		if (!driver_open (DRIVER_FOR_TYPE(i), DEVICE_FOR_TYPE(i),
-				  driver_type_to_callback_func (data->drivers[i]->type), data)) {
-			DRIVER_FOR_TYPE(i) = NULL;
-			g_clear_object (&DEVICE_FOR_TYPE(i));
-		}
-	}
-
-	if (!any_sensors_left (data))
-		goto out;
-
-	data->init_done = TRUE;
-	if (data->connection) {
-		send_dbus_event (data, PROP_ALL);
-		send_dbus_event (data, PROP_ALL_COMPASS);
-	}
-
 	data->loop = g_main_loop_new (NULL, TRUE);
 	g_main_loop_run (data->loop);
-
-out:
+	ret = data->ret;
 	free_sensor_data (data);
 
 	return ret;
