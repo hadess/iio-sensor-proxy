@@ -46,12 +46,9 @@ MAINTAINERCLEANFILES =		\
 	iio-sensor-proxy-*.txt	\
 	$(NULL)
 
-if ENABLE_GTK_DOC
 include $(top_srcdir)/gtk-doc.make
-else
-CLEANFILES = $(NULL)
+
 EXTRA_DIST = iio-sensor-proxy-docs.xml
-endif
 
 CLEANFILES +=					\
 	docs-net.hadess.SensorProxy.xml		\
