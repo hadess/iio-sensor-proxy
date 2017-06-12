@@ -98,7 +98,7 @@ to minimise the impact of this kernel bug. The bug has been reported but still n
 a race condition and hard to "not reproduce" with certainty, meaning a number of possible of unaffected
 kernels work because of different timings.
 
-See also (this linux-iio thread)[https://www.spinics.net/lists/linux-iio/msg29983.html].
+See also [this linux-iio thread](https://www.spinics.net/lists/linux-iio/msg29983.html).
 
 References
 ----------
