@@ -86,6 +86,20 @@ If your device does not contain a compass, you can run tests with:
 - As root, get a shell as the `geoclue` user with `su -s /bin/bash geoclue`
 - Run, as the `geoclue` user, `monitor-sensor`
 
+Known problems
+--------------
+
+Every Linux kernel from 4.3 up to the latest versions (4.12-rc3 at the time of writing) have a bug that
+make iio-sensor-proxy fail to see any events coming from sensors until the sensor is unplugged and replugged
+or suspended and resumed.
+
+A work-around for this problem was added in [this commit](https://github.com/hadess/iio-sensor-proxy/commit/5468452f7a72566d2e6ddc44f9396d3d088fa9fb)
+to minimise the impact of this kernel bug. The bug has been reported but still not root-caused. It's
+a race condition and hard to "not reproduce" with certainty, meaning a number of possible of unaffected
+kernels work because of different timings.
+
+See also (this linux-iio thread)[https://www.spinics.net/lists/linux-iio/msg29983.html].
+
 References
 ----------
 
