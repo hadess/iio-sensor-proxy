@@ -114,7 +114,7 @@ Tested on
 - Apple MacBook Air (6,2)
 - Apple MacBook Pro (8.2)
 - Asus Transformer Book TP500LB
-- Asus Zenbook UX31A, UX303L, UX305
+- Asus Zenbook UX31A, UX303L, UX305, UX330UA
 - Cube i9
 - Dell Inspiron 13 7000
 - Dell Venue 11 Pro (7140)
