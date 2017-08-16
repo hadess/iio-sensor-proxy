@@ -177,7 +177,8 @@ iioutils_get_param_float (float      *output,
 		fclose (sysfsfp);
 	} else {
 		ret = -errno;
-		g_warning ("Failed to read float from %s", filename);
+		if (ret != -ENOENT)
+			g_warning ("Failed to read float from %s", filename);
 	}
 
 	g_free (filename);
