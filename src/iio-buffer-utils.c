@@ -475,7 +475,7 @@ size_from_channelarray (iio_channel_info **channels,
  **/
 void
 process_scan_1 (char              *data,
-    BufferDrvData        *buffer_data,
+		BufferDrvData        *buffer_data,
 		const char        *ch_name,
 		int               *ch_val,
 		gdouble           *ch_scale,
@@ -495,13 +495,15 @@ process_scan_1 (char              *data,
 			if (!buffer_data->channels[k]->is_signed) {
 				guint32 val = *(guint32 *) (data + buffer_data->channels[k]->location);
 				val = val >> buffer_data->channels[k]->shift;
-				if (buffer_data->channels[k]->bits_used < 32) val &= ((guint32) 1 << buffer_data->channels[k]->bits_used) - 1;
+				if (buffer_data->channels[k]->bits_used < 32)
+					val &= ((guint32) 1 << buffer_data->channels[k]->bits_used) - 1;
 				*ch_val = (int) val;
 				*ch_present = TRUE;
 			} else {
 				gint32 val = *(gint32 *) (data + buffer_data->channels[k]->location);
 				val = val >> buffer_data->channels[k]->shift;
-				if (buffer_data->channels[k]->bits_used < 32) val &= ((guint32) 1 << buffer_data->channels[k]->bits_used) - 1;
+				if (buffer_data->channels[k]->bits_used < 32)
+					val &= ((guint32) 1 << buffer_data->channels[k]->bits_used) - 1;
 				val = (gint32) (val << (32 - buffer_data->channels[k]->bits_used)) >> (32 - buffer_data->channels[k]->bits_used);
 				*ch_val = (int) val;
 				if (buffer_data->channels[k]->scale)
