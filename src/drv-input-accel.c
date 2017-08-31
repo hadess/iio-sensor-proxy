@@ -34,10 +34,68 @@ static DrvData *drv_data = NULL;
 
 static void input_accel_set_polling (gboolean state);
 
+/* From src/linux/up-device-supply.c in UPower */
+static GUdevDevice *
+get_sibling_with_subsystem (GUdevDevice *device,
+			    const char *subsystem)
+{
+	GUdevDevice *parent;
+	GUdevClient *client;
+	GUdevDevice *sibling;
+	const char * class[] = { NULL, NULL };
+	const char *parent_path;
+	GList *devices, *l;
+
+	g_return_val_if_fail (device != NULL, NULL);
+	g_return_val_if_fail (subsystem != NULL, NULL);
+
+	parent = g_udev_device_get_parent (device);
+	if (!parent)
+		return NULL;
+	parent_path = g_udev_device_get_sysfs_path (parent);
+
+	sibling = NULL;
+	class[0] = subsystem;
+	client = g_udev_client_new (class);
+	devices = g_udev_client_query_by_subsystem (client, subsystem);
+	for (l = devices; l != NULL && sibling == NULL; l = l->next) {
+		GUdevDevice *d = l->data;
+		GUdevDevice *p;
+		const char *p_path;
+
+		p = g_udev_device_get_parent (d);
+		if (!p)
+			continue;
+		p_path = g_udev_device_get_sysfs_path (p);
+		if (g_strcmp0 (p_path, parent_path) == 0)
+			sibling = g_object_ref (d);
+
+		g_object_unref (p);
+	}
+
+	g_list_free_full (devices, (GDestroyNotify) g_object_unref);
+	g_object_unref (client);
+	g_object_unref (parent);
+
+	return sibling;
+}
+
+static gboolean
+is_part_of_joypad (GUdevDevice *device)
+{
+	g_autoptr(GUdevDevice) sibling;
+
+	sibling = get_sibling_with_subsystem (device, "input");
+	if (!sibling)
+		return FALSE;
+	return g_udev_device_get_property_as_boolean (sibling, "ID_INPUT_JOYSTICK");
+}
+
 static gboolean
 input_accel_discover (GUdevDevice *device)
 {
 	const char *path;
+	g_autoptr(GUdevDevice) parent = NULL;
 
 	if (g_strcmp0 (g_udev_device_get_property (device, "IIO_SENSOR_PROXY_TYPE"), "input-accel") != 0)
 		return FALSE;
@@ -46,6 +104,10 @@ input_accel_discover (GUdevDevice *device)
 	if (!path)
 		return FALSE;
 	if (strstr (path, "/event") == NULL)
+		return FALSE;
+
+	parent = g_udev_device_get_parent (device);
+	if (parent && is_part_of_joypad (parent))
 		return FALSE;
 
 	g_debug ("Found input accel at %s", g_udev_device_get_sysfs_path (device));

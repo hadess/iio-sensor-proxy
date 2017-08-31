@@ -49,7 +49,7 @@ if test x$enable_gtk_tests = xyes; then
 fi
 AM_CONDITIONAL(HAVE_GTK_TESTS, test "x$enable_gtk_tests" = "xyes")
 
-PKG_CHECK_MODULES(IIO_SENSOR_PROXY, gio-2.0 gudev-1.0)
+PKG_CHECK_MODULES(IIO_SENSOR_PROXY, gio-2.0 gudev-1.0 >= 232)
 
 AC_PATH_PROG([GDBUS_CODEGEN],[gdbus-codegen])
 
