@@ -178,7 +178,7 @@ iioutils_get_param_float (float      *output,
 	} else {
 		ret = -errno;
 		if (ret != -ENOENT)
-			g_warning ("Failed to read float from %s", filename);
+			g_warning ("Failed to read float from %s: %s", filename, g_strerror (-ret));
 	}
 
 	g_free (filename);
