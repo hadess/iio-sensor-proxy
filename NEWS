@@ -1,3 +1,11 @@
+2.3
+---
+
+This release fixes API documentation not being in the tarball,
+removes a work-around for long-standing kernel bug (see README.md
+for details), and ignores accelerometers that are part of gaming
+devices. A number of build warnings were also fixed.
+
 2.2
 ---
 
