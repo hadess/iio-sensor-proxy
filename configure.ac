@@ -51,6 +51,13 @@ AM_CONDITIONAL(HAVE_GTK_TESTS, test "x$enable_gtk_tests" = "xyes")
 
 PKG_CHECK_MODULES(IIO_SENSOR_PROXY, gio-2.0 gudev-1.0 >= 232)
 
+AC_ARG_WITH(geoclue-user,
+            AS_HELP_STRING([--with-geoclue-user=USER],
+                           [The USER (existing) as which geoclue service is running (default: geoclue)]),
+            geoclue_user="$with_geoclue_user",
+            geoclue_user="geoclue")
+AC_SUBST(geoclue_user)
+
 AC_PATH_PROG([GDBUS_CODEGEN],[gdbus-codegen])
 
 AC_CONFIG_FILES([

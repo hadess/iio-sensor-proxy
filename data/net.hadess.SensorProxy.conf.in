@@ -11,7 +11,7 @@
   </policy>
 
   <!-- Only Geoclue can access the compass -->
-  <policy user="geoclue">
+  <policy user="@geoclue_user@">
     <allow send_destination="net.hadess.SensorProxy" send_interface="net.hadess.SensorProxy.Compass" send_path="/net/hadess/SensorProxy/Compass"/>
     <allow send_destination="net.hadess.SensorProxy" send_interface="org.freedesktop.DBus.Introspectable" send_path="/net/hadess/SensorProxy/Compass"/>
     <allow send_destination="net.hadess.SensorProxy" send_interface="org.freedesktop.DBus.Properties" send_path="/net/hadess/SensorProxy/Compass"/>

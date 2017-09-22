@@ -9,5 +9,9 @@ iio-sensor-proxy.service: iio-sensor-proxy.service.in Makefile
 dbusconfdir = $(sysconfdir)/dbus-1/system.d
 dbusconf_DATA = net.hadess.SensorProxy.conf
 
-CLEANFILES = iio-sensor-proxy.service
+net.hadess.SensorProxy.conf: net.hadess.SensorProxy.conf.in Makefile
+	@sed -e "s|\@geoclue_user\@|$(geoclue_user)|" $< > $@
+
+
+CLEANFILES = iio-sensor-proxy.service net.hadess.SensorProxy.conf
 EXTRA_DIST = $(udevrules_DATA) $(dbusconf_DATA) $(systemdservice_in_files)
