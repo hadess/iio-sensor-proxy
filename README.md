@@ -117,6 +117,7 @@ Tested on
 - Dell Inspiron 13 7000
 - Dell Venue 11 Pro (7140)
 - Dell Venue 8 Pro
+- Dell XPS 9365
 - HP Pavilion X360
 - HP Spectre x360 (Kaby Lake)
 - Lenovo IdeaPad Yoga 13
