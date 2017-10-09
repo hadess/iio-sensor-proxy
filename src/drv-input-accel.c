@@ -199,6 +199,8 @@ input_accel_open (GUdevDevice        *device,
 	drv_data->parent = g_udev_device_get_parent (drv_data->dev);
 	drv_data->dev_path = g_udev_device_get_device_file (device);
 	drv_data->name = g_udev_device_get_property (device, "NAME");
+	if (!drv_data->name)
+		drv_data->name = g_udev_device_get_property (device, "ID_MODEL");
 	drv_data->client = g_udev_client_new (subsystems);
 
 	mount_matrix = g_udev_device_get_property (device, "ACCEL_MOUNT_MATRIX");
