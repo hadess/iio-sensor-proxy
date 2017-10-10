@@ -93,7 +93,7 @@ Every Linux kernel from 4.3 up to version 4.12 had a bug that made
 made iio-sensor-proxy fail to see any events coming from sensors until the
 sensor was power-cycled (unplugged and replugged, or suspended and resumed).
 
-The bug was finally fixed in [this commit](https://git.kernel.org/pub/scm/linux/kernel/git/jic23/iio.git/commit/?h=fixes-togreg&id=eafad73ed3851707fa6e3124a255fc049ff9545d)
+The bug was finally fixed in [this commit](https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/commit/?id=f1664eaacec31035450132c46ed2915fd2b2049a)
 in the upstream kernel and backported to stable releases. If you experience
 unresponsive sensors, ask your distributor to make sure this patch was
 applied to the version you're using.
