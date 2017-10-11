@@ -535,14 +535,14 @@ process_scan_1 (char              *data,
 			/* only a few cases implemented so far */
 		case 4:
 			if (!buffer_data->channels[k]->is_signed) {
-				guint32 val = *(guint32 *) (data + buffer_data->channels[k]->location);
+				guint32 val = iio_readu32(buffer_data->channels[k], (guint8 *) data);
 				val = val >> buffer_data->channels[k]->shift;
 				if (buffer_data->channels[k]->bits_used < 32)
 					val &= ((guint32) 1 << buffer_data->channels[k]->bits_used) - 1;
 				*ch_val = (int) val;
 				*ch_present = TRUE;
 			} else {
-				gint32 val = *(gint32 *) (data + buffer_data->channels[k]->location);
+				gint32 val = iio_read32(buffer_data->channels[k], (gint8 *) data);
 				val = val >> buffer_data->channels[k]->shift;
 				if (buffer_data->channels[k]->bits_used < 32)
 					val &= ((guint32) 1 << buffer_data->channels[k]->bits_used) - 1;
