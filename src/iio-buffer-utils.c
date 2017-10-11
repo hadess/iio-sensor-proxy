@@ -44,6 +44,48 @@ struct iio_channel_info {
 	unsigned location;
 };
 
+#define _IIO_GETU(__data, __idx, __size, __shift) \
+    (((guint##__size) (((const guint8 *) (__data))[__idx])) << (__shift))
+
+#define _IIO_READ_UINT32_BE(data)       (_IIO_GETU (data, 0, 32, 24) | \
+                                         _IIO_GETU (data, 1, 32, 16) | \
+                                         _IIO_GETU (data, 2, 32,  8) | \
+                                         _IIO_GETU (data, 3, 32,  0))
+
+#define _IIO_READ_UINT32_LE(data)       (_IIO_GETU (data, 3, 32, 24) | \
+                                         _IIO_GETU (data, 2, 32, 16) | \
+                                         _IIO_GETU (data, 1, 32,  8) | \
+                                         _IIO_GETU (data, 0, 32,  0))
+
+static inline guint32
+iio_readu32 (struct iio_channel_info *info, const guint8 * data)
+{
+	if (info->be)
+		return _IIO_READ_UINT32_BE (data);
+	return _IIO_READ_UINT32_LE(data);
+}
+
+#define _IIO_GET(__data, __idx, __size, __shift) \
+    (((guint##__size) (((const guint8 *) (__data))[__idx])) << (__shift))
+
+#define _IIO_READ_INT32_BE(data)       (_IIO_GET (data, 0, 32, 24) | \
+                                        _IIO_GET (data, 1, 32, 16) | \
+                                        _IIO_GET (data, 2, 32,  8) | \
+                                        _IIO_GET (data, 3, 32,  0))
+
+#define _IIO_READ_INT32_LE(data)       (_IIO_GET (data, 3, 32, 24) | \
+                                        _IIO_GET (data, 2, 32, 16) | \
+                                        _IIO_GET (data, 1, 32,  8) | \
+                                        _IIO_GET (data, 0, 32,  0))
+
+static inline gint32
+iio_read32 (struct iio_channel_info *info, const gint8 * data)
+{
+	if (info->be)
+		return _IIO_READ_INT32_BE (data);
+	return _IIO_READ_INT32_LE(data);
+}
+
 static char *
 iioutils_break_up_name (const char *name)
 {
