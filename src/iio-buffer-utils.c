@@ -61,8 +61,8 @@ static inline guint32
 iio_readu32 (struct iio_channel_info *info, const guint8 * data)
 {
 	if (info->be)
-		return _IIO_READ_UINT32_BE (data);
-	return _IIO_READ_UINT32_LE(data);
+		return _IIO_READ_UINT32_BE (data + info->location);
+	return _IIO_READ_UINT32_LE(data + info->location);
 }
 
 #define _IIO_GET(__data, __idx, __size, __shift) \
@@ -82,8 +82,8 @@ static inline gint32
 iio_read32 (struct iio_channel_info *info, const gint8 * data)
 {
 	if (info->be)
-		return _IIO_READ_INT32_BE (data);
-	return _IIO_READ_INT32_LE(data);
+		return _IIO_READ_INT32_BE (data + info->location);
+	return _IIO_READ_INT32_LE(data + info->location);
 }
 
 static char *
