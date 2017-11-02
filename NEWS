@@ -1,3 +1,10 @@
+2.4
+---
+
+This release fixes data being incorrectly read from sensors due to
+a naively broken compilation fix. It also supports Geoclue running
+as a different user than "geoclue".
+
 2.3
 ---
 
