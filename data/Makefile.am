@@ -14,4 +14,4 @@ net.hadess.SensorProxy.conf: net.hadess.SensorProxy.conf.in Makefile
 
 
 CLEANFILES = iio-sensor-proxy.service net.hadess.SensorProxy.conf
-EXTRA_DIST = $(udevrules_DATA) $(dbusconf_DATA) $(systemdservice_in_files)
+EXTRA_DIST = $(udevrules_DATA) $(dbusconf_DATA) $(systemdservice_in_files) net.hadess.SensorProxy.conf.in
