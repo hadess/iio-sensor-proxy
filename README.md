@@ -114,6 +114,7 @@ Tested on
 - Asus Transformer Book TP500LB
 - Asus Zenbook UX31A, UX303L, UX305, UX330UA
 - Cube i9
+- Cube Mix Plus
 - Dell Inspiron 13 7000
 - Dell Venue 11 Pro (7140)
 - Dell Venue 8 Pro
