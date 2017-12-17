@@ -23,6 +23,14 @@ automatically be applied when rotating the panel, ambient light will be used
 to change the screen brightness, and Geoclue will be able to read the compass
 data to show the direction in Maps.
 
+Note that nothing in iio-sensor-proxy is GNOME specific, or relies on GNOME.
+GNOME and geoclue use the data provided by iio-sensor-proxy, other desktop
+environments are more than welcome to use this as a basis for their own
+integration.
+
+Debugging
+---------
+
 Note that a number of kernel bugs will prevent it from working correctly on
 some machines so please make sure to use the latest upstream kernel (kernel
 crashes on the Surface Pro, sensor failing to work after suspend on the Yoga
