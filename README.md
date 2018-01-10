@@ -136,6 +136,7 @@ Tested on
 - Lenovo Yoga 2 13" and 11"
 - Lenovo Yoga 2 Pro
 - Lenovo Yoga 460
+- Lenovo Yoga 520-14IKB
 - Lenovo Yoga 710-11ISK
 - Lenovo Yoga 900
 - Microsoft Surface Pro 2
