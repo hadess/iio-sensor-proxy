@@ -31,11 +31,11 @@ fake_light_discover (GUdevDevice *device)
 	if (g_getenv ("FAKE_LIGHT_SENSOR") == NULL)
 		return FALSE;
 
-	if (g_strcmp0 (g_udev_device_get_subsystem (device), "input") != 0)
-		return FALSE;
-
-	/* "Lid switch" is a random input device to latch onto */
-	if (g_strcmp0 (g_udev_device_get_property (device, "NAME"), "\"Lid Switch\"") == 0)
+	/* We need a udev device to associate with our fake light sensor,
+	 * and the power button is as good as any, and should be available
+	 * on most devices we want to run this on. */
+	if (g_strcmp0 (g_udev_device_get_subsystem (device), "input") != 0 ||
+	    g_strcmp0 (g_udev_device_get_property (device, "NAME"), "\"Power Button\"") != 0)
 		return FALSE;
 
 	g_debug ("Found fake light at %s", g_udev_device_get_sysfs_path (device));
