@@ -131,8 +131,8 @@ setup_uinput (OrientationData *data)
 	memset (&dev, 0, sizeof(dev));
 	snprintf (dev.name, sizeof (dev.name), "%s", "iio-sensor-proxy test application");
 	dev.id.bustype = BUS_VIRTUAL;
-	dev.id.vendor = 0x01; //FIXME
-	dev.id.product = 0x02;
+	dev.id.vendor = 0x00;
+	dev.id.product = 0x00;
 
 	/* 1G accel is reported as ~256, so clamp to 2G */
 	dev.absmin[ABS_X] = dev.absmin[ABS_Y] = dev.absmin[ABS_Z] = -512;
