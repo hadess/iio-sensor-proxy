@@ -139,6 +139,7 @@ Tested on
 - Lenovo Yoga 520-14IKB
 - Lenovo Yoga 710-11ISK
 - Lenovo Yoga 900
+- Lenovo IdeaTab Miix2 8
 - Microsoft Surface Pro 2
 - Onda v975w
 - Toshiba Portégé Z10t
