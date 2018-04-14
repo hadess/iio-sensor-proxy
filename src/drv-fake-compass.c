@@ -43,7 +43,7 @@ fake_compass_discover (GUdevDevice *device)
 }
 
 static gboolean
-compass_changed (void)
+compass_changed (gpointer user_data)
 {
 	static gdouble heading = 0;
 	CompassReadings readings;
@@ -62,7 +62,7 @@ compass_changed (void)
 static gboolean
 first_values (gpointer user_data)
 {
-	compass_changed ();
+	compass_changed (NULL);
 	drv_data->timeout_id = g_timeout_add_seconds (1, (GSourceFunc) compass_changed, NULL);
 	g_source_set_name_by_id (drv_data->timeout_id, "[fake_compass_set_polling] compass_changed");
 	return G_SOURCE_REMOVE;

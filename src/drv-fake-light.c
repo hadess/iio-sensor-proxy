@@ -43,7 +43,7 @@ fake_light_discover (GUdevDevice *device)
 }
 
 static gboolean
-light_changed (void)
+light_changed (gpointer user_data)
 {
 	static gdouble level = -1.0;
 	LightReadings readings;
@@ -62,7 +62,7 @@ light_changed (void)
 static gboolean
 first_values (gpointer user_data)
 {
-	light_changed ();
+	light_changed (NULL);
 	drv_data->timeout_id = g_timeout_add_seconds (1, (GSourceFunc) light_changed, NULL);
 	g_source_set_name_by_id (drv_data->timeout_id, "[fake_light_set_polling] light_changed");
 	return G_SOURCE_REMOVE;

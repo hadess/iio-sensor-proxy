@@ -38,7 +38,7 @@ hwmon_light_discover (GUdevDevice *device)
 }
 
 static gboolean
-light_changed (void)
+light_changed (gpointer user_data)
 {
 	LightReadings readings;
 	gdouble level;
@@ -101,7 +101,7 @@ hwmon_light_set_polling (gboolean state)
 		g_source_set_name_by_id (drv_data->timeout_id, "[hwmon_light_set_polling] light_changed");
 
 		/* And send a reading straight away */
-		light_changed ();
+		light_changed (NULL);
 	}
 }
 

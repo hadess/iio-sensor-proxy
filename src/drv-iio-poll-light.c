@@ -38,7 +38,7 @@ iio_poll_light_discover (GUdevDevice *device)
 }
 
 static gboolean
-light_changed (void)
+light_changed (gpointer user_data)
 {
 	LightReadings readings;
 	gdouble level;
