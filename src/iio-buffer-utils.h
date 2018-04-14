@@ -35,6 +35,7 @@ void process_scan_1                    (char              *data,
 				        int               *ch_val,
 				        gdouble           *ch_scale,
 				        gboolean          *ch_present);
+gboolean iio_fixup_sampling_frequency  (GUdevDevice *dev);
 
 void           buffer_drv_data_free    (BufferDrvData *buffer_data);
 BufferDrvData *buffer_drv_data_new     (GUdevDevice *device,

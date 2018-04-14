@@ -7,6 +7,7 @@
  */
 
 #include "drivers.h"
+#include "iio-buffer-utils.h"
 
 #include <fcntl.h>
 #include <unistd.h>
@@ -114,6 +115,8 @@ iio_poll_light_open (GUdevDevice        *device,
 		     ReadingsUpdateFunc  callback_func,
 		     gpointer            user_data)
 {
+	iio_fixup_sampling_frequency (device);
+
 	drv_data = g_new0 (DrvData, 1);
 	drv_data->callback_func = callback_func;
 	drv_data->user_data = user_data;

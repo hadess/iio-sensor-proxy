@@ -7,6 +7,7 @@
  */
 
 #include "drivers.h"
+#include "iio-buffer-utils.h"
 #include "accel-mount-matrix.h"
 
 #include <fcntl.h>
@@ -118,6 +119,8 @@ iio_poll_accel_open (GUdevDevice        *device,
 		     gpointer            user_data)
 {
 	const char *mount_matrix;
+
+	iio_fixup_sampling_frequency (device);
 
 	drv_data = g_new0 (DrvData, 1);
 	drv_data->dev = g_object_ref (device);

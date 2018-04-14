@@ -17,6 +17,8 @@
 #include <errno.h>
 #include <stdio.h>
 
+#define IIO_MIN_SAMPLING_FREQUENCY	10 /* Hz */
+
 /**
  * iio_channel_info - information about a given channel
  * @name: channel name
@@ -569,6 +571,51 @@ process_scan_1 (char              *data,
 }
 
 /**
+ * iio_fixup_sampling_frequency: Fixup devices *sampling_frequency attributes
+ * @dev: the IIO device to fix the sampling frequencies for
+ *
+ * Make sure devices with *sampling_frequency attributes are sampling at
+ * 10Hz or more. This fixes 2 problems:
+ * 1) Some buffered devices default their sampling_frequency to 0Hz and then
+ * never produce any readings.
+ * 2) Some polled devices default to 1Hz and wait for a fresh sample before
+ * returning from sysfs *_raw reads, blocking all of iio-sensor-proxy for
+ * multiple seconds
+ **/
+gboolean
+iio_fixup_sampling_frequency (GUdevDevice *dev)
+{
+	GDir *dir;
+	const char *device_dir;
+	const char *name;
+	GError *error = NULL;
+	double sample_freq;
+
+	device_dir = g_udev_device_get_sysfs_path (dev);
+	dir = g_dir_open (g_udev_device_get_sysfs_path (dev), 0, &error);
+	if (!dir) {
+		g_warning ("Failed to open directory '%s': %s", device_dir, error->message);
+		g_error_free (error);
+		return FALSE;
+	}
+
+	while ((name = g_dir_read_name (dir))) {
+		if (g_str_has_suffix (name, "sampling_frequency") == FALSE)
+			continue;
+
+		sample_freq = g_udev_device_get_sysfs_attr_as_double (dev, name);
+		if (sample_freq >= IIO_MIN_SAMPLING_FREQUENCY)
+			continue; /* Continue with pre-set sample freq. */
+
+		/* Sample freq too low, set it to 10Hz */
+		if (write_sysfs_int (name, device_dir, IIO_MIN_SAMPLING_FREQUENCY) < 0)
+			g_warning ("Could not fix sample-freq for %s/%s", device_dir, name);
+	}
+	g_dir_close (dir);
+	return TRUE;
+}
+
+/**
  * enable_sensors: enable all the sensors in a device
  * @device_dir: the IIO device directory in sysfs
  * @
@@ -719,7 +766,8 @@ buffer_drv_data_new (GUdevDevice *device,
 	buffer_data->trigger_name = g_strdup (trigger_name);
 	buffer_data->device = g_object_ref (device);
 
-	if (!enable_sensors (device, 1) ||
+	if (!iio_fixup_sampling_frequency (device) ||
+	    !enable_sensors (device, 1) ||
 	    !enable_trigger (buffer_data) ||
 	    !enable_ring_buffer (buffer_data) ||
 	    !build_channels (buffer_data)) {
