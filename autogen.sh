@@ -5,12 +5,6 @@ test -n "$srcdir" || srcdir=.
 
 olddir=$(pwd)
 
-if [[ ! "$olddir" -ef $srcdir ]]; then
-        echo "*** ERROR: iio-sensor-proxy doesn't currently support builddir != srcdir. ***"
-        echo "*** See https://bugzilla.gnome.org/show_bug.cgi?id=771359 for details. ***"
-        exit 1
-fi
-
 cd $srcdir
 
 (test -f configure.ac) || {
