@@ -9,7 +9,7 @@ ExecStart=@sbindir@/iio-sensor-proxy
 #Environment="G_MESSAGES_DEBUG=all"
 
 # Lockdown
-ProtectSystem=true
+ProtectSystem=strict
 ProtectControlGroups=true
 ProtectHome=true
 ProtectKernelModules=true
