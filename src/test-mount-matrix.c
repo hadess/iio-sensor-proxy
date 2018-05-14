@@ -15,9 +15,9 @@ static void
 print_vecs (AccelVec3 vecs[3])
 {
 	g_test_message ("%f, %f, %f; %f, %f, %f; %f, %f, %f",
-			vecs[0].x, vecs[0].y, vecs[0].z,
-			vecs[1].x, vecs[1].y, vecs[1].z,
-			vecs[2].x, vecs[2].y, vecs[2].z);
+			(double) vecs[0].x, (double) vecs[0].y, (double) vecs[0].z,
+			(double) vecs[1].x, (double) vecs[1].y, (double) vecs[1].z,
+			(double) vecs[2].x, (double) vecs[2].y, (double) vecs[2].z);
 }
 
 static void

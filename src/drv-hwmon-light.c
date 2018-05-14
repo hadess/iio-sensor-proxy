@@ -52,7 +52,7 @@ light_changed (gpointer user_data)
 			g_free (contents);
 			return G_SOURCE_CONTINUE;
 		}
-		level = ((float) MAX(light1, light2)) / (float) MAX_LIGHT_LEVEL * 100.0;
+		level = (double) (((float) MAX(light1, light2)) / (float) MAX_LIGHT_LEVEL * 100.0f);
 		g_free (contents);
 	} else {
 		g_warning ("Failed to read input level at %s: %s",
