@@ -197,6 +197,8 @@ iioutils_get_param_float (float      *output,
 	char *builtname, *filename;
 	int ret = 0;
 
+	g_debug ("Trying to read '%s_%s' (name) from dir '%s'", name, param_name, device_dir);
+
 	builtname = g_strdup_printf ("%s_%s", name, param_name);
 	filename = g_build_filename (device_dir, builtname, NULL);
 	g_free (builtname);
@@ -209,7 +211,10 @@ iioutils_get_param_float (float      *output,
 		return 0;
 	}
 
+	g_debug ("Failed to read float from %s: %s", filename, g_strerror (-ret));
 	g_free (filename);
+
+	g_debug ("Trying to read '%s_%s' (generic name) from dir '%s'", generic_name, param_name, device_dir);
 
 	builtname = g_strdup_printf ("%s_%s", generic_name, param_name);
 	filename = g_build_filename (device_dir, builtname, NULL);
@@ -223,6 +228,8 @@ iioutils_get_param_float (float      *output,
 		ret = -errno;
 		if (ret != -ENOENT)
 			g_warning ("Failed to read float from %s: %s", filename, g_strerror (-ret));
+		else
+			g_debug ("Failed to read float from %s: %s", filename, g_strerror (-ret));
 	}
 
 	g_free (filename);
