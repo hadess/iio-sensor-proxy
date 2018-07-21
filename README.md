@@ -129,6 +129,7 @@ Tested on
 - Dell XPS 9365
 - HP Pavilion X360
 - HP Spectre x360 (Kaby Lake)
+- Huawei Matebook X Pro
 - Lenovo IdeaPad Yoga 13
 - Lenovo ThinkPad Twist
 - Lenovo X1 Carbon 2014 (rev2)
