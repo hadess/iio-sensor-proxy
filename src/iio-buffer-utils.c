@@ -533,6 +533,9 @@ process_scan_1 (char              *data,
 		gboolean          *ch_present)
 {
 	int k;
+
+	*ch_scale = 1.0;
+
 	for (k = 0; k < buffer_data->channels_count; k++) {
 		if (strcmp (buffer_data->channels[k]->name, ch_name) != 0)
 			continue;
@@ -559,8 +562,6 @@ process_scan_1 (char              *data,
 				*ch_val = (int) val;
 				if (buffer_data->channels[k]->scale)
 					*ch_scale = buffer_data->channels[k]->scale;
-				else
-					*ch_scale = 1.0;
 				*ch_present = TRUE;
 			}
 			break;

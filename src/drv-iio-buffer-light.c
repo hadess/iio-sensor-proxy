@@ -56,9 +56,7 @@ process_scan (IIOSensorData data, DrvData *or_data)
 	process_scan_1(data.data + or_data->buffer_data->scan_size*i, or_data->buffer_data, "in_intensity_both", &level, &scale, &present_level);
 
 	g_debug ("Light read from IIO on '%s': %d (scale %lf) = %lf", or_data->name, level, scale, level * scale);
-	readings.level = level;
-	if (scale)
-		readings.level *= scale;
+	readings.level = level * scale;
 
 	/* Even though the IIO kernel API declares in_intensity* values as unitless,
 	 * we use Microsoft's hid-sensors-usages.docx which mentions that Windows 8
