@@ -552,6 +552,8 @@ process_scan_1 (char              *data,
 				if (buffer_data->channels[k]->bits_used < 32)
 					val &= ((guint32) 1 << buffer_data->channels[k]->bits_used) - 1;
 				*ch_val = (int) val;
+				if (buffer_data->channels[k]->scale)
+					*ch_scale = buffer_data->channels[k]->scale;
 				*ch_present = TRUE;
 			} else {
 				gint32 val = iio_read32(buffer_data->channels[k], (gint8 *) data);
