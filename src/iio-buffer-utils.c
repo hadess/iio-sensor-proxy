@@ -526,7 +526,7 @@ size_from_channelarray (iio_channel_info **channels,
  **/
 void
 process_scan_1 (char              *data,
-		BufferDrvData        *buffer_data,
+		BufferDrvData     *buffer_data,
 		const char        *ch_name,
 		int               *ch_val,
 		gdouble           *ch_scale,
