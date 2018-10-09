@@ -1,3 +1,10 @@
+2.5
+---
+
+This releases fixes a number of build warnings and bugs, as well as
+ensuring that some devices have non-0 update frequencies, and that
+the sensor scale is set to 1.0 when the device does not export one.
+
 2.4
 ---
 

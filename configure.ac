@@ -1,6 +1,6 @@
 AC_PREREQ(2.59)
 
-AC_INIT([iio-sensor-proxy], [2.4], [hadess@hadess.net])
+AC_INIT([iio-sensor-proxy], [2.5], [hadess@hadess.net])
 
 AX_IS_RELEASE([git-directory])
 
