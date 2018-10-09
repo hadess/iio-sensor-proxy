@@ -106,6 +106,10 @@ in the upstream kernel and backported to stable releases. If you experience
 unresponsive sensors, ask your distributor to make sure this patch was
 applied to the version you're using.
 
+The IIO sensors regressed again not long afterwards, which got fixed in
+[this commit](https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/commit/?id=6f92253024d9d947a4f454654840ce479e251376).
+Again, make sure that your kernel contains this fix.
+
 References
 ----------
 
