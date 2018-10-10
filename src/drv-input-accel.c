@@ -255,7 +255,6 @@ input_accel_close (void)
 	g_clear_object (&drv_data->dev);
 	g_clear_object (&drv_data->parent);
 	g_clear_pointer (&drv_data->mount_matrix, g_free);
-	g_clear_pointer (&drv_data->dev_path, g_free);
 
 	g_clear_pointer (&drv_data, g_free);
 }
