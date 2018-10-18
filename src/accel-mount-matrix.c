@@ -22,11 +22,14 @@ static AccelVec3 id_matrix[3] = {
 	{ 0.0, 0.0, 1.0 }
 };
 
+static char axis_names[] = "xyz";
+
 gboolean
 parse_mount_matrix (const char *mtx,
 		    AccelVec3  *vecs[3])
 {
 	AccelVec3 *ret;
+	guint i;
 
 	g_return_val_if_fail (vecs != NULL, FALSE);
 
@@ -45,6 +48,17 @@ parse_mount_matrix (const char *mtx,
 		g_free (ret);
 		g_warning ("Failed to parse '%s' as a mount matrix", mtx);
 		return FALSE;
+	}
+
+	for (i = 0; i < G_N_ELEMENTS(id_matrix); i++) {
+		if (ret[i].x == 0.0f &&
+		    ret[i].y == 0.0f &&
+		    ret[i].z == 0.0f) {
+			g_free (ret);
+			g_warning ("In mount matrix '%s', axis %c is all zeroes, which is invalid",
+				   mtx, axis_names[i]);
+			return FALSE;
+		}
 	}
 
 	*vecs = ret;
