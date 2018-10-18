@@ -130,6 +130,7 @@ appeared_cb (GDBusConnection *connection,
 	     gpointer         user_data)
 {
 	GError *error = NULL;
+	GVariant *ret = NULL;
 
 	g_print ("+++ iio-sensor-proxy appeared\n");
 
@@ -158,44 +159,50 @@ appeared_cb (GDBusConnection *connection,
 	}
 
 	/* Accelerometer */
-	if (!g_dbus_proxy_call_sync (iio_proxy,
+	ret = g_dbus_proxy_call_sync (iio_proxy,
 				     "ClaimAccelerometer",
 				     NULL,
 				     G_DBUS_CALL_FLAGS_NONE,
 				     -1,
-				     NULL, &error)) {
+				     NULL, &error);
+	if (!ret) {
 		if (!g_error_matches (error, G_IO_ERROR, G_IO_ERROR_CANCELLED))
 			g_warning ("Failed to claim accelerometer: %s", error->message);
 		g_main_loop_quit (loop);
 		return;
 	}
+	g_clear_pointer (&ret, g_variant_unref);
 
 	/* ALS */
-	if (!g_dbus_proxy_call_sync (iio_proxy,
+	ret = g_dbus_proxy_call_sync (iio_proxy,
 				     "ClaimLight",
 				     NULL,
 				     G_DBUS_CALL_FLAGS_NONE,
 				     -1,
-				     NULL, &error)) {
+				     NULL, &error);
+	if (!ret) {
 		if (!g_error_matches (error, G_IO_ERROR, G_IO_ERROR_CANCELLED))
 			g_warning ("Failed to claim light sensor: %s", error->message);
 		g_main_loop_quit (loop);
 		return;
 	}
+	g_clear_pointer (&ret, g_variant_unref);
 
 	/* Compass */
 	if (g_strcmp0 (g_get_user_name (), "geoclue") == 0) {
-		if (!g_dbus_proxy_call_sync (iio_proxy_compass,
+		ret = g_dbus_proxy_call_sync (iio_proxy_compass,
 					     "ClaimCompass",
 					     NULL,
 					     G_DBUS_CALL_FLAGS_NONE,
 					     -1,
-					     NULL, &error)) {
+					     NULL, &error);
+		if (!ret) {
 			if (!g_error_matches (error, G_IO_ERROR, G_IO_ERROR_CANCELLED))
 				g_warning ("Failed to claim light sensor: %s", error->message);
 			g_main_loop_quit (loop);
 			return;
 		}
+		g_clear_pointer (&ret, g_variant_unref);
 	}
 
 	print_initial_values ();
