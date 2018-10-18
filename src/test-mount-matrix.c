@@ -10,6 +10,7 @@
 #include "accel-mount-matrix.h"
 
 #define SWAP_Y_Z_MATRIX "1, 0, 0; 0, 0, 1; 0, 1, 0"
+#define INVALID_MATRIX "0, 1, 0; 1, 0, 0; 0, 0, 0"
 
 static void
 print_vecs (AccelVec3 vecs[3])
@@ -53,6 +54,11 @@ test_mount_matrix (void)
 	g_assert_cmpfloat (test.z, ==, 0.0);
 	g_assert_cmpfloat (test.y, ==, -256.0);
 	g_free (vecs);
+
+	/* Invalid matrix */
+	g_test_expect_message (NULL, G_LOG_LEVEL_WARNING, "In mount matrix '0, 1, 0; 1, 0, 0; 0, 0, 0', axis z is all zeroes, which is invalid");
+	g_assert_false (parse_mount_matrix (INVALID_MATRIX, &vecs));
+	g_test_assert_expected_messages ();
 }
 
 int main (int argc, char **argv)
