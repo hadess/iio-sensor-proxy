@@ -67,6 +67,8 @@ properties_changed (GDBusProxy *proxy,
 		g_print ("    Compass heading changed: %lf\n", g_variant_get_double (v));
 		g_variant_unref (v);
 	}
+
+	g_variant_dict_clear (&dict);
 }
 
 static void
