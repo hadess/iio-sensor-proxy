@@ -123,6 +123,7 @@ Tested on
 - Apple MacBook Air (4,2)
 - Apple MacBook Air (6,2)
 - Apple MacBook Pro (8.2)
+- ASUS T100Chi
 - Asus Transformer Book TP500LB
 - Asus Zenbook UX31A, UX303L, UX305, UX330UA
 - Cube i9
