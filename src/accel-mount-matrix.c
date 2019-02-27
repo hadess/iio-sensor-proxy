@@ -31,12 +31,27 @@ setup_mount_matrix (GUdevDevice *device)
 	const char *mount_matrix;
 
 	mount_matrix = g_udev_device_get_property (device, "ACCEL_MOUNT_MATRIX");
-	if (!parse_mount_matrix (mount_matrix, &ret)) {
-		g_warning ("Invalid mount-matrix ('%s'), falling back to identity",
+	if (mount_matrix) {
+		if (parse_mount_matrix (mount_matrix, &ret))
+			return ret;
+
+		g_warning ("Failed to parse ACCEL_MOUNT_MATRIX ('%s') from udev",
 			   mount_matrix);
-		parse_mount_matrix (NULL, &ret);
+		g_clear_pointer (&ret, g_free);
 	}
 
+	mount_matrix = g_udev_device_get_sysfs_attr (device, "mount_matrix");
+	if (mount_matrix) {
+		if (parse_mount_matrix (mount_matrix, &ret))
+			return ret;
+
+		g_warning ("Failed to parse mount_matrix ('%s') from sysfs",
+			   mount_matrix);
+		g_clear_pointer (&ret, g_free);
+	}
+
+	g_debug ("Failed to auto-detect mount matrix, falling back to identity");
+	parse_mount_matrix (NULL, &ret);
 	return ret;
 }
 
