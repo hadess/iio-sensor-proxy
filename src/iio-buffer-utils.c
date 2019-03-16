@@ -540,8 +540,10 @@ process_scan_1 (char              *data,
 		if (strcmp (buffer_data->channels[k]->name, ch_name) != 0)
 			continue;
 
-		g_debug ("process_scan_1: channel_index: %d, chan_name: %s, channel_data_index: %d location: %d",
-			 k, buffer_data->channels[k]->name, buffer_data->channels[k]->index, buffer_data->channels[k]->location);
+		g_debug ("process_scan_1: channel_index: %d, chan_name: %s, channel_data_index: %d location: %d bytes: %d is_signed: %d be: %d shift: %d bits_used: %d",
+			 k, buffer_data->channels[k]->name, buffer_data->channels[k]->index, buffer_data->channels[k]->location,
+			 buffer_data->channels[k]->bytes, buffer_data->channels[k]->is_signed, buffer_data->channels[k]->be,
+			 buffer_data->channels[k]->shift, buffer_data->channels[k]->bits_used);
 
 		switch (buffer_data->channels[k]->bytes) {
 			/* only a few cases implemented so far */
