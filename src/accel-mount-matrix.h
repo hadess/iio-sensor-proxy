@@ -8,12 +8,15 @@
  */
 
 #include <glib.h>
+#include <gudev/gudev.h>
 
 typedef struct {
 	float x;
 	float y;
 	float z;
 } AccelVec3;
+
+AccelVec3 *setup_mount_matrix (GUdevDevice *device);
 
 gboolean parse_mount_matrix (const char *mtx,
                              AccelVec3  *vecs[3]);

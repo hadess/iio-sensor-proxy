@@ -200,7 +200,6 @@ iio_buffer_accel_open (GUdevDevice        *device,
 		       gpointer            user_data)
 {
 	char *trigger_name;
-	const char *mount_matrix;
 
 	drv_data = g_new0 (DrvData, 1);
 
@@ -218,13 +217,7 @@ iio_buffer_accel_open (GUdevDevice        *device,
 		return FALSE;
 	}
 
-	mount_matrix = g_udev_device_get_property (device, "ACCEL_MOUNT_MATRIX");
-	if (!parse_mount_matrix (mount_matrix, &drv_data->mount_matrix)) {
-		g_warning ("Invalid mount-matrix ('%s'), falling back to identity",
-			   mount_matrix);
-		parse_mount_matrix (NULL, &drv_data->mount_matrix);
-	}
-
+	drv_data->mount_matrix = setup_mount_matrix (device);
 	drv_data->dev = g_object_ref (device);
 	drv_data->dev_path = g_udev_device_get_device_file (device);
 	drv_data->name = g_udev_device_get_property (device, "NAME");

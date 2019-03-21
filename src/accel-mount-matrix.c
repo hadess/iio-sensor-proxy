@@ -24,6 +24,22 @@ static AccelVec3 id_matrix[3] = {
 
 static char axis_names[] = "xyz";
 
+AccelVec3 *
+setup_mount_matrix (GUdevDevice *device)
+{
+	AccelVec3 *ret = NULL;
+	const char *mount_matrix;
+
+	mount_matrix = g_udev_device_get_property (device, "ACCEL_MOUNT_MATRIX");
+	if (!parse_mount_matrix (mount_matrix, &ret)) {
+		g_warning ("Invalid mount-matrix ('%s'), falling back to identity",
+			   mount_matrix);
+		parse_mount_matrix (NULL, &ret);
+	}
+
+	return ret;
+}
+
 gboolean
 parse_mount_matrix (const char *mtx,
 		    AccelVec3  *vecs[3])
