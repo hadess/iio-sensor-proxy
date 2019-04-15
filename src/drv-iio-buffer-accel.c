@@ -24,6 +24,7 @@ typedef struct {
 	const char *dev_path;
 	const char *name;
 	AccelVec3 *mount_matrix;
+	AccelLocation location;
 	int device_id;
 	BufferDrvData *buffer_data;
 } DrvData;
@@ -218,6 +219,7 @@ iio_buffer_accel_open (GUdevDevice        *device,
 	}
 
 	drv_data->mount_matrix = setup_mount_matrix (device);
+	drv_data->location = setup_accel_location (device);
 	drv_data->dev = g_object_ref (device);
 	drv_data->dev_path = g_udev_device_get_device_file (device);
 	drv_data->name = g_udev_device_get_property (device, "NAME");

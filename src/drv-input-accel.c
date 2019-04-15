@@ -27,6 +27,7 @@ typedef struct DrvData {
 	const char *dev_path;
 	const char *name;
 	AccelVec3 *mount_matrix;
+	AccelLocation location;
 	gboolean sends_kevent;
 } DrvData;
 
@@ -202,6 +203,7 @@ input_accel_open (GUdevDevice        *device,
 		drv_data->name = g_udev_device_get_property (device, "ID_MODEL");
 	drv_data->client = g_udev_client_new (subsystems);
 	drv_data->mount_matrix = setup_mount_matrix (device);
+	drv_data->location = setup_accel_location (device);
 	drv_data->callback_func = callback_func;
 	drv_data->user_data = user_data;
 
