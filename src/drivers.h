@@ -9,6 +9,8 @@
 #include <glib.h>
 #include <gudev/gudev.h>
 
+#include "accel-location.h"
+
 typedef enum {
 	DRIVER_TYPE_ACCEL,
 	DRIVER_TYPE_LIGHT,
@@ -77,7 +79,13 @@ driver_discover (SensorDriver *driver,
 	g_return_val_if_fail (driver->discover, FALSE);
 	g_return_val_if_fail (device, FALSE);
 
-	return driver->discover (device);
+	if (!driver->discover (device))
+		return FALSE;
+
+	if (driver->type != DRIVER_TYPE_ACCEL)
+		return TRUE;
+
+	return (setup_accel_location (device) == ACCEL_LOCATION_DISPLAY);
 }
 
 static inline gboolean
