@@ -37,7 +37,7 @@ iio_sensor_proxy_CPPFLAGS =			\
 	$(WARN_CFLAGS)
 iio_sensor_proxy_LDADD = $(IIO_SENSOR_PROXY_LIBS) $(LIBM)
 
-noinst_PROGRAMS = fake-input-accelerometer test-mount-matrix test-orientation
+noinst_PROGRAMS = fake-input-accelerometer test-mount-matrix test-accel-location test-orientation
 
 fake_input_accelerometer_SOURCES =		\
 	fake-input-accelerometer.c		\
@@ -57,6 +57,16 @@ test_mount_matrix_CPPFLAGS =			\
 	$(IIO_SENSOR_PROXY_CFLAGS)		\
 	$(WARN_CFLAGS)
 test_mount_matrix_LDADD = $(IIO_SENSOR_PROXY_LIBS)
+
+test_accel_location_SOURCES =			\
+	test-accel-location.c			\
+	accel-location.h			\
+	accel-location.c
+
+test_accel_location_CPPFLAGS =			\
+	$(IIO_SENSOR_PROXY_CFLAGS)		\
+	$(WARN_CFLAGS)
+test_accel_location_LDADD = $(IIO_SENSOR_PROXY_LIBS)
 
 test_orientation_SOURCES =			\
 	test-orientation.c			\
