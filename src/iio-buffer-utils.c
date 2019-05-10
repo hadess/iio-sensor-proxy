@@ -318,6 +318,10 @@ build_channel_array (const char        *device_dir,
 			g_free (index_name);
 
 			sysfsfp = fopen (filename, "r");
+			if (sysfsfp == NULL) {
+				ret = -errno;
+				goto error;
+			}
 			fscanf (sysfsfp, "%u", &current->index);
 			fclose (sysfsfp);
 			g_free (filename);
