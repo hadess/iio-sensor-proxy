@@ -176,10 +176,7 @@ iioutils_get_type (unsigned   *is_signed,
 		*mask = ~0;
 	else
 		*mask = (1 << *bits_used) - 1;
-	if (signchar == 's')
-		*is_signed = 1;
-	else
-		*is_signed = 0;
+	*is_signed = (signchar == 's');
 
 	g_debug ("Got type for %s: is signed: %d, bytes: %d, bits_used: %d, shift: %d, mask: 0x%" G_GUINT64_FORMAT ", be: %d",
 		 name, *is_signed, *bytes, *bits_used, *shift, *mask, *be);
