@@ -116,6 +116,8 @@ iioutils_break_up_name (const char *name)
  * @be: big endian
  * @device_dir: the iio device directory
  * @name: the channel name
+ *
+ * See `struct iio_chan_spec` in the kernel headers.
  **/
 static gboolean
 iioutils_get_type (unsigned   *is_signed,
@@ -152,6 +154,7 @@ iioutils_get_type (unsigned   *is_signed,
 		}
 	}
 
+	/* See `iio_show_fixed_type()` in the IIO core for the format */
 	ret = fscanf (sysfsfp,
 		      "%ce:%c%u/%u>>%u",
 		      &endianchar,
