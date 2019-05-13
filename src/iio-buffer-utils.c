@@ -228,7 +228,10 @@ iioutils_get_param_float (float      *output,
 
 	sysfsfp = fopen (filename, "r");
 	if (sysfsfp) {
-		fscanf (sysfsfp, "%f", output);
+		if (fscanf (sysfsfp, "%f", output) != 1) {
+			g_debug ("Failed to read float from %s", filename);
+			ret = -EINVAL;
+		}
 		fclose (sysfsfp);
 	} else {
 		ret = -errno;
