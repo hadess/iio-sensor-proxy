@@ -519,7 +519,40 @@ process_scan_1 (char              *data,
 			 info->shift, info->bits_used);
 
 		switch (info->bytes) {
-			/* only a few cases implemented so far */
+		case 1: {
+			guint8 input;
+
+			input = *(guint8 *)(data + info->location);
+			input >>= info->shift;
+			input &= info->mask;
+			if (info->is_signed) {
+				gint8 val = (gint8)(input << (8 - info->bits_used)) >>
+					(8 - info->bits_used);
+				val += info->offset;
+				*ch_val = val;
+			} else {
+				*ch_val = input + info->offset;
+			}
+			break;
+			}
+		case 2: {
+			guint16 input;
+
+			input = *(guint16 *)(data + info->location);
+			input = info->be ? GUINT16_FROM_BE (input) : GUINT16_FROM_LE (input);
+			input >>= info->shift;
+			input &= info->mask;
+
+			if (info->is_signed) {
+				gint16 val = (gint16)(input << (16 - info->bits_used)) >>
+					(16 - info->bits_used);
+				val += info->offset;
+				*ch_val = val;
+			} else {
+				*ch_val = input + info->offset;
+			}
+			break;
+			}
 		case 4: {
 			guint32 input;
 
@@ -538,12 +571,26 @@ process_scan_1 (char              *data,
 			}
 			break;
 			}
-		case 1:
-		case 2:
-		case 8:
-			g_error ("Process %d bytes channels not supported yet", info->bytes);
+		case 8: {
+			guint64 input;
+
+			input = *(guint64 *)(data + info->location);
+			input = info->be ? GUINT64_FROM_BE (input) : GUINT64_FROM_LE (input);
+			input >>= info->shift;
+			input &= info->mask;
+
+			if (info->is_signed) {
+				gint64 val = (gint64)(input << (64 - info->bits_used)) >>
+					(64 - info->bits_used);
+				val += info->offset;
+				*ch_val = val;
+			} else {
+				*ch_val = input + info->offset;
+			}
+			break;
+			}
 		default:
-			g_assert_not_reached ();
+			g_error ("Process %d bytes channels not supported", info->bytes);
 			break;
 		}
 
