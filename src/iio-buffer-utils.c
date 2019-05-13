@@ -547,41 +547,43 @@ process_scan_1 (char              *data,
 	*ch_scale = 1.0;
 
 	for (k = 0; k < buffer_data->channels_count; k++) {
-		if (strcmp (buffer_data->channels[k]->name, ch_name) != 0)
+		struct iio_channel_info *info = buffer_data->channels[k];
+
+		if (strcmp (info->name, ch_name) != 0)
 			continue;
 
 		g_debug ("process_scan_1: channel_index: %d, chan_name: %s, channel_data_index: %d location: %d bytes: %d is_signed: %d be: %d shift: %d bits_used: %d",
-			 k, buffer_data->channels[k]->name, buffer_data->channels[k]->index, buffer_data->channels[k]->location,
-			 buffer_data->channels[k]->bytes, buffer_data->channels[k]->is_signed, buffer_data->channels[k]->be,
-			 buffer_data->channels[k]->shift, buffer_data->channels[k]->bits_used);
+			 k, info->name, info->index, info->location,
+			 info->bytes, info->is_signed, info->be,
+			 info->shift, info->bits_used);
 
-		switch (buffer_data->channels[k]->bytes) {
+		switch (info->bytes) {
 			/* only a few cases implemented so far */
 		case 4:
-			if (!buffer_data->channels[k]->is_signed) {
-				guint32 val = iio_readu32(buffer_data->channels[k], (guint8 *) data);
-				val = val >> buffer_data->channels[k]->shift;
-				if (buffer_data->channels[k]->bits_used < 32)
-					val &= ((guint32) 1 << buffer_data->channels[k]->bits_used) - 1;
+			if (!info->is_signed) {
+				guint32 val = iio_readu32(info, (guint8 *) data);
+				val = val >> info->shift;
+				if (info->bits_used < 32)
+					val &= ((guint32) 1 << info->bits_used) - 1;
 				*ch_val = (int) val;
-				if (buffer_data->channels[k]->scale)
-					*ch_scale = buffer_data->channels[k]->scale;
+				if (info->scale)
+					*ch_scale = info->scale;
 				*ch_present = TRUE;
 			} else {
-				gint32 val = iio_read32(buffer_data->channels[k], (gint8 *) data);
-				val = val >> buffer_data->channels[k]->shift;
-				if (buffer_data->channels[k]->bits_used < 32)
-					val &= ((guint32) 1 << buffer_data->channels[k]->bits_used) - 1;
-				val = (gint32) (val << (32 - buffer_data->channels[k]->bits_used)) >> (32 - buffer_data->channels[k]->bits_used);
+				gint32 val = iio_read32(info, (gint8 *) data);
+				val = val >> info->shift;
+				if (info->bits_used < 32)
+					val &= ((guint32) 1 << info->bits_used) - 1;
+				val = (gint32) (val << (32 - info->bits_used)) >> (32 - info->bits_used);
 				*ch_val = (int) val;
-				if (buffer_data->channels[k]->scale)
-					*ch_scale = buffer_data->channels[k]->scale;
+				if (info->scale)
+					*ch_scale = info->scale;
 				*ch_present = TRUE;
 			}
 			break;
 		case 2:
 		case 8:
-			g_error ("Process %d bytes channels not supported yet", buffer_data->channels[k]->bytes);
+			g_error ("Process %d bytes channels not supported yet", info->bytes);
 		default:
 			g_assert_not_reached ();
 			break;
