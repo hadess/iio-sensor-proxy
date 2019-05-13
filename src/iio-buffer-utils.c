@@ -588,6 +588,7 @@ process_scan_1 (char              *data,
 
 		*ch_scale = info->scale;
 		*ch_present = TRUE;
+		break;
 	}
 
 	if (!*ch_present)
