@@ -22,13 +22,18 @@
 /**
  * iio_channel_info - information about a given channel
  * @name: channel name
- * @scale: scale factor to be applied for conversion to si units
- * @offset: offset to be applied for conversion to si units
+ * @generic_name: the generic name of the channel
+ * @scale: scale factor to be applied for conversion to SI units
+ * @offset: offset to be applied for conversion to SI units
  * @index: the channel index in the buffer output
- * @bytes: number of bytes occupied in buffer output
+ * @is_signed: signed or unsigned
+ * @bits_used: number of valid bits of data
+ * @bytes: number of bytes occupied in buffer output (bits_used + padding)
+ * @shift: shift right by this before masking out bits_used
  * @mask: a bit mask for the raw output
- * @is_signed: is the raw value stored signed
+ * @be: little or big endian
  * @enabled: is this channel enabled
+ * @location: data offset for this channel inside the buffer (in bytes)
  **/
 struct iio_channel_info {
 	char *name;
@@ -36,12 +41,12 @@ struct iio_channel_info {
 	float scale;
 	float offset;
 	unsigned index;
-	unsigned bytes;
+	unsigned is_signed;
 	unsigned bits_used;
+	unsigned bytes;
 	unsigned shift;
 	guint64 mask;
 	unsigned be;
-	unsigned is_signed;
 	unsigned enabled;
 	unsigned location;
 };
