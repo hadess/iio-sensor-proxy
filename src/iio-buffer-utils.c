@@ -578,6 +578,7 @@ process_scan_1 (char              *data,
 				*ch_val = (int) val;
 			}
 			break;
+		case 1:
 		case 2:
 		case 8:
 			g_error ("Process %d bytes channels not supported yet", info->bytes);
