@@ -486,6 +486,25 @@ size_from_channelarray (iio_channel_info **channels,
 	return bytes;
 }
 
+#define GUINT8_FROM_BE(x) (x)
+#define GUINT8_FROM_LE(x) (x)
+#define PROCESS_CHANNEL_BITS(bits)							\
+{											\
+	guint##bits input;								\
+											\
+	input = *(guint##bits *)(data + info->location);				\
+	input = info->be ? GUINT##bits##_FROM_BE (input) : GUINT##bits##_FROM_LE (input);\
+	input >>= info->shift;								\
+	input &= info->mask;								\
+	if (info->is_signed) {								\
+		gint##bits val = (gint##bits)(input << (bits - info->bits_used)) >> (bits - info->bits_used);	\
+		val += info->offset;							\
+		*ch_val = val;								\
+	} else {									\
+		*ch_val = input + info->offset;						\
+	}										\
+}
+
 /**
  * process_scan_1() - get an integer value for a particular channel
  * @data:               pointer to the start of the scan
@@ -519,76 +538,21 @@ process_scan_1 (char              *data,
 			 info->shift, info->bits_used);
 
 		switch (info->bytes) {
-		case 1: {
-			guint8 input;
-
-			input = *(guint8 *)(data + info->location);
-			input >>= info->shift;
-			input &= info->mask;
-			if (info->is_signed) {
-				gint8 val = (gint8)(input << (8 - info->bits_used)) >>
-					(8 - info->bits_used);
-				val += info->offset;
-				*ch_val = val;
-			} else {
-				*ch_val = input + info->offset;
-			}
+		case 1:
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wduplicated-branches"
+			PROCESS_CHANNEL_BITS(8);
+#pragma GCC diagnostic pop
 			break;
-			}
-		case 2: {
-			guint16 input;
-
-			input = *(guint16 *)(data + info->location);
-			input = info->be ? GUINT16_FROM_BE (input) : GUINT16_FROM_LE (input);
-			input >>= info->shift;
-			input &= info->mask;
-
-			if (info->is_signed) {
-				gint16 val = (gint16)(input << (16 - info->bits_used)) >>
-					(16 - info->bits_used);
-				val += info->offset;
-				*ch_val = val;
-			} else {
-				*ch_val = input + info->offset;
-			}
+		case 2:
+			PROCESS_CHANNEL_BITS(16);
 			break;
-			}
-		case 4: {
-			guint32 input;
-
-			input = *(guint32 *)(data + info->location);
-			input = info->be ? GUINT32_FROM_BE (input) : GUINT32_FROM_LE (input);
-			input >>= info->shift;
-			input &= info->mask;
-
-			if (info->is_signed) {
-				gint32 val = (gint32)(input << (32 - info->bits_used)) >>
-					(32 - info->bits_used);
-				val += info->offset;
-				*ch_val = val;
-			} else {
-				*ch_val = input + info->offset;
-			}
+		case 4:
+			PROCESS_CHANNEL_BITS(32);
 			break;
-			}
-		case 8: {
-			guint64 input;
-
-			input = *(guint64 *)(data + info->location);
-			input = info->be ? GUINT64_FROM_BE (input) : GUINT64_FROM_LE (input);
-			input >>= info->shift;
-			input &= info->mask;
-
-			if (info->is_signed) {
-				gint64 val = (gint64)(input << (64 - info->bits_used)) >>
-					(64 - info->bits_used);
-				val += info->offset;
-				*ch_val = val;
-			} else {
-				*ch_val = input + info->offset;
-			}
+		case 8:
+			PROCESS_CHANNEL_BITS(64);
 			break;
-			}
 		default:
 			g_error ("Process %d bytes channels not supported", info->bytes);
 			break;
