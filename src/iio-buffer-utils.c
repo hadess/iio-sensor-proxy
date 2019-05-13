@@ -547,7 +547,7 @@ process_scan_1 (char              *data,
 {
 	int k;
 
-	*ch_scale = 1.0;
+	*ch_present = FALSE;
 
 	for (k = 0; k < buffer_data->channels_count; k++) {
 		struct iio_channel_info *info = buffer_data->channels[k];
@@ -569,9 +569,6 @@ process_scan_1 (char              *data,
 				if (info->bits_used < 32)
 					val &= ((guint32) 1 << info->bits_used) - 1;
 				*ch_val = (int) val;
-				if (info->scale)
-					*ch_scale = info->scale;
-				*ch_present = TRUE;
 			} else {
 				gint32 val = iio_read32(info, (gint8 *) data);
 				val = val >> info->shift;
@@ -579,9 +576,6 @@ process_scan_1 (char              *data,
 					val &= ((guint32) 1 << info->bits_used) - 1;
 				val = (gint32) (val << (32 - info->bits_used)) >> (32 - info->bits_used);
 				*ch_val = (int) val;
-				if (info->scale)
-					*ch_scale = info->scale;
-				*ch_present = TRUE;
 			}
 			break;
 		case 2:
@@ -591,6 +585,9 @@ process_scan_1 (char              *data,
 			g_assert_not_reached ();
 			break;
 		}
+
+		*ch_scale = info->scale;
+		*ch_present = TRUE;
 	}
 
 	if (!*ch_present)
