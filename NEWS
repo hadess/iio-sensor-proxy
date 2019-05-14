@@ -1,3 +1,14 @@
+2.6
+---
+
+This release adds support for mount matrices coming from the kernel
+itself, checking those more thoroughly for validity. On devices with
+multiple accelerometers, the ones in the base are now ignored.
+
+Support for sensors with uncommon formats was already enhanced (or fixed
+depending on the device). A couple of possible crashes and memory
+leaks were also fixed.
+
 2.5
 ---
 
