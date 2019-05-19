@@ -136,9 +136,9 @@ iioutils_get_type (unsigned   *is_signed,
 	*be = (endianchar == 'b');
 	*bytes = padint / 8;
 	if (*bits_used == 64)
-		*mask = ~0;
+		*mask = ~G_GUINT64_CONSTANT(0);
 	else
-		*mask = (1 << *bits_used) - 1;
+		*mask = (G_GUINT64_CONSTANT(1) << *bits_used) - G_GUINT64_CONSTANT(1);
 	*is_signed = (signchar == 's');
 
 	g_debug ("Got type for %s: is signed: %d, bytes: %d, bits_used: %d, shift: %d, mask: 0x%" G_GUINT64_FORMAT ", be: %d",
