@@ -1,3 +1,9 @@
+2.7
+---
+
+This release fixes broken sensor readings on multiple platforms due
+to a compiler optimisation.
+
 2.6
 ---
 
