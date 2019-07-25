@@ -22,9 +22,16 @@ setup_accel_location (GUdevDevice *device)
 
 		g_warning ("Failed to parse ACCEL_LOCATION ('%s') from udev",
 			   location);
-	} else {
-		g_debug ("No autodetected location, falling back to display location");
 	}
+	location = g_udev_device_get_sysfs_attr (device, "location");
+	if (location) {
+		if (parse_accel_location (location, &ret))
+			return ret;
+
+		g_warning ("Failed to parse location ('%s') from sysfs",
+			   location);
+	}
+	g_debug ("No auto-detected location, falling back to display location");
 
 	ret = ACCEL_LOCATION_DISPLAY;
 	return ret;
@@ -36,7 +43,8 @@ parse_accel_location (const char *location, AccelLocation *value)
 	/* Empty string means we use the display location */
 	if (location == NULL ||
 	    *location == '\0' ||
-	    g_str_equal (location, "display")) {
+	    g_str_equal (location, "display") ||
+	    g_str_equal (location, "lid")) {
 		*value = ACCEL_LOCATION_DISPLAY;
 		return TRUE;
 	} else if (g_str_equal (location, "base")) {
