@@ -65,38 +65,42 @@ orientation_calc (OrientationUp prev,
                   int in_x, int in_y, int in_z,
                   gdouble scale)
 {
-        int rotation;
         OrientationUp ret = prev;
         int x, y, z;
+        int portrait_rotation;
+        int landscape_rotation;
 
         /* this code expects 1G ~= 256 */
         x = SCALE(in_x);
         y = SCALE(in_y);
         z = SCALE(in_z);
 
-        /* Portrait check */
-        rotation = round(atan((double) x / sqrt(y * y + z * z)) * RADIANS_TO_DEGREES);
+        portrait_rotation  = round(atan2(x, sqrt(y * y + z * z)) * RADIANS_TO_DEGREES);
+        landscape_rotation = round(atan2(y, sqrt(x * x + z * z)) * RADIANS_TO_DEGREES);
 
-        if (abs(rotation) > THRESHOLD_PORTRAIT) {
-                ret = (rotation > 0) ? ORIENTATION_LEFT_UP : ORIENTATION_RIGHT_UP;
+        /* Don't change orientation if we are on the common border of two thresholds */
+        if (abs(portrait_rotation) > THRESHOLD_PORTRAIT && abs(landscape_rotation) > THRESHOLD_LANDSCAPE)
+                return prev;
+
+        /* Portrait check */
+        if (abs(portrait_rotation) > THRESHOLD_PORTRAIT) {
+                ret = (portrait_rotation > 0) ? ORIENTATION_LEFT_UP : ORIENTATION_RIGHT_UP;
 
                 /* Some threshold to switching between portrait modes */
                 if (prev == ORIENTATION_LEFT_UP || prev == ORIENTATION_RIGHT_UP) {
-                        if (abs(rotation) < SAME_AXIS_LIMIT) {
+                        if (abs(portrait_rotation) < SAME_AXIS_LIMIT) {
                                 ret = prev;
                         }
                 }
 
         } else {
                 /* Landscape check */
-                rotation = round(atan((double) y / sqrt(x * x + z * z)) * RADIANS_TO_DEGREES);
-
-                if (abs(rotation) > THRESHOLD_LANDSCAPE) {
-                        ret = (rotation > 0) ? ORIENTATION_BOTTOM_UP : ORIENTATION_NORMAL;
+                if (abs(landscape_rotation) > THRESHOLD_LANDSCAPE) {
+                        ret = (landscape_rotation > 0) ? ORIENTATION_BOTTOM_UP : ORIENTATION_NORMAL;
 
                         /* Some threshold to switching between landscape modes */
                         if (prev == ORIENTATION_BOTTOM_UP || prev == ORIENTATION_NORMAL) {
-                                if (abs(rotation) < SAME_AXIS_LIMIT) {
+                                if (abs(landscape_rotation) < SAME_AXIS_LIMIT) {
                                         ret = prev;
                                 }
                         }

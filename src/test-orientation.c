@@ -68,9 +68,9 @@ test_orientation_threshold (void)
 		OrientationUp expected;
 	} orientations[] = {
 		{ 0, -ONEG, 0, ORIENTATION_NORMAL },
-		{ 183, -ONEG, 0, ORIENTATION_LEFT_UP },
+		{ 183, -ONEG, 0, ORIENTATION_NORMAL },
 		{ 176, -ONEG, 0, ORIENTATION_NORMAL },
-		{ 183, -ONEG, 0, ORIENTATION_LEFT_UP },
+		{ 183, -ONEG, 0, ORIENTATION_NORMAL },
 	};
 	guint i, num_failures;
 	OrientationUp prev;
