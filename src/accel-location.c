@@ -35,11 +35,11 @@ parse_accel_location (const char *location, AccelLocation *value)
 {
 	/* Empty string means we use the display location */
 	if (location == NULL ||
-		*location == '\0' ||
-		(g_strcmp0 (location, "display") == 0)) {
+	    *location == '\0' ||
+	    g_str_equal (location, "display")) {
 		*value = ACCEL_LOCATION_DISPLAY;
 		return TRUE;
-	} else if (g_strcmp0 (location, "base") == 0) {
+	} else if (g_str_equal (location, "base")) {
 		*value = ACCEL_LOCATION_BASE;
 		return TRUE;
 	} else {
