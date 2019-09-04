@@ -1,3 +1,10 @@
+2.8
+---
+
+This release adds support for accelerometers in ChromeBooks, and also
+fixes the screen orientation in favour of portrait when rotating the
+display instead of favouring the previous orientation.
+
 2.7
 ---
 
