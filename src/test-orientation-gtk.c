@@ -33,7 +33,7 @@ value_changed (GtkSpinButton *spin_button,
 int main (int argc, char **argv)
 {
 	GtkWidget *window;
-	GtkWidget *box;
+	GtkWidget *grid;
 
 	gtk_init (&argc, &argv);
 
@@ -47,12 +47,25 @@ int main (int argc, char **argv)
 	gtk_spin_button_set_value (GTK_SPIN_BUTTON (scale_y), ONEG);
 	gtk_spin_button_set_value (GTK_SPIN_BUTTON (scale_z), 0.0);
 
-	box = gtk_box_new (GTK_ORIENTATION_VERTICAL, 10);
-	gtk_container_add (GTK_CONTAINER (window), box);
+	grid = gtk_grid_new ();
+	g_object_set (G_OBJECT (grid),
+		      "column-spacing", 12,
+		      "row-spacing", 12,
+		      NULL);
+	gtk_container_add (GTK_CONTAINER (window), grid);
 
-	gtk_container_add (GTK_CONTAINER (box), scale_x);
-	gtk_container_add (GTK_CONTAINER (box), scale_y);
-	gtk_container_add (GTK_CONTAINER (box), scale_z);
+	gtk_grid_attach (GTK_GRID (grid), gtk_label_new ("X:"),
+			 0, 0, 1, 1);
+	gtk_grid_attach (GTK_GRID (grid), gtk_label_new ("Y:"),
+			 0, 1, 1, 1);
+	gtk_grid_attach (GTK_GRID (grid), gtk_label_new ("Z:"),
+			 0, 2, 1, 1);
+	gtk_grid_attach (GTK_GRID (grid), scale_x,
+			 1, 0, 1, 1);
+	gtk_grid_attach (GTK_GRID (grid), scale_y,
+			 1, 1, 1, 1);
+	gtk_grid_attach (GTK_GRID (grid), scale_z,
+			 1, 2, 1, 1);
 
 	g_signal_connect (G_OBJECT (scale_x), "value-changed",
 			  G_CALLBACK (value_changed), NULL);
@@ -62,7 +75,7 @@ int main (int argc, char **argv)
 			  G_CALLBACK (value_changed), NULL);
 
 	label = gtk_label_new ("");
-	gtk_container_add (GTK_CONTAINER (box), label);
+	gtk_grid_attach (GTK_GRID (grid), label, 0, 3, 2, 1);
 
 	value_changed (NULL, NULL);
 
