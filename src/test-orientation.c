@@ -69,11 +69,11 @@ test_mount_matrix_orientation (void)
 		OrientationUp expected;
 	} tests[] = {
 		/* Onda v975 quirking */
-		{ { 523, 13, 5 }, 0.019163, "0, -1, 0; -1, 0, 0; 0, 0, 0", ORIENTATION_NORMAL },
-		{ { 8, 521, -67 }, 0.019163, "0, -1, 0; -1, 0, 0; 0, 0, 0", ORIENTATION_RIGHT_UP },
+		{ { 523, 13, 5 }, 0.019163, "0, -1, 0; -1, 0, 0; 0, 0, 1", ORIENTATION_NORMAL },
+		{ { 8, 521, -67 }, 0.019163, "0, -1, 0; -1, 0, 0; 0, 0, 1", ORIENTATION_RIGHT_UP },
 		/* Winbook TW100 quirking */
-		{ { 24, 0, -21 }, 0.306457, "0, -1, 0; -1, 0, 0; 0, 0, 0", ORIENTATION_NORMAL },
-		{ { 15, -25, -14 }, 0.306457, "0, -1, 0; -1, 0, 0; 0, 0, 0", ORIENTATION_LEFT_UP }
+		{ { 24, 0, -21 }, 0.306457, "0, -1, 0; -1, 0, 0; 0, 0, 1", ORIENTATION_NORMAL },
+		{ { 15, -25, -14 }, 0.306457, "0, -1, 0; -1, 0, 0; 0, 0, 1", ORIENTATION_LEFT_UP }
 	};
 
 	for (i = 0; i < G_N_ELEMENTS (tests); i++) {
