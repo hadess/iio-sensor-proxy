@@ -43,7 +43,7 @@ test_orientation (void)
 				      9.81 / ONEG);
 		result = orientation_to_string (o);
 		expected = orientation_to_string (orientations[i].expected);
-		/* Fail straight away when verbose */
+		/* Fail straight away when not verbose */
 		if (g_test_verbose ()) {
 			if (g_strcmp0 (result, expected) != 0) {
 				g_test_message ("Expected %s, got %s", expected, result);
