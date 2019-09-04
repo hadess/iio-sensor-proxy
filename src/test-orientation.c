@@ -59,6 +59,54 @@ test_orientation (void)
 }
 
 static void
+test_orientation_threshold (void)
+{
+	static struct {
+		int x;
+		int y;
+		int z;
+		OrientationUp expected;
+	} orientations[] = {
+		{ 0, -ONEG, 0, ORIENTATION_NORMAL },
+		{ 183, -ONEG, 0, ORIENTATION_LEFT_UP },
+		{ 176, -ONEG, 0, ORIENTATION_NORMAL },
+		{ 183, -ONEG, 0, ORIENTATION_LEFT_UP },
+	};
+	guint i, num_failures;
+	OrientationUp prev;
+
+	num_failures = 0;
+	prev = ORIENTATION_UNDEFINED;
+
+	for (i = 0; i < G_N_ELEMENTS (orientations); i++) {
+		OrientationUp o;
+		const char *expected, *result;
+
+		o = orientation_calc (prev,
+				      orientations[i].x,
+				      orientations[i].y,
+				      orientations[i].z,
+				      9.81 / ONEG);
+		result = orientation_to_string (o);
+		expected = orientation_to_string (orientations[i].expected);
+		/* Fail straight away when not verbose */
+		if (g_test_verbose ()) {
+			if (g_strcmp0 (result, expected) != 0) {
+				g_test_message ("Expected %s, got %s (orientation #%d)", expected, result, i);
+				num_failures++;
+			}
+		} else {
+			g_assert_cmpstr (result, ==, expected);
+		}
+		g_assert_cmpstr (result, ==, expected);
+		prev = orientations[i].expected;
+	}
+
+	if (num_failures > 0)
+		g_test_fail ();
+}
+
+static void
 test_mount_matrix_orientation (void)
 {
 	guint i;
@@ -171,6 +219,7 @@ int main (int argc, char **argv)
 
 	g_test_add_func ("/iio-sensor-proxy/orientation", test_orientation);
 	g_test_add_func ("/iio-sensor-proxy/quirking", test_mount_matrix_orientation);
+	g_test_add_func ("/iio-sensor-proxy/threshold", test_orientation_threshold);
 
 	return g_test_run ();
 }
