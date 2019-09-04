@@ -48,6 +48,9 @@ fake_input_accelerometer_CPPFLAGS =		\
 	$(WARN_CFLAGS)
 fake_input_accelerometer_LDADD = $(IIO_SENSOR_PROXY_LIBS)
 
+include $(top_srcdir)/Makefile.decl
+TEST_PROGS += test-mount-matrix test-accel-location test-orientation
+
 test_mount_matrix_SOURCES =			\
 	test-mount-matrix.c			\
 	accel-mount-matrix.h			\
