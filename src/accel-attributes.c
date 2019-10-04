@@ -1,5 +1,6 @@
 /*
  * Copyright (c) 2019 Luís Ferreira <luis@aurorafoss.org>
+ * Copyright (c) 2019 Daniel Stuart <daniel.stuart@pucpr.edu.br>
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License version 3 as published by
@@ -7,7 +8,7 @@
  *
  */
 
-#include "accel-location.h"
+#include "accel-attributes.h"
 
 AccelLocation
 setup_accel_location (GUdevDevice *device)
@@ -54,4 +55,24 @@ parse_accel_location (const char *location, AccelLocation *value)
 		g_warning ("Failed to parse '%s' as a location", location);
 		return FALSE;
 	}
+}
+
+gdouble
+get_accel_scale (GUdevDevice *device)
+{
+	gdouble scale;
+
+	scale = g_udev_device_get_sysfs_attr_as_double (device, "in_accel_scale");
+	if (scale != 0.0) {
+		g_debug ("Attribute in_accel_scale ('%f') found on sysfs", scale);
+		return scale;
+	}
+	scale = g_udev_device_get_sysfs_attr_as_double (device, "scale");
+	if (scale != 0.0) {
+		g_debug ("Attribute scale ('%f') found on sysfs", scale);
+		return scale;
+	}
+
+	g_debug ("Failed to auto-detect scale, falling back to 1.0");
+	return 1.0;
 }

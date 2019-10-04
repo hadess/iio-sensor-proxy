@@ -28,8 +28,8 @@ iio_sensor_proxy_SOURCES =			\
 	iio-buffer-utils.c			\
 	accel-mount-matrix.h			\
 	accel-mount-matrix.c			\
-	accel-location.h				\
-	accel-location.c				\
+	accel-attributes.h				\
+	accel-attributes.c				\
 	$(BUILT_SOURCES)
 
 iio_sensor_proxy_CPPFLAGS =			\
@@ -63,8 +63,8 @@ test_mount_matrix_LDADD = $(IIO_SENSOR_PROXY_LIBS)
 
 test_accel_location_SOURCES =			\
 	test-accel-location.c			\
-	accel-location.h			\
-	accel-location.c
+	accel-attributes.h			\
+	accel-attributes.c
 
 test_accel_location_CPPFLAGS =			\
 	$(IIO_SENSOR_PROXY_CFLAGS)		\

@@ -9,7 +9,7 @@
 #include <glib.h>
 #include <gudev/gudev.h>
 
-#include "accel-location.h"
+#include "accel-attributes.h"
 
 typedef enum {
 	DRIVER_TYPE_ACCEL,

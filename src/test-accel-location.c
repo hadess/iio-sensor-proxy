@@ -7,7 +7,7 @@
  *
  */
 
-#include "accel-location.h"
+#include "accel-attributes.h"
 
 #define VALID_DISPLAY_LOCATION "display"
 #define VALID_BASE_LOCATION "base"
