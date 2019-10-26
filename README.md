@@ -20,11 +20,11 @@ Usage
 
 With a GNOME 3.18 (or newer) based system, orientation changes will
 automatically be applied when rotating the panel, ambient light will be used
-to change the screen brightness, and Geoclue will be able to read the compass
+to change the screen brightness, and GeoClue will be able to read the compass
 data to show the direction in Maps.
 
 Note that nothing in iio-sensor-proxy is GNOME specific, or relies on GNOME.
-GNOME and geoclue use the data provided by iio-sensor-proxy, other desktop
+GNOME and GeoClue use the data provided by iio-sensor-proxy, other desktop
 environments are more than welcome to use this as a basis for their own
 integration.
 
@@ -83,7 +83,7 @@ for details.
 Compass testing
 ---------------
 
-Only the Geoclue daemon (as the geoclue user) is allowed to access the `net.hadess.SensorProxy.Compass`
+Only the GeoClue daemon (as the geoclue user) is allowed to access the `net.hadess.SensorProxy.Compass`
 interface, the results of which it will propagate to clients along with positional information.
 
 If your device does not contain a compass, you can run tests with:
