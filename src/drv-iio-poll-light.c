@@ -24,6 +24,8 @@ typedef struct DrvData {
 	char               *input_path;
 	guint               interval;
 	guint               timeout_id;
+
+	double              scale;
 } DrvData;
 
 static DrvData *drv_data = NULL;
@@ -55,8 +57,8 @@ light_changed (gpointer user_data)
 		g_error_free (error);
 		return G_SOURCE_CONTINUE;
 	}
-
-	readings.level = level;
+	readings.level = level * drv_data->scale;
+	g_debug ("Light read from IIO: %lf, (scale %lf)", level, drv_data->scale);
 
 	/* Even though the IIO kernel API declares in_intensity* values as unitless,
 	 * we use Microsoft's hid-sensors-usages.docx which mentions that Windows 8
@@ -125,6 +127,16 @@ iio_poll_light_open (GUdevDevice        *device,
 	drv_data->input_path = g_build_filename (g_udev_device_get_sysfs_path (device),
 						 "in_illuminance_input",
 						 NULL);
+	if (!g_file_test (drv_data->input_path, G_FILE_TEST_EXISTS)) {
+		g_free (drv_data->input_path);
+		drv_data->input_path = g_build_filename (g_udev_device_get_sysfs_path (device),
+							 "in_illuminance_raw",
+							 NULL);
+	}
+
+	drv_data->scale = g_udev_device_get_sysfs_attr_as_double (device, "in_illuminance_scale");
+	if (drv_data->scale == 0.0)
+		drv_data->scale = 1.0;
 
 	return TRUE;
 }
