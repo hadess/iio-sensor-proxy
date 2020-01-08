@@ -71,23 +71,45 @@ light_changed (gpointer user_data)
 	return G_SOURCE_CONTINUE;
 }
 
+static char *
+get_illuminance_channel_path (GUdevDevice *device,
+			      const char *suffix)
+{
+	const char *channels[] = {
+		"in_illuminance",
+		"in_illuminance0"
+	};
+	char *path = NULL;
+	guint i;
+
+	for (i = 0; i < G_N_ELEMENTS (channels); i++) {
+		path = g_strdup_printf ("%s/%s_%s",
+					g_udev_device_get_sysfs_path (device),
+					channels[i],
+					suffix);
+		if (g_file_test (path, G_FILE_TEST_EXISTS))
+			return path;
+		g_clear_pointer (&path, g_free);
+	}
+	return NULL;
+}
+
 static guint
 get_interval (GUdevDevice *device)
 {
-	gdouble time;
+	gdouble time = DEFAULT_POLL_TIME;
 	char *path, *contents;
 
-	path = g_build_filename (g_udev_device_get_sysfs_path (device),
-				 "in_illuminance_integration_time",
-				 NULL);
+	path = get_illuminance_channel_path (device, "integration_time");
+	if (!path)
+		goto out;
 	if (g_file_get_contents (path, &contents, NULL, NULL)) {
 		time = g_ascii_strtod (contents, NULL);
 		g_free (contents);
-	} else {
-		time = DEFAULT_POLL_TIME;
 	}
 	g_free (path);
 
+out:
 	return (time * 1000);
 }
 
@@ -124,17 +146,19 @@ iio_poll_light_open (GUdevDevice        *device,
 	drv_data->user_data = user_data;
 
 	drv_data->interval = get_interval (device);
-	drv_data->input_path = g_build_filename (g_udev_device_get_sysfs_path (device),
-						 "in_illuminance_input",
-						 NULL);
-	if (!g_file_test (drv_data->input_path, G_FILE_TEST_EXISTS)) {
-		g_free (drv_data->input_path);
-		drv_data->input_path = g_build_filename (g_udev_device_get_sysfs_path (device),
-							 "in_illuminance_raw",
-							 NULL);
-	}
+	drv_data->input_path = get_illuminance_channel_path (device, "input");
+	if (!drv_data->input_path)
+		drv_data->input_path = get_illuminance_channel_path (device, "raw");
+	if (!drv_data->input_path)
+		return FALSE;
 
-	drv_data->scale = g_udev_device_get_sysfs_attr_as_double (device, "in_illuminance_scale");
+	if (g_str_has_prefix (drv_data->input_path, "in_illuminance0")) {
+		drv_data->scale = g_udev_device_get_sysfs_attr_as_double (device,
+									  "in_illuminance0_scale");
+	} else {
+		drv_data->scale = g_udev_device_get_sysfs_attr_as_double (device,
+									  "in_illuminance_scale");
+	}
 	if (drv_data->scale == 0.0)
 		drv_data->scale = 1.0;
 
